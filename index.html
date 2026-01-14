@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zeedna 3amiat — Dictionnaire participatif</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <header class="topbar">
+<div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
+    <div class="logo">
+      <img src="./LogoV2.png" alt="Zeedna" />
+    </div>
+
+    <div class="brandText">
+      <div class="title">Zeedna 3amiat</div>
+    </div>
+  </div>
+
+  <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">
+    🌙
+  </button>
+
+  <a class="cta" target="_blank" rel="noopener"
+     href="https://docs.google.com/forms/d/e/1FAIpQLSdAleUQ0x2H8_BT35kyte7xv7FgZa83rZcYQ_8xbLIR0lGKKw/viewform?usp=dialog">
+    ➕ Contribuer
+  </a>
+</header>
+  <main class="container">
+    <section class="controls">
+      <div class="searchwrap">
+        <input id="q" class="search" type="search" autocomplete="off"
+               placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..." />
+      </div>
+
+      <select id="dialect" class="select">
+        <option value="">Tous les dialectes</option>
+      </select>
+    </section>
+
+    <section class="meta">
+      <div id="status" class="status muted">Prêt</div>
+      <div id="count" class="count">0 résultat(s)</div>
+    </section>
+
+    <section id="results" class="results"></section>
+
+    <footer class="footer">
+      <div>© Zeedna 3amiat</div>
+      <div class="muted">v1.0.0</div>
+    </footer>
+  </main>
+
+  <!-- MODAL -->
+  <div id="backdrop" class="modal-backdrop" aria-hidden="true"></div>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-header">
+      <div>
+        <div id="m_word" class="word-ar"></div>
+        <div id="m_translit" class="translit"></div>
+      </div>
+      <button id="m_close" class="close-btn">Fermer</button>
+    </div>
+
+    <div id="m_meta" class="trads"></div>
+    <div id="m_kv" class="kv"></div>
+
+    <div class="syn-wrap">
+      <div class="tag">Autres dialectes / synonymes</div>
+      <div id="m_syn" class="syn-list"></div>
+      <div class="small muted" style="margin-top:10px;">
+        Astuce : correspondances trouvées automatiquement via les sens <b>FR + EN</b>.
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ ORDRE IMPORTANT -->
+  <script src="utils.js"></script>
+  <script src="synonyms.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
