@@ -30,13 +30,36 @@ function initThemeToggle(){
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbz6qw-BRd6UFG0ZeVlFT72m8uDQIsXXocJ5XGYYkaBr7Ne32zHGDUvONNU05ik7bog/exec";
+
 /* =========================================================
-   [APP-1.5] i18n (Home language by browser)
+   [APP-2] DOM ELEMENTS
+   ========================================================= */
+
+// UI elements
+const qEl = document.getElementById("q");
+const dialectEl = document.getElementById("dialect");
+const resultsEl = document.getElementById("results");
+const countEl = document.getElementById("count");
+const statusEl = document.getElementById("status");
+const homeBtn = document.getElementById("homeBtn");
+
+// Modal elements
+const elBackdrop = document.getElementById("backdrop");
+const elModal = document.getElementById("modal");
+const elClose = document.getElementById("m_close");
+const mWord = document.getElementById("m_word");
+const mTranslit = document.getElementById("m_translit");
+const mMeta = document.getElementById("m_meta");
+const mKV = document.getElementById("m_kv");
+const mSyn = document.getElementById("m_syn");
+
+/* =========================================================
+   [APP-3] i18n (Home language by browser)
    ========================================================= */
 
 const I18N = {
   fr: {
-    loading reopening: "Prêt",
+    ready: "Prêt",
     loading: "Chargement…",
     ok: (n) => `OK — ${n} entrées`,
     error: "Erreur chargement (ouvre la console)",
@@ -44,9 +67,8 @@ const I18N = {
     contribute_btn: "➕ Contribuer",
     all_dialects: "Tous les dialectes",
     modal_close: "Fermer",
-    modal_syn_title: "Autres dialectes / synonymes",
-    modal_syn_hint: "Astuce : correspondances trouvées automatiquement via les sens FR + EN.",
-    results_count: (n) => `${n} résultat(s)`
+    results_count: (n) => `${n} résultat(s)`,
+    no_results: "Aucun résultat"
   },
   en: {
     ready: "Ready",
@@ -57,9 +79,8 @@ const I18N = {
     contribute_btn: "➕ Contribute",
     all_dialects: "All dialects",
     modal_close: "Close",
-    modal_syn_title: "Other dialects / synonyms",
-    modal_syn_hint: "Tip: matches are found automatically via FR + EN meanings.",
-    results_count: (n) => `${n} result(s)`
+    results_count: (n) => `${n} result(s)`,
+    no_results: "No results"
   },
   ar: {
     ready: "جاهز",
@@ -70,9 +91,8 @@ const I18N = {
     contribute_btn: "➕ ساهم",
     all_dialects: "كل اللهجات",
     modal_close: "إغلاق",
-    modal_syn_title: "لهجات أخرى / مرادفات",
-    modal_syn_hint: "معلومة: يتم إيجاد المطابقات تلقائياً عبر معاني FR + EN.",
-    results_count: (n) => `${n} نتيجة`
+    results_count: (n) => `${n} نتيجة`,
+    no_results: "لا نتائج"
   }
 };
 
@@ -82,7 +102,6 @@ function detectLang(){
   if (nav.startsWith("fr")) return "fr";
   return "en";
 }
-
 const LANG = detectLang();
 
 function t(key){
@@ -100,19 +119,29 @@ function applyI18nStatic(){
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
     if(!key) return;
-    const val = t(key);
-    if(val) el.textContent = val;
+
+    // mapping simple (ton HTML a home_contribute_btn)
+    if(key === "home_contribute_btn"){
+      el.textContent = t("contribute_btn");
+    }
   });
 
   // placeholders
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
     const key = el.getAttribute("data-i18n-placeholder");
-    if(!key) return;
-    const val = t(key.replace("home_", "").replace("_ph","") === "search" ? "search_ph" : key);
-    // on mappe explicitement
-    const v = (key === "home_search_ph") ? t("search_ph") : "";
-    if(v) el.setAttribute("placeholder", v);
+    if(key === "home_search_ph"){
+      el.setAttribute("placeholder", t("search_ph"));
+    }
   });
+
+  // dropdown first option
+  if(dialectEl){
+    const first = dialectEl.querySelector("option[value='']");
+    if(first) first.textContent = t("all_dialects");
+  }
+
+  // modal close text
+  if(elClose) elClose.textContent = t("modal_close");
 }
 
 function setCount(n){
@@ -120,29 +149,9 @@ function setCount(n){
   const pack = I18N[LANG] || I18N.en;
   countEl.textContent = (pack.results_count) ? pack.results_count(n) : `${n}`;
 }
-/* =========================================================
-   [APP-2] DOM ELEMENTS
-   ========================================================= */
-
-// UI elements
-const qEl = document.getElementById("q");
-const dialectEl = document.getElementById("dialect");
-const resultsEl = document.getElementById("results");
-const countEl = document.getElementById("count");
-const statusEl = document.getElementById("status");
-
-// Modal elements
-const elBackdrop = document.getElementById("backdrop");
-const elModal = document.getElementById("modal");
-const elClose = document.getElementById("m_close");
-const mWord = document.getElementById("m_word");
-const mTranslit = document.getElementById("m_translit");
-const mMeta = document.getElementById("m_meta");
-const mKV = document.getElementById("m_kv");
-const mSyn = document.getElementById("m_syn");
 
 /* =========================================================
-   [APP-3] STATE
+   [APP-4] STATE
    ========================================================= */
 
 let rows = [];
@@ -150,11 +159,11 @@ let filteredRows = [];
 let synIndex = null;
 
 /* =========================================================
-   [APP-4] HELPERS (local)
+   [APP-5] HELPERS (local)
    ========================================================= */
 
 function setAppStatus(msg){
-  // setStatus(htmlElement, msg) doit exister dans ton utils
+  // setStatus(htmlElement, msg) doit exister dans utils.js
   setStatus(statusEl, msg);
 }
 
@@ -174,15 +183,15 @@ function slugify(s){
     .trim()
     .toLowerCase()
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-") // garde aussi l'arabe
+    .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/(^-|-$)/g, "");
 }
 
 function buildHashForRow(row){
   const a = slugify(row.mot_arabe || "");
-  const t = slugify(row.transliteration || "");
-  const base = a || t || "mot";
+  const tr = slugify(row.transliteration || "");
+  const base = a || tr || "mot";
   const cc = (row.pays_code || "").toUpperCase().trim();
   return `#mot=${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
 }
@@ -209,8 +218,8 @@ function findRowFromHash(route){
     if(!okCountry) return false;
 
     const a = slugify(r.mot_arabe || "");
-    const t = slugify(r.transliteration || "");
-    return a === slug || t === slug;
+    const tr = slugify(r.transliteration || "");
+    return a === slug || tr === slug;
   });
 
   return candidates[0] || null;
@@ -238,8 +247,9 @@ function openFromCurrentHash(){
     clearHash();
   }
 }
+
 /* =========================================================
-   [APP-5] LOAD + NORMALIZE DATA
+   [APP-6] LOAD + NORMALIZE DATA
    ========================================================= */
 
 async function loadData(){
@@ -253,29 +263,26 @@ async function loadData(){
 
     rows = data.map(normalizeRow).filter(r => r.actifBool);
 
-    // Build synonym index (FR + EN) — sans concept_id
+    // Synonyms index (FR + EN)
     synIndex = buildSynIndex(rows);
 
     buildDialectDropdown(rows);
     applyFilters();
     openFromCurrentHash();
 
-    setAppStatus(`OK — ${rows.length} entrées`);
+    setAppStatus(t("ok")(rows.length));
   }catch(e){
     console.error(e);
     setAppStatus(t("error"));
+  }
 }
 
 function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  // FR: ton champ principal est sens_dialectal (col K)
   const fr = clean(r.sens_dialectal) || clean(r.traduction_fr);
-
-  // EN: traduction_eng fallback traduction_en
   const en = clean(r.traduction_eng) || clean(r.traduction_en);
-
   const nl = clean(r.traduction_nl);
   const fu = clean(r.Fouss7a);
 
@@ -323,7 +330,7 @@ function normalizeRow(r){
 }
 
 /* =========================================================
-   [APP-6] DIALECT DROPDOWN
+   [APP-7] DIALECT DROPDOWN
    ========================================================= */
 
 function buildDialectDropdown(data){
@@ -342,19 +349,18 @@ function buildDialectDropdown(data){
 }
 
 /* =========================================================
-   [APP-7] FILTER + RENDER LIST
+   [APP-8] FILTER + RENDER LIST
    ========================================================= */
 
 function applyFilters(){
   const q = norm(qEl?.value || "");
   const dialect = clean(dialectEl?.value || "");
 
-  // ✅ Ne rien afficher tant qu’il n’y a pas au moins une recherche OU un filtre dialecte
   const hasSearch = q.length > 0 || dialect.length > 0;
 
   if(!hasSearch){
     filteredRows = [];
-    renderList([]); // ✅ IMPORTANT: ta fonction s’appelle renderList
+    renderList([]);
     setCount(0);
     return;
   }
@@ -365,7 +371,7 @@ function applyFilters(){
     return okDialect && okQ;
   });
 
-  renderList(filteredRows); // ✅ IMPORTANT
+  renderList(filteredRows);
   setCount(filteredRows.length);
 }
 
@@ -374,7 +380,7 @@ function renderList(data){
   resultsEl.innerHTML = "";
 
   if(!data.length){
-    resultsEl.innerHTML = `<div class="muted small" style="padding:10px;">Aucun résultat</div>`;
+    resultsEl.innerHTML = `<div class="muted small" style="padding:10px;">${escapeHtml(t("no_results"))}</div>`;
     return;
   }
 
@@ -418,18 +424,19 @@ function renderCard(row){
 }
 
 /* =========================================================
-   [APP-8] MODAL OPEN/CLOSE
+   [APP-9] MODAL OPEN/CLOSE
    ========================================================= */
 
 function openModal(row){
   if(!elModal || !elBackdrop) return;
+
   setHashForRow(row);
+
   mWord.textContent = row.mot_arabe || "—";
   mTranslit.textContent = row.transliteration || "";
 
   const flag = isoToFlagEmoji(row.pays_code);
 
-  // Meta
   const metaLines = [];
   metaLines.push(`<div class="trad-line"><span class="tag">${flag}</span>${row.registre ? `<span class="small">${escapeHtml(row.registre)}</span>` : ""}</div>`);
   if(row.fr) metaLines.push(`<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(row.fr)}</span></div>`);
@@ -438,7 +445,6 @@ function openModal(row){
   if(row.fu) metaLines.push(`<div class="trad-line"><span class="tag">Fouss7a</span>${safeDirRTL(row.fu)}</div>`);
   mMeta.innerHTML = metaLines.join("");
 
-  // ✅ PATCH 3 : pas d’ID affiché
   const kv = [
     ["Pays", row.pays_code],
     ["Catégorie", row.categorie_grammaticale],
@@ -454,7 +460,6 @@ function openModal(row){
     <div class="v">${escapeHtml(String(v))}</div>
   `).join("");
 
-  // Synonyms (FR + EN) — clickable
   renderSynonyms(row);
 
   elBackdrop.style.display = "block";
@@ -465,15 +470,17 @@ function openModal(row){
 
 function closeModal(){
   if(!elModal || !elBackdrop) return;
+
   elBackdrop.style.display = "none";
   elModal.style.display = "none";
   elBackdrop.setAttribute("aria-hidden","true");
   elModal.setAttribute("aria-hidden","true");
+
   clearHash();
 }
 
 /* =========================================================
-   [APP-9] MODAL → SYNONYMS (FR + EN)
+   [APP-10] MODAL → SYNONYMS (FR + EN)
    ========================================================= */
 
 function renderSynonyms(baseRow){
@@ -481,7 +488,6 @@ function renderSynonyms(baseRow){
 
   const list = findSynonyms(baseRow, rows, synIndex, 12);
 
-  // ✅ PATCH 3 : on n'affiche rien si pas de synonymes
   if(!list.length){
     mSyn.innerHTML = "";
     return;
@@ -513,8 +519,8 @@ function renderSynonyms(baseRow){
     `;
   }).join("");
 
-  const cards = mSyn.querySelectorAll(".syn-card");
-  cards.forEach(c => {
+  // click sur une carte synonyme
+  mSyn.querySelectorAll(".syn-card").forEach(c => {
     c.addEventListener("click", (e) => {
       e.stopPropagation();
       const id = c.getAttribute("data-id");
@@ -523,9 +529,10 @@ function renderSynonyms(baseRow){
     });
   });
 }
-
-/* =========================================================
-   [APP-10] EVENTS
+            
+            
+            /* =========================================================
+   [APP-10] EVENTS + HASH ROUTING
    ========================================================= */
 
 qEl?.addEventListener("input", applyFilters);
@@ -533,79 +540,61 @@ dialectEl?.addEventListener("change", applyFilters);
 
 elClose?.addEventListener("click", closeModal);
 elBackdrop?.addEventListener("click", closeModal);
-document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
+});
+
+// Important: quand on navigue dans l’historique (back/forward)
+window.addEventListener("popstate", () => {
+  if (location.hash && location.hash.startsWith("#mot=")) {
+    openFromCurrentHash();
+  } else {
+    closeModal();
+  }
+});
+// Important: quand le hash change (#mot=...)
+window.addEventListener("hashchange", () => {
+  if (location.hash && location.hash.startsWith("#mot=")) {
+    openFromCurrentHash();
+  } else {
+    closeModal();
+  }
+});
 /* =========================================================
-   [APP-12] HOME CLICK (logo)
+   [APP-11] HOME CLICK (logo)
    ========================================================= */
 
-const homeBtn = document.getElementById("homeBtn");
-
 function goHome(){
-  // 1. Ferme la modale si ouverte
+  // ferme la modale si ouverte
   closeModal();
 
-  // 2. Vide la recherche
+  // reset filtres
   if(qEl) qEl.value = "";
   if(dialectEl) dialectEl.value = "";
 
-  // 3. Vide les résultats
+  // vide résultats
   filteredRows = [];
   renderList([]);
+  setCount(0);
 
-  // 4. Reset compteur
-  if(countEl) countEl.textContent = "0 résultat(s)";
-
-  // 5. Nettoie l’URL (?id=...)
+  // reset url
   history.pushState({}, "", "/");
 }
 
 if(homeBtn){
   homeBtn.addEventListener("click", goHome);
-
-  // accessibilité clavier (Entrée)
   homeBtn.addEventListener("keydown", (e) => {
-    if(e.key === "Enter") goHome();
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      goHome();
+    }
   });
 }
-window.addEventListener("popstate", () => {
-  if(location.hash && location.hash.startsWith("#mot=")){
-    openFromCurrentHash();
-  }else{
-    closeModal();
-  }
-});
 
 /* =========================================================
-   [APP-11] START
+   [APP-12] START
    ========================================================= */
-// =====================
-// i18n (Home)
-// =====================
-(function initI18nHome(){
-  if (typeof detectLang !== "function" || typeof applyI18n !== "function") return;
 
-  const lang = detectLang();
-
-  const DICT = {
-    fr: {
-      __lang: "fr",
-      home_search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)...",
-      home_contribute_btn: "➕ Contribuer"
-    },
-    en: {
-      __lang: "en",
-      home_search_ph: "Search a word (Arabic, translit, FR, EN, NL, Fusha)...",
-      home_contribute_btn: "➕ Contribute"
-    },
-    ar: {
-      __lang: "ar",
-      home_search_ph: "ابحث عن كلمة (عربي، كتابة لاتينية، فرنسي، إنجليزي، هولندي، فصحى)...",
-      home_contribute_btn: "➕ ساهم"
-    }
-  };
-
-  applyI18n(DICT[lang] || DICT.fr);
-})();
 initThemeToggle();
 applyI18nStatic();
 loadData();
