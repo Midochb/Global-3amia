@@ -398,3 +398,44 @@ a{ color:inherit; }
 }
 .brand{ cursor:pointer; }
 .brand:active{ transform:scale(.99); }
+/* ===== Modal iPhone fix ===== */
+
+/* Backdrop prend tout l'écran */
+.modal-backdrop{
+  position: fixed;
+  inset: 0;
+}
+
+/* Modal centrée + hauteur max + scroll interne */
+.modal{
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  width: min(720px, 92vw);
+  max-height: min(80vh, 80dvh);
+  overflow: auto;
+
+  /* iOS scroll fluide */
+  -webkit-overflow-scrolling: touch;
+
+  /* évite que le contenu colle à l'encoche */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Header de modale “sticky” pour garder le bouton Close visible */
+.modal-header{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  /* Important: si ton fond est transparent,
+     mets un background identique à ta modale */
+  background: inherit;
+}
+
+/* Empêche Safari iOS de zoomer quand on clique dans des champs (si tu en as dans modale) */
+.modal input, .modal select, .modal textarea{
+  font-size: 16px;
+}
