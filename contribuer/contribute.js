@@ -3,7 +3,7 @@
    ========================================================= */
 
 // ✅ Mets TON URL Apps Script ici (le nouveau)
-const API_URL = "https://script.google.com/macros/s/AKfycbzcmKMgG60WxkU52UzO3CsMOd6Ncq5KHO979GDifZgqf7YcUukdkeDOARraVkreFW-i/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxUR8JRLJVKNIUaDsBcI246EAtF5X4iz7-uis5NbP8z8vp_WBR4MbEYAmzAIKBxsYgL/exec";
 
 /* =========================================================
    [CONTRIB-2] DOM
