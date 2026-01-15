@@ -4,7 +4,27 @@
 
 // ✅ Mets TON URL Apps Script ici (le nouveau)
 const API_URL = "https://script.google.com/macros/s/AKfycbwvGUVxjP6vPy2MZYT7b4I3aqbDAU0aWJ6WluPlYP5R1GzF8peFGtSURn7KJX3v_mkw/exec";
+/* =========================================================
+   [CONTRIB-I18N] Langue navigateur + textes (FR/AR/EN)
+   ========================================================= */
 
+function getBrowserLang(){
+  const raw = (navigator.language || "fr").toLowerCase();
+  // ex: fr-FR, ar-TN, en-US
+  if (raw.startsWith("ar")) return "ar";
+  if (raw.startsWith("en")) return "en";
+  return "fr";
+}
+
+const I18N = {
+  fr: {
+    c_subtitle: "Contribuer",
+    c_title: "Proposer un mot",
+    c_hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
+    c_word_ar_lab: "Mot (arabe)",
+    c_word_ar_ph: "اكتب الكلمة هنا",
+    c_sens_fr_lab: "Traduction (FR)",
+    c_sens_fr_ph: "ex
 /* =========================================================
    [CONTRIB-2] DOM
    ========================================================= */
