@@ -490,5 +490,33 @@ window.addEventListener("popstate", () => {
 /* =========================================================
    [APP-11] START
    ========================================================= */
+// =====================
+// i18n (Home)
+// =====================
+(function initI18nHome(){
+  if (typeof detectLang !== "function" || typeof applyI18n !== "function") return;
+
+  const lang = detectLang();
+
+  const DICT = {
+    fr: {
+      __lang: "fr",
+      home_search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)...",
+      home_contribute_btn: "➕ Contribuer"
+    },
+    en: {
+      __lang: "en",
+      home_search_ph: "Search a word (Arabic, translit, FR, EN, NL, Fusha)...",
+      home_contribute_btn: "➕ Contribute"
+    },
+    ar: {
+      __lang: "ar",
+      home_search_ph: "ابحث عن كلمة (عربي، كتابة لاتينية، فرنسي، إنجليزي، هولندي، فصحى)...",
+      home_contribute_btn: "➕ ساهم"
+    }
+  };
+
+  applyI18n(DICT[lang] || DICT.fr);
+})();
 initThemeToggle();
 loadData();
