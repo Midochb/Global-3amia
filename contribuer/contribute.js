@@ -5,26 +5,106 @@
 // ✅ Mets TON URL Apps Script ici (le nouveau)
 const API_URL = "https://script.google.com/macros/s/AKfycbwvGUVxjP6vPy2MZYT7b4I3aqbDAU0aWJ6WluPlYP5R1GzF8peFGtSURn7KJX3v_mkw/exec";
 /* =========================================================
-   [CONTRIB-I18N] Langue navigateur + textes (FR/AR/EN)
+   [CONTRIB-i18n] Language (Browser)
    ========================================================= */
 
 function getBrowserLang(){
   const raw = (navigator.language || "fr").toLowerCase();
-  // ex: fr-FR, ar-TN, en-US
   if (raw.startsWith("ar")) return "ar";
   if (raw.startsWith("en")) return "en";
   return "fr";
 }
 
-const I18N = {
+const I18N_CONTRIB = {
   fr: {
-    c_subtitle: "Contribuer",
-    c_title: "Proposer un mot",
-    c_hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
-    c_word_ar_lab: "Mot (arabe)",
-    c_word_ar_ph: "اكتب الكلمة هنا",
-    c_sens_fr_lab: "Traduction (FR)",
-    c_sens_fr_ph: "ex
+    subtitle: "Contribuer",
+    title: "Proposer un mot",
+    hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
+    word_lab: "Mot (arabe)",
+    word_ph: "اكتب الكلمة هنا",
+    fr_lab: "Traduction (FR)",
+    fr_ph: "ex : beaucoup, énormément, vachement",
+    ex_lab: "Exemple",
+    ex_ph: "ex : أنا لوّاج على خدمة",
+    dialect_lab: "Dialecte / pays",
+    city_lab: "Ville / région",
+    city_ph: "ex : Zarzis, Casablanca...",
+    send: "Envoyer"
+  },
+  en: {
+    subtitle: "Contribute",
+    title: "Suggest a word",
+    hint: "Tip: if there are multiple meanings, separate with commas (e.g., a lot, very much, tons).",
+    word_lab: "Word (Arabic)",
+    word_ph: "Type the word here",
+    fr_lab: "Meaning (French)",
+    fr_ph: "e.g., beaucoup, énormément, vachement",
+    ex_lab: "Example",
+    ex_ph: "e.g., أنا لوّاج على خدمة",
+    dialect_lab: "Dialect / country",
+    city_lab: "City / region",
+    city_ph: "e.g., Zarzis, Casablanca...",
+    send: "Send"
+  },
+  ar: {
+    subtitle: "المساهمة",
+    title: "اقترح كلمة",
+    hint: "ملاحظة: إذا كانت هناك عدة معانٍ، افصل بينها بفواصل (مثال: كثير، جدًا، بزّاف).",
+    word_lab: "الكلمة (بالعربية)",
+    word_ph: "اكتب الكلمة هنا",
+    fr_lab: "المعنى بالفرنسية",
+    fr_ph: "مثال: beaucoup, énormément, vachement",
+    ex_lab: "مثال",
+    ex_ph: "مثال: أنا لوّاج على خدمة",
+    dialect_lab: "اللهجة / البلد",
+    city_lab: "المدينة / المنطقة",
+    city_ph: "مثال: زرڨيس، الدار البيضاء…",
+    send: "إرسال"
+  }
+};
+
+function applyContribI18n(){
+  const lang = getBrowserLang();
+  const t = I18N_CONTRIB[lang] || I18N_CONTRIB.fr;
+
+  // texts
+  const elSubtitle = document.getElementById("t_subtitle");
+  const elTitle = document.getElementById("t_title");
+  const elHint = document.getElementById("t_hint");
+
+  const labWord = document.getElementById("t_word_ar_lab");
+  const labFr = document.getElementById("t_trad_fr_lab");
+  const labEx = document.getElementById("t_example_lab");
+  const labDialect = document.getElementById("t_dialect_lab");
+  const labCity = document.getElementById("t_city_lab");
+
+  if(elSubtitle) elSubtitle.textContent = t.subtitle;
+  if(elTitle) elTitle.textContent = t.title;
+  if(elHint) elHint.textContent = t.hint;
+
+  if(labWord) labWord.textContent = t.word_lab;
+  if(labFr) labFr.textContent = t.fr_lab;
+  if(labEx) labEx.textContent = t.ex_lab;
+  if(labDialect) labDialect.textContent = t.dialect_lab;
+  if(labCity) labCity.textContent = t.city_lab;
+
+  // placeholders
+  if(wordArEl) wordArEl.setAttribute("placeholder", t.word_ph);
+  if(tradFrEl) tradFrEl.setAttribute("placeholder", t.fr_ph);
+  if(exampleEl) exampleEl.setAttribute("placeholder", t.ex_ph);
+  if(cityEl) cityEl.setAttribute("placeholder", t.city_ph);
+
+  // button text
+  if(submitBtn) submitBtn.textContent = t.send;
+
+  // html lang + direction
+  document.documentElement.setAttribute("lang", lang);
+  if(lang === "ar"){
+    document.body.setAttribute("dir", "rtl");
+  } else {
+    document.body.removeAttribute("dir");
+  }
+}
 /* =========================================================
    [CONTRIB-2] DOM
    ========================================================= */
@@ -194,7 +274,7 @@ function initSubmit() {
 /* =========================================================
    [CONTRIB-8] START
    ========================================================= */
-
+applyContribI18n();
 initThemeToggle();
 initHomeClick();
 initPrefill();
