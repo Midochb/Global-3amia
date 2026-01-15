@@ -3,85 +3,118 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- SEO (on ne touche pas, comme demandé) -->
   <title>Zeedna 3amiat – Dictionnaire des dialectes arabes (darija, tunisien, marocain)</title>
-  <meta name="description" content="
-Zeedna 3amiat est un dictionnaire participatif des dialectes arabes.
-Découvre la darija marocaine, le tunisien, l’algérien, l’égyptien et plus encore.
-Compare les traductions, les usages et propose tes propres mots.
-" />
+  <meta name="description" content="Zeedna 3amiat est un dictionnaire participatif des dialectes arabes. Découvre la darija marocaine, le tunisien, l’algérien, l’égyptien et plus encore. Compare les traductions, les usages et propose tes propres mots." />
+
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <header class="topbar">
-<div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
-    <div class="logo">
-      <img src="./LogoV2.png" alt="Zeedna" />
-    </div>
 
+<!-- ===================== HEADER ===================== -->
+<header class="topbar">
+
+  <!-- Logo + retour home -->
+  <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
+    <div class="logo">
+      <img src="./LogoV2.png" alt="Zeedna 3amiat" />
+    </div>
     <div class="brandText">
       <div class="title">Zeedna 3amiat</div>
     </div>
   </div>
 
-  <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">
-    🌙
-  </button>
-  <a class="cta" href="/contribuer" data-i18n="home_contribute_btn">➕ Contribuer</a>
+  <!-- Actions -->
+  <div class="headerActions">
+    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">
+      🌙
+    </button>
+    <a class="cta" href="/contribuer" data-i18n="home_contribute_btn">
+      ➕ Contribuer
+    </a>
+  </div>
+
 </header>
-  <main class="container">
-    <section class="controls">
-      <div class="searchwrap">
-       <input id="q" class="search" type="search" autocomplete="off"
-       data-i18n-placeholder="home_search_ph"
-       placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..." />
-      </div>
 
-      <select id="dialect" class="select">
-        <option value="">Tous les dialectes</option>
-      </select>
-    </section>
+<!-- ===================== MAIN ===================== -->
+<main class="container">
 
-    <section class="meta">
-      <div id="status" class="status muted">Prêt</div>
-      <div id="count" class="count">0 résultat(s)</div>
-    </section>
-
-    <section id="results" class="results"></section>
-
-    <footer class="footer">
-      <div>© Zeedna 3amiat</div>
-      <div class="muted">v1.0.0</div>
-    </footer>
-  </main>
-
-  <!-- MODAL -->
-  <div id="backdrop" class="modal-backdrop" aria-hidden="true"></div>
-
-  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-header">
-      <div>
-        <div id="m_word" class="word-ar"></div>
-        <div id="m_translit" class="translit"></div>
-      </div>
-      <button id="m_close" class="close-btn">Fermer</button>
+  <!-- Recherche -->
+  <section class="controls">
+    <div class="searchwrap">
+      <input
+        id="q"
+        class="search"
+        type="search"
+        autocomplete="off"
+        data-i18n-placeholder="home_search_ph"
+        placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
+      />
     </div>
 
-    <div id="m_meta" class="trads"></div>
-    <div id="m_kv" class="kv"></div>
+    <select id="dialect" class="select" data-i18n="home_all_dialects">
+      <option value="">Tous les dialectes</option>
+    </select>
+  </section>
 
-    <div class="syn-wrap">
-      <div class="tag">Autres dialectes / synonymes</div>
-      <div id="m_syn" class="syn-list"></div>
-      <div class="small muted" style="margin-top:10px;">
-        Astuce : correspondances trouvées automatiquement via les sens <b>FR + EN</b>.
-      </div>
+  <!-- Status -->
+  <section class="meta">
+    <div id="status" class="status muted" data-i18n="home_status_ready">
+      Prêt
+    </div>
+    <div id="count" class="count">
+      0 résultat(s)
+    </div>
+  </section>
+
+  <!-- Résultats -->
+  <section id="results" class="results"></section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div>© Zeedna 3amiat</div>
+    <div class="muted">v1.0.0</div>
+  </footer>
+
+</main>
+
+<!-- ===================== MODAL ===================== -->
+<div id="backdrop" class="modal-backdrop" aria-hidden="true"></div>
+
+<div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+
+  <div class="modal-header">
+    <div>
+      <div id="m_word" class="word-ar"></div>
+      <div id="m_translit" class="translit"></div>
+    </div>
+    <button id="m_close" class="close-btn" data-i18n="modal_close">
+      Fermer
+    </button>
+  </div>
+
+  <div id="m_meta" class="trads"></div>
+  <div id="m_kv" class="kv"></div>
+
+  <div class="syn-wrap">
+    <div class="tag" data-i18n="modal_synonyms_title">
+      Autres dialectes / synonymes
+    </div>
+    <div id="m_syn" class="syn-list"></div>
+    <div class="small muted" style="margin-top:10px;" data-i18n="modal_synonyms_hint">
+      Astuce : correspondances trouvées automatiquement via les sens FR + EN.
     </div>
   </div>
 
-  <!-- ✅ ORDRE IMPORTANT -->
-  <script src="utils.js"></script>
-  <script src="synonyms.js"></script>
-  <script src="app.js"></script>
+</div>
+
+<!-- ===================== SCRIPTS ===================== -->
+<!-- ⚠️ ordre important -->
+<script src="utils.js"></script>
+<script src="synonyms.js"></script>
+<script src="app.js"></script>
+
 </body>
 </html>
