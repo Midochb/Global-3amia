@@ -41,7 +41,6 @@ const dialectEl = document.getElementById("dialect");
 const resultsEl = document.getElementById("results");
 const countEl = document.getElementById("count");
 const statusEl = document.getElementById("status");
-const homeBtn = document.getElementById("homeBtn");
 
 // Modal elements
 const elBackdrop = document.getElementById("backdrop");
@@ -443,27 +442,7 @@ function renderSynonyms(baseRow){
 
 qEl?.addEventListener("input", applyFilters);
 dialectEl?.addEventListener("change", applyFilters);
-function goHome(){
-  // ferme la modal si ouverte
-  closeModal();
 
-  // reset UI
-  if(qEl) qEl.value = "";
-  if(dialectEl) dialectEl.value = "";
-
-  // comme ton applyFilters n’affiche rien si pas de recherche/filtre
-  applyFilters();
-
-  // optionnel : remonter en haut
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-homeBtn?.addEventListener("click", goHome);
-
-// clavier (accessibilité)
-homeBtn?.addEventListener("keydown", (e) => {
-  if(e.key === "Enter" || e.key === " ") goHome();
-});
 elClose?.addEventListener("click", closeModal);
 elBackdrop?.addEventListener("click", closeModal);
 document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
@@ -478,42 +457,5 @@ window.addEventListener("popstate", () => {
 /* =========================================================
    [APP-11] START
    ========================================================= */
-/* =========================================================
-   [APP-10.5] HOME BUTTON (LOGO)
-   ========================================================= */
-
-const homeBtn = document.getElementById("homeBtn");
-
-if (homeBtn) {
-  const goHome = () => {
-    // 1. Fermer la modal si ouverte
-    closeModal();
-
-    // 2. Nettoyer l’URL (?id=...)
-    history.pushState({}, "", "/");
-
-    // 3. Réinitialiser les champs
-    if (qEl) qEl.value = "";
-    if (dialectEl) dialectEl.value = "";
-
-    // 4. Vider les résultats
-    filteredRows = [];
-    renderList([]);
-
-    // 5. Reset compteur
-    if (countEl) countEl.textContent = "0 résultat(s)";
-  };
-
-  // Click souris / tactile
-  homeBtn.addEventListener("click", goHome);
-
-  // Clavier (Entrée / Espace)
-  homeBtn.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      goHome();
-    }
-  });
-}
 initThemeToggle();
 loadData();
