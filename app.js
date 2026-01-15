@@ -446,6 +446,39 @@ dialectEl?.addEventListener("change", applyFilters);
 elClose?.addEventListener("click", closeModal);
 elBackdrop?.addEventListener("click", closeModal);
 document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+/* =========================================================
+   [APP-12] HOME CLICK (logo)
+   ========================================================= */
+
+const homeBtn = document.getElementById("homeBtn");
+
+function goHome(){
+  // 1. Ferme la modale si ouverte
+  closeModal();
+
+  // 2. Vide la recherche
+  if(qEl) qEl.value = "";
+  if(dialectEl) dialectEl.value = "";
+
+  // 3. Vide les résultats
+  filteredRows = [];
+  renderList([]);
+
+  // 4. Reset compteur
+  if(countEl) countEl.textContent = "0 résultat(s)";
+
+  // 5. Nettoie l’URL (?id=...)
+  history.pushState({}, "", "/");
+}
+
+if(homeBtn){
+  homeBtn.addEventListener("click", goHome);
+
+  // accessibilité clavier (Entrée)
+  homeBtn.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") goHome();
+  });
+}
 window.addEventListener("popstate", () => {
   if(location.hash && location.hash.startsWith("#mot=")){
     openFromCurrentHash();
