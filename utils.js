@@ -56,3 +56,32 @@ function isoToFlagEmoji(iso){
   const second = code.charCodeAt(1) - 65 + A;
   return String.fromCodePoint(first, second);
 }
+// =====================
+// i18n (langue navigateur)
+// =====================
+function detectLang() {
+  const raw = (navigator.language || navigator.userLanguage || "fr").toLowerCase();
+
+  if (raw.startsWith("ar")) return "ar";
+  if (raw.startsWith("fr")) return "fr";
+  return "en";
+}
+
+function applyI18n(dict) {
+  // textes
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (key && dict[key] != null) el.textContent = dict[key];
+  });
+
+  // placeholders
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if (key && dict[key] != null) el.setAttribute("placeholder", dict[key]);
+  });
+
+  // lang + direction
+  const lang = dict.__lang || "fr";
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+}
