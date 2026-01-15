@@ -1,5 +1,5 @@
 // ====== CONFIG ======
-const API_URL = "https://script.google.com/macros/s/AKfycbz6qw-BRd6UFG0ZeVlFT72m8uDQIsXXocJ5XGYYkaBr7Ne32zHGDUvONNU05ik7bog/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzcmKMgG60WxkU52UzO3CsMOd6Ncq5KHO979GDifZgqf7YcUukdkeDOARraVkreFW-i/exec";
 
 // ====== THEME (reprise logique) ======
 function applyTheme(mode){
