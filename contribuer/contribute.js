@@ -104,6 +104,55 @@ function applyContribI18n(){
   } else {
     document.body.removeAttribute("dir");
   }
+    // --- Translate select options labels (keep values like TN/MA/...)
+  const COUNTRY_LABELS = {
+    fr: {
+      "": "—",
+      TN: "🇹🇳 Tunisie",
+      MA: "🇲🇦 Maroc",
+      DZ: "🇩🇿 Algérie",
+      LY: "🇱🇾 Libye",
+      EG: "🇪🇬 Égypte",
+      LB: "🇱🇧 Liban",
+      SA: "🇸🇦 Arabie Saoudite",
+      IQ: "🇮🇶 Irak",
+      SD: "🇸🇩 Soudan"
+    },
+    en: {
+      "": "—",
+      TN: "🇹🇳 Tunisia",
+      MA: "🇲🇦 Morocco",
+      DZ: "🇩🇿 Algeria",
+      LY: "🇱🇾 Libya",
+      EG: "🇪🇬 Egypt",
+      LB: "🇱🇧 Lebanon",
+      SA: "🇸🇦 Saudi Arabia",
+      IQ: "🇮🇶 Iraq",
+      SD: "🇸🇩 Sudan"
+    },
+    ar: {
+      "": "—",
+      TN: "🇹🇳 تونس",
+      MA: "🇲🇦 المغرب",
+      DZ: "🇩🇿 الجزائر",
+      LY: "🇱🇾 ليبيا",
+      EG: "🇪🇬 مصر",
+      LB: "🇱🇧 لبنان",
+      SA: "🇸🇦 السعودية",
+      IQ: "🇮🇶 العراق",
+      SD: "🇸🇩 السودان"
+    }
+  };
+
+  if (dialectEl) {
+    const lang = getBrowserLang();
+    const map = COUNTRY_LABELS[lang] || COUNTRY_LABELS.fr;
+
+    Array.from(dialectEl.options).forEach(opt => {
+      const v = (opt.value || "").toUpperCase();
+      if (map[v] !== undefined) opt.textContent = map[v];
+    });
+  }
 }
 /* =========================================================
    [CONTRIB-2] DOM
