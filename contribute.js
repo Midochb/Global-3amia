@@ -1,94 +1,199 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Zeedna 3amiat — Contribuer</title>
-  <link rel="stylesheet" href="/style.css" />
-</head>
+// ====== CONFIG ======
+const API_URL = "https://script.google.com/macros/s/AKfycbz6qw-BRd6UFG0ZeVlFT72m8uDQIsXXocJ5XGYYkaBr7Ne32zHGDUvONNU05ik7bog/exec";
 
-<body>
-  <header class="topbar">
-    <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
-      <div class="logo">
-        <!-- si tu as ton img logo, mets-la ici comme sur la home -->
-        <img src="/LogoV2.png" alt="Zeedna" style="width:28px;height:28px;object-fit:contain;" />
-      </div>
-      <div>
-        <div class="title">Zeedna 3amiat</div>
-        <div class="subtitle" id="t_subtitle">Contribuer</div>
-      </div>
-    </div>
+// ====== THEME (reprise logique) ======
+function applyTheme(mode){
+  document.body.setAttribute("data-theme", mode);
+  try { localStorage.setItem("zeedna_theme", mode); } catch(e){}
+}
+function initThemeToggle(){
+  const btn = document.getElementById("themeToggle");
+  if(!btn) return;
+  let saved = "dark";
+  try { saved = localStorage.getItem("zeedna_theme") || "dark"; } catch(e){}
+  if(saved !== "light") saved = "dark";
+  applyTheme(saved);
+  btn.textContent = (saved === "light") ? "☀️" : "🌙";
+  btn.addEventListener("click", () => {
+    const current = document.body.getAttribute("data-theme") || "dark";
+    const next = (current === "light") ? "dark" : "light";
+    applyTheme(next);
+    btn.textContent = (next === "light") ? "☀️" : "🌙";
+  });
+}
 
-    <button class="cta" id="themeToggle" type="button" aria-label="Thème">🌙</button>
-  </header>
+// ====== HOME CLICK ======
+function initHomeBtn(){
+  const homeBtn = document.getElementById("homeBtn");
+  if(!homeBtn) return;
+  const goHome = () => { window.location.href = "/"; };
+  homeBtn.addEventListener("click", goHome);
+  homeBtn.addEventListener("keydown", (e) => { if(e.key === "Enter") goHome(); });
+}
 
-  <main class="container">
-    <section class="card" style="cursor:default;">
-      <div style="font-weight:800;font-size:18px;margin-bottom:6px;" id="t_title">
-        Proposer un mot
-      </div>
-      <div class="muted small" style="margin-bottom:14px;" id="t_hint">
-        Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).
-      </div>
+// ====== I18N (FR/EN/AR) ======
+const I18N = {
+  fr: {
+    subtitle: "Contribuer",
+    title: "Proposer un mot",
+    hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
+    word_ar: "Mot (arabe)",
+    trad_fr: "Traduction (FR)",
+    example: "Exemple",
+    dialect: "Dialecte / pays",
+    city: "Ville / région",
+    send: "Envoyer",
+    sending: "Envoi…",
+    ok: "Merci ! Contribution envoyée ✅",
+    err: "Erreur d’envoi. Réessaie plus tard."
+  },
+  en: {
+    subtitle: "Contribute",
+    title: "Submit a word",
+    hint: "Tip: if multiple meanings, separate with commas (e.g., a lot, plenty, loads).",
+    word_ar: "Word (Arabic)",
+    trad_fr: "Translation (FR field)",
+    example: "Example",
+    dialect: "Dialect / country",
+    city: "City / region",
+    send: "Send",
+    sending: "Sending…",
+    ok: "Thanks! Submitted ✅",
+    err: "Submission error. Try again later."
+  },
+  ar: {
+    subtitle: "ساهم",
+    title: "اقترح كلمة",
+    hint: "ملاحظة: إذا كانت هناك معانٍ متعددة، افصلها بفواصل (،).",
+    word_ar: "الكلمة (بالعربية)",
+    trad_fr: "المعنى (بالفرنسية)",
+    example: "مثال",
+    dialect: "اللهجة / البلد",
+    city: "المدينة / المنطقة",
+    send: "إرسال",
+    sending: "جارٍ الإرسال…",
+    ok: "شكرًا! تم الإرسال ✅",
+    err: "حدث خطأ. حاول لاحقًا."
+  }
+};
 
-      <form id="contribForm">
-        <!-- Anti-spam (honeypot) -->
-        <div style="display:none;">
-          <label>Website</label>
-          <input type="text" id="website" autocomplete="off" />
-        </div>
+function pickLang(){
+  const nav = (navigator.language || "fr").toLowerCase();
+  if(nav.startsWith("ar")) return "ar";
+  if(nav.startsWith("en")) return "en";
+  return "fr";
+}
 
-        <label class="small muted" id="t_word_ar_lab">Mot (arabe)</label>
-        <input class="search" id="word_ar" required dir="rtl"
-               placeholder="اكتب الكلمة هنا" />
+function applyLang(lang){
+  const t = I18N[lang] || I18N.fr;
 
-        <div style="height:10px;"></div>
+  const map = [
+    ["t_subtitle","subtitle"],
+    ["t_title","title"],
+    ["t_hint","hint"],
+    ["t_word_ar_lab","word_ar"],
+    ["t_trad_fr_lab","trad_fr"],
+    ["t_example_lab","example"],
+    ["t_dialect_lab","dialect"],
+    ["t_city_lab","city"]
+  ];
 
-        <label class="small muted" id="t_trad_fr_lab">Traduction (FR)</label>
-        <input class="search" id="trad_fr" required
-               placeholder="ex : beaucoup, énormément, vachement" />
+  map.forEach(([id,key]) => {
+    const el = document.getElementById(id);
+    if(el) el.textContent = t[key];
+  });
 
-        <div style="height:10px;"></div>
+  const btn = document.getElementById("submitBtn");
+  if(btn) btn.textContent = t.send;
 
-        <label class="small muted" id="t_example_lab">Exemple</label>
-        <input class="search" id="example" required
-               placeholder="ex : أنا لوّاج على خدمة" />
+  // RTL en arabe
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang === "ar") ? "rtl" : "ltr";
+}
 
-        <div style="height:10px;"></div>
+// ====== FORM SUBMIT ======
+const formStartTs = Date.now();
 
-        <label class="small muted" id="t_dialect_lab">Dialecte / pays</label>
-        <select class="select" id="dialect" required>
-          <option value="">—</option>
-          <option value="TN">🇹🇳 Tunisie</option>
-          <option value="MA">🇲🇦 Maroc</option>
-          <option value="DZ">🇩🇿 Algérie</option>
-          <option value="LY">🇱🇾 Libye</option>
-          <option value="EG">🇪🇬 Égypte</option>
-          <option value="LB">🇱🇧 Liban</option>
-          <option value="SA">🇸🇦 Arabie Saoudite</option>
-          <option value="IQ">🇮🇶 Irak</option>
-          <option value="SD">🇸🇩 Soudan</option>
-          <!-- tu peux compléter -->
-        </select>
+function val(s){ return (s ?? "").toString().trim(); }
 
-        <div style="height:10px;"></div>
+async function submitContribution(payload){
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+  if(!res.ok) throw new Error("HTTP " + res.status);
+  const data = await res.json();
+  if(!data || data.ok !== true) throw new Error(data?.error || "unknown");
+  return data;
+}
 
-        <label class="small muted" id="t_city_lab">Ville / région</label>
-        <input class="search" id="city" required placeholder="ex : Zarzis, Casablanca..." />
+function initForm(){
+  const form = document.getElementById("contribForm");
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("submitBtn");
+  const lang = pickLang();
+  const t = I18N[lang] || I18N.fr;
 
-        <div style="height:14px;"></div>
+  if(!form) return;
 
-        <button class="cta" type="submit" id="submitBtn" style="width:100%; text-align:center;">
-          Envoyer
-        </button>
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if(msg) msg.textContent = "";
 
-        <div id="msg" class="small muted" style="margin-top:10px;"></div>
-      </form>
-    </section>
-  </main>
+    // Anti-spam #1: honeypot
+    const website = val(document.getElementById("website")?.value);
+    if(website){
+      if(msg) msg.textContent = "—";
+      return;
+    }
 
-  <script src="/utils.js"></script>
-  <script src="/contribuer/contribute.js"></script>
-</body>
-</html>
+    // Anti-spam #2: temps mini (3s)
+    const elapsed = Date.now() - formStartTs;
+    if(elapsed < 3000){
+      if(msg) msg.textContent = "Merci de patienter 2 secondes et réessayer.";
+      return;
+    }
+
+    const word_ar = val(document.getElementById("word_ar")?.value);
+    const trad_fr = val(document.getElementById("trad_fr")?.value);
+    const example = val(document.getElementById("example")?.value);
+    const dialect = val(document.getElementById("dialect")?.value);
+    const city = val(document.getElementById("city")?.value);
+
+    // Validations basiques
+    if(!word_ar || !trad_fr || !example || !dialect || !city){
+      if(msg) msg.textContent = "Merci de remplir tous les champs.";
+      return;
+    }
+
+    if(btn){ btn.disabled = true; btn.textContent = t.sending; }
+
+    try{
+      await submitContribution({
+        word_ar,
+        trad_fr,
+        example,
+        dialect,
+        city,
+        ui_lang: lang,
+        user_agent: navigator.userAgent,
+        created_at: new Date().toISOString()
+      });
+
+      if(msg) msg.textContent = t.ok;
+      form.reset();
+    }catch(err){
+      console.error(err);
+      if(msg) msg.textContent = t.err;
+    }finally{
+      if(btn){ btn.disabled = false; btn.textContent = t.send; }
+    }
+  });
+}
+
+// ====== START ======
+initThemeToggle();
+initHomeBtn();
+applyLang(pickLang());
+initForm();
