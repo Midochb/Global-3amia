@@ -11,7 +11,6 @@
   <header class="topbar">
     <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
       <div class="logo">
-        <!-- si tu as ton img logo, mets-la ici comme sur la home -->
         <img src="/LogoV2.png" alt="Zeedna" style="width:28px;height:28px;object-fit:contain;" />
       </div>
       <div>
@@ -32,33 +31,39 @@
         Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).
       </div>
 
-      <form id="contribForm">
+      <!-- ✅ IMPORTANT: method POST + target hidden_iframe (évite CORS) -->
+      <form id="contribForm" method="POST" target="hidden_iframe">
         <!-- Anti-spam (honeypot) -->
         <div style="display:none;">
           <label>Website</label>
-          <input type="text" id="website" autocomplete="off" />
+          <!-- ✅ IMPORTANT: name obligatoire -->
+          <input type="text" id="website" name="website" autocomplete="off" />
         </div>
 
         <label class="small muted" id="t_word_ar_lab">Mot (arabe)</label>
-        <input class="search" id="word_ar" required dir="rtl"
+        <!-- ✅ IMPORTANT: name obligatoire -->
+        <input class="search" id="word_ar" name="mot_arabe" required dir="rtl"
                placeholder="اكتب الكلمة هنا" />
 
         <div style="height:10px;"></div>
 
         <label class="small muted" id="t_trad_fr_lab">Traduction (FR)</label>
-        <input class="search" id="trad_fr" required
+        <!-- ✅ IMPORTANT: name obligatoire -->
+        <input class="search" id="trad_fr" name="traduction_fr" required
                placeholder="ex : beaucoup, énormément, vachement" />
 
         <div style="height:10px;"></div>
 
         <label class="small muted" id="t_example_lab">Exemple</label>
-        <input class="search" id="example" required
+        <!-- ✅ IMPORTANT: name obligatoire -->
+        <input class="search" id="example" name="exemple_phrase" required
                placeholder="ex : أنا لوّاج على خدمة" />
 
         <div style="height:10px;"></div>
 
         <label class="small muted" id="t_dialect_lab">Dialecte / pays</label>
-        <select class="select" id="dialect" required>
+        <!-- ✅ IMPORTANT: name obligatoire -->
+        <select class="select" id="dialect" name="pays_code" required>
           <option value="">—</option>
           <option value="TN">🇹🇳 Tunisie</option>
           <option value="MA">🇲🇦 Maroc</option>
@@ -69,13 +74,13 @@
           <option value="SA">🇸🇦 Arabie Saoudite</option>
           <option value="IQ">🇮🇶 Irak</option>
           <option value="SD">🇸🇩 Soudan</option>
-          <!-- tu peux compléter -->
         </select>
 
         <div style="height:10px;"></div>
 
         <label class="small muted" id="t_city_lab">Ville / région</label>
-        <input class="search" id="city" required placeholder="ex : Zarzis, Casablanca..." />
+        <!-- ✅ IMPORTANT: name obligatoire -->
+        <input class="search" id="city" name="region" required placeholder="ex : Zarzis, Casablanca..." />
 
         <div style="height:14px;"></div>
 
@@ -85,6 +90,10 @@
 
         <div id="msg" class="small muted" style="margin-top:10px;"></div>
       </form>
+
+      <!-- ✅ IMPORTANT: iframe cachée pour recevoir la réponse Apps Script -->
+      <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
     </section>
   </main>
 
