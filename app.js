@@ -30,7 +30,96 @@ function initThemeToggle(){
    ========================================================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbz6qw-BRd6UFG0ZeVlFT72m8uDQIsXXocJ5XGYYkaBr7Ne32zHGDUvONNU05ik7bog/exec";
+/* =========================================================
+   [APP-1.5] i18n (Home language by browser)
+   ========================================================= */
 
+const I18N = {
+  fr: {
+    loading reopening: "Prêt",
+    loading: "Chargement…",
+    ok: (n) => `OK — ${n} entrées`,
+    error: "Erreur chargement (ouvre la console)",
+    search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)...",
+    contribute_btn: "➕ Contribuer",
+    all_dialects: "Tous les dialectes",
+    modal_close: "Fermer",
+    modal_syn_title: "Autres dialectes / synonymes",
+    modal_syn_hint: "Astuce : correspondances trouvées automatiquement via les sens FR + EN.",
+    results_count: (n) => `${n} résultat(s)`
+  },
+  en: {
+    ready: "Ready",
+    loading: "Loading…",
+    ok: (n) => `OK — ${n} entries`,
+    error: "Load error (open console)",
+    search_ph: "Search a word (Arabic, translit, FR, EN, NL, Fusha)...",
+    contribute_btn: "➕ Contribute",
+    all_dialects: "All dialects",
+    modal_close: "Close",
+    modal_syn_title: "Other dialects / synonyms",
+    modal_syn_hint: "Tip: matches are found automatically via FR + EN meanings.",
+    results_count: (n) => `${n} result(s)`
+  },
+  ar: {
+    ready: "جاهز",
+    loading: "جارٍ التحميل…",
+    ok: (n) => `تم — ${n} مدخلة`,
+    error: "خطأ في التحميل (افتح وحدة التحكم)",
+    search_ph: "ابحث عن كلمة (عربي، translit، FR، EN، NL، فصحى)...",
+    contribute_btn: "➕ ساهم",
+    all_dialects: "كل اللهجات",
+    modal_close: "إغلاق",
+    modal_syn_title: "لهجات أخرى / مرادفات",
+    modal_syn_hint: "معلومة: يتم إيجاد المطابقات تلقائياً عبر معاني FR + EN.",
+    results_count: (n) => `${n} نتيجة`
+  }
+};
+
+function detectLang(){
+  const nav = (navigator.language || "en").toLowerCase();
+  if (nav.startsWith("ar")) return "ar";
+  if (nav.startsWith("fr")) return "fr";
+  return "en";
+}
+
+const LANG = detectLang();
+
+function t(key){
+  const pack = I18N[LANG] || I18N.en;
+  const fr = I18N.fr;
+  return pack[key] ?? fr[key] ?? "";
+}
+
+function applyI18nStatic(){
+  // html lang/dir
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = (LANG === "ar") ? "rtl" : "ltr";
+
+  // data-i18n
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if(!key) return;
+    const val = t(key);
+    if(val) el.textContent = val;
+  });
+
+  // placeholders
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    if(!key) return;
+    const val = t(key.replace("home_", "").replace("_ph","") === "search" ? "search_ph" : key);
+    // on mappe explicitement
+    const v = (key === "home_search_ph") ? t("search_ph") : "";
+    if(v) el.setAttribute("placeholder", v);
+  });
+}
+
+function setCount(n){
+  if(!countEl) return;
+  const pack = I18N[LANG] || I18N.en;
+  countEl.textContent = (pack.results_count) ? pack.results_count(n) : `${n}`;
+}
 /* =========================================================
    [APP-2] DOM ELEMENTS
    ========================================================= */
@@ -154,7 +243,7 @@ function openFromCurrentHash(){
    ========================================================= */
 
 async function loadData(){
-  setAppStatus("Chargement…");
+  setAppStatus(t("loading"));
   try{
     const res = await fetch(API_URL, { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -174,8 +263,7 @@ async function loadData(){
     setAppStatus(`OK — ${rows.length} entrées`);
   }catch(e){
     console.error(e);
-    setAppStatus("Erreur chargement (ouvre la console)");
-  }
+    setAppStatus(t("error"));
 }
 
 function normalizeRow(r){
@@ -244,7 +332,7 @@ function buildDialectDropdown(data){
   const set = new Set(data.map(x => x.pays_code).filter(Boolean));
   const list = Array.from(set).sort();
 
-  dialectEl.innerHTML = `<option value="">Tous les dialectes</option>`;
+  dialectEl.innerHTML = `<option value="">${t("all_dialects")}</option>`;
   for(const code of list){
     const opt = document.createElement("option");
     opt.value = code;
@@ -267,7 +355,7 @@ function applyFilters(){
   if(!hasSearch){
     filteredRows = [];
     renderList([]); // ✅ IMPORTANT: ta fonction s’appelle renderList
-    if(countEl) countEl.textContent = `0 résultat(s)`;
+    setCount(0);
     return;
   }
 
@@ -278,7 +366,7 @@ function applyFilters(){
   });
 
   renderList(filteredRows); // ✅ IMPORTANT
-  if(countEl) countEl.textContent = `${filteredRows.length} résultat(s)`;
+  setCount(filteredRows.length);
 }
 
 function renderList(data){
@@ -519,4 +607,5 @@ window.addEventListener("popstate", () => {
   applyI18n(DICT[lang] || DICT.fr);
 })();
 initThemeToggle();
+applyI18nStatic();
 loadData();
