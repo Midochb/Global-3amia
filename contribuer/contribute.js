@@ -231,14 +231,21 @@ function initThemeToggle() {
 }
 
 /* =========================================================
-   [CONTRIB-5] HOME CLICK
+   [CONTRIB-5] HOME CLICK (logo -> home)
    ========================================================= */
 
 function initHomeClick() {
+  const homeBtn = document.getElementById("homeBtn");
   if (!homeBtn) return;
-  const goHome = () => { window.location.href = "/"; };
 
+  const goHome = () => {
+    window.location.href = "/";
+  };
+
+  // clic souris
   homeBtn.addEventListener("click", goHome);
+
+  // accessibilité clavier (Enter / Space)
   homeBtn.addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
