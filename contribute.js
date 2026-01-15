@@ -1,1 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zeedna 3amiat — Contribuer</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
 
+<body>
+  <header class="topbar">
+    <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
+      <div class="logo">
+        <!-- si tu as ton img logo, mets-la ici comme sur la home -->
+        <img src="/LogoV2.png" alt="Zeedna" style="width:28px;height:28px;object-fit:contain;" />
+      </div>
+      <div>
+        <div class="title">Zeedna 3amiat</div>
+        <div class="subtitle" id="t_subtitle">Contribuer</div>
+      </div>
+    </div>
+
+    <button class="cta" id="themeToggle" type="button" aria-label="Thème">🌙</button>
+  </header>
+
+  <main class="container">
+    <section class="card" style="cursor:default;">
+      <div style="font-weight:800;font-size:18px;margin-bottom:6px;" id="t_title">
+        Proposer un mot
+      </div>
+      <div class="muted small" style="margin-bottom:14px;" id="t_hint">
+        Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).
+      </div>
+
+      <form id="contribForm">
+        <!-- Anti-spam (honeypot) -->
+        <div style="display:none;">
+          <label>Website</label>
+          <input type="text" id="website" autocomplete="off" />
+        </div>
+
+        <label class="small muted" id="t_word_ar_lab">Mot (arabe)</label>
+        <input class="search" id="word_ar" required dir="rtl"
+               placeholder="اكتب الكلمة هنا" />
+
+        <div style="height:10px;"></div>
+
+        <label class="small muted" id="t_trad_fr_lab">Traduction (FR)</label>
+        <input class="search" id="trad_fr" required
+               placeholder="ex : beaucoup, énormément, vachement" />
+
+        <div style="height:10px;"></div>
+
+        <label class="small muted" id="t_example_lab">Exemple</label>
+        <input class="search" id="example" required
+               placeholder="ex : أنا لوّاج على خدمة" />
+
+        <div style="height:10px;"></div>
+
+        <label class="small muted" id="t_dialect_lab">Dialecte / pays</label>
+        <select class="select" id="dialect" required>
+          <option value="">—</option>
+          <option value="TN">🇹🇳 Tunisie</option>
+          <option value="MA">🇲🇦 Maroc</option>
+          <option value="DZ">🇩🇿 Algérie</option>
+          <option value="LY">🇱🇾 Libye</option>
+          <option value="EG">🇪🇬 Égypte</option>
+          <option value="LB">🇱🇧 Liban</option>
+          <option value="SA">🇸🇦 Arabie Saoudite</option>
+          <option value="IQ">🇮🇶 Irak</option>
+          <option value="SD">🇸🇩 Soudan</option>
+          <!-- tu peux compléter -->
+        </select>
+
+        <div style="height:10px;"></div>
+
+        <label class="small muted" id="t_city_lab">Ville / région</label>
+        <input class="search" id="city" required placeholder="ex : Zarzis, Casablanca..." />
+
+        <div style="height:14px;"></div>
+
+        <button class="cta" type="submit" id="submitBtn" style="width:100%; text-align:center;">
+          Envoyer
+        </button>
+
+        <div id="msg" class="small muted" style="margin-top:10px;"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/utils.js"></script>
+  <script src="/contribuer/contribute.js"></script>
+</body>
+</html>
