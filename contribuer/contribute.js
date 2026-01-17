@@ -258,21 +258,159 @@ function suggestPhonetic(ar){
   return out.replace(/\s+/g," ").trim();
 }
 
+
+function suggestArabicFromPhonetic(ph){
+  const raw = (ph || "").toLowerCase().trim();
+  if (!raw) return "";
+
+  let s = raw
+    .replace(/[‘’]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/[^a-z0-9' \-]/g, "");
+
+  const DIGRAPHS = {
+    ch: "ش",
+    sh: "ش",
+    kh: "خ",
+    gh: "غ",
+    th: "ث",
+    dh: "ذ"
+  };
+
+  const SINGLE = {
+    b: "ب",
+    t: "ت",
+    j: "ج",
+    d: "د",
+    r: "ر",
+    z: "ز",
+    s: "س",
+    f: "ف",
+    q: "ق",
+    k: "ك",
+    c: "ك",
+    l: "ل",
+    m: "م",
+    n: "ن",
+    h: "ه",
+    w: "و",
+    y: "ي",
+    g: "گ",
+    p: "پ",
+    v: "ڤ",
+    x: "كس"
+  };
+
+  let out = "";
+  for (let i = 0; i < s.length; ) {
+    const ch = s[i];
+
+    if (ch === " ") {
+      out += " ";
+      i += 1;
+      continue;
+    }
+
+    // numbers used in arabizi
+    if (ch === "3") { out += "ع"; i += 1; continue; }
+    if (ch === "7") { out += "ح"; i += 1; continue; }
+    if (ch === "5") { out += "خ"; i += 1; continue; }
+    if (ch === "9") { out += "ق"; i += 1; continue; }
+
+    // long vowels
+    const two = s.slice(i, i + 2);
+    if (two === "aa") { out += "ا"; i += 2; continue; }
+    if (two === "ii") { out += "ي"; i += 2; continue; }
+    if (two === "ou" || two === "oo" || two === "uu") { out += "و"; i += 2; continue; }
+
+    // digraphs
+    if (DIGRAPHS[two]) {
+      out += DIGRAPHS[two];
+      i += 2;
+      continue;
+    }
+
+    // apostrophe / hamza
+    if (ch === "'") {
+      out += "ء";
+      i += 1;
+      continue;
+    }
+
+    // short vowels: keep very light heuristic (initial vowel => ا)
+    if ("aeiou".includes(ch)) {
+      const prev = out.slice(-1);
+      if (!out || prev === " ") out += "ا";
+      i += 1;
+      continue;
+    }
+
+    if (SINGLE[ch]) {
+      out += SINGLE[ch];
+      i += 1;
+      continue;
+    }
+
+    // fallback
+    out += ch;
+    i += 1;
+  }
+
+  return out.replace(/\s+/g, " ").trim();
+}
+
 function initPhoneticAutosuggest(){
   if(!wordArEl || !phoneticEl) return;
 
-  let dirty = false;
-  phoneticEl.addEventListener("input", () => { dirty = true; });
+  let dirtyAr = false;
+  let dirtyPh = false;
+  let internal = false;
 
-  const sync = () => {
+  const syncFromAr = () => {
+    const ar = (wordArEl.value || "").trim();
+    if(!ar) return;
+
     const current = (phoneticEl.value || "").trim();
-    if(dirty && current) return; // user wrote something -> don't overwrite
-    phoneticEl.value = suggestPhonetic(wordArEl.value);
+    if(dirtyPh && current) return;
+
+    internal = true;
+    phoneticEl.value = suggestPhonetic(ar);
+    internal = false;
   };
 
-  wordArEl.addEventListener("input", sync);
-  wordArEl.addEventListener("blur", sync);
+  const syncFromPh = () => {
+    const ph = (phoneticEl.value || "").trim();
+    if(!ph) return;
+
+    const current = (wordArEl.value || "").trim();
+    if(dirtyAr && current) return;
+
+    internal = true;
+    wordArEl.value = suggestArabicFromPhonetic(ph);
+    internal = false;
+  };
+
+  wordArEl.addEventListener("input", () => {
+    if(internal) return;
+    dirtyAr = true;
+    syncFromAr();
+  });
+
+  phoneticEl.addEventListener("input", () => {
+    if(internal) return;
+    dirtyPh = true;
+    syncFromPh();
+  });
+
+  wordArEl.addEventListener("blur", syncFromAr);
+  phoneticEl.addEventListener("blur", syncFromPh);
+
+  // initial sync
+  if((wordArEl.value || "").trim() && !(phoneticEl.value || "").trim()) syncFromAr();
+  if((phoneticEl.value || "").trim() && !(wordArEl.value || "").trim()) syncFromPh();
 }
+
+
 /* =========================================================
    [CONTRIB-2] DOM
    ========================================================= */
@@ -478,15 +616,26 @@ function initSubmit() {
     }
 
     // Petite validation user-side (en plus des required)
-    const w = (wordArEl?.value || "").trim();
+    let w = (wordArEl?.value || "").trim();
+    const ph = (phoneticEl?.value || "").trim();
     const fr = (tradFrEl?.value || "").trim();
     const ex = (exampleEl?.value || "").trim();
     const d = (dialectEl?.value || "").trim();
     const c = (cityEl?.value || "").trim();
 
-    if (!w || !fr || !ex || !d || !c) {
+    // If user filled only one of Arabic/phonetic, auto-suggest the other
+    if (!w && ph) {
+      try { wordArEl.value = suggestArabicFromPhonetic(ph); } catch (e) {}
+      w = (wordArEl.value || "").trim();
+    }
+    if (!ph && w) {
+      try { phoneticEl.value = suggestPhonetic(w); } catch (e) {}
+    }
+
+    // Require at least one of Arabic or phonetic + other mandatory fields
+    if ((!w && !ph) || !fr || !ex || !d || !c) {
       e.preventDefault();
-      setMsg("⚠️ Remplis tous les champs avant d’envoyer.", "error");
+      setMsg("⚠️ Remplis au moins le mot en arabe OU sa phonétique, puis les autres champs.", "error");
       return;
     }
 
