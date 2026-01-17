@@ -29,16 +29,7 @@ function initThemeToggle(){
    [APP-1] CONFIG
    ========================================================= */
 
-// ✅ URL Apps Script (GET JSON + POST contributions)
-const API_URL = "https://script.google.com/macros/s/AKfycbyvwBHRDqOP0OGGCXk1K0TODk1Q9B8L1UZgFcd3_M1kiTjC-7ft6dQHrQVUkzY69WJX/exec";
-
-// Cache local to make the search page feel instant (Apps Script can be slow on cold start)
-const CACHE_KEY = "zeedna_words_cache_v1";
-const CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12h
-
-// Cache local to make the search page feel instant (Apps Script can be slow on cold start)
-const CACHE_KEY = "zeedna_words_cache_v1";
-const CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12h
+const API_URL = "https://script.google.com/macros/s/AKfycbxjmksJSupiO3d9CwO5GrXzqmTjEkb9NtN2bsHRqO3zvhtkqqIb9Fwx3ggJBx6s9vno/exec";
 
 /* =========================================================
    [APP-2] DOM ELEMENTS
@@ -46,8 +37,6 @@ const CACHE_MAX_AGE_MS = 12 * 60 * 60 * 1000; // 12h
 
 // UI elements
 const qEl = document.getElementById("q");
-const searchBtn = document.getElementById("searchBtn");
-const suggEl = document.getElementById("suggestions");
 const dialectEl = document.getElementById("dialect");
 const resultsEl = document.getElementById("results");
 const countEl = document.getElementById("count");
@@ -76,7 +65,6 @@ const I18N = {
     error: "Erreur chargement (ouvre la console)",
     search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)...",
     contribute_btn: "➕ Contribuer",
-    search_btn: "Rechercher",
     all_dialects: "Tous les dialectes",
     modal_close: "Fermer",
     results_count: (n) => `${n} résultat(s)`,
@@ -89,7 +77,6 @@ const I18N = {
     error: "Load error (open console)",
     search_ph: "Search a word (Arabic, translit, FR, EN, NL, Fusha)...",
     contribute_btn: "➕ Contribute",
-    search_btn: "Search",
     all_dialects: "All dialects",
     modal_close: "Close",
     results_count: (n) => `${n} result(s)`,
@@ -102,7 +89,6 @@ const I18N = {
     error: "خطأ في التحميل (افتح وحدة التحكم)",
     search_ph: "ابحث عن كلمة (عربي، translit، FR، EN، NL، فصحى)...",
     contribute_btn: "➕ ساهم",
-    search_btn: "بحث",
     all_dialects: "كل اللهجات",
     modal_close: "إغلاق",
     results_count: (n) => `${n} نتيجة`,
@@ -156,9 +142,6 @@ function applyI18nStatic(){
 
   // modal close text
   if(elClose) elClose.textContent = t("modal_close");
-
-  // search button
-  if(searchBtn) searchBtn.textContent = t("search_btn");
 }
 
 function setCount(n){
@@ -175,82 +158,6 @@ let rows = [];
 let filteredRows = [];
 let synIndex = null;
 
-function hasActiveSearch_(){
-  const q = norm(qEl?.value || "");
-  const dialect = clean(dialectEl?.value || "");
-  return (q.length > 0) || (dialect.length > 0);
-}
-
-function hideSuggestions_(){
-  if(!suggEl) return;
-  suggEl.style.display = "none";
-  suggEl.innerHTML = "";
-}
-
-function updateSuggestions_(){
-  if(!suggEl) return;
-  const q = norm(qEl?.value || "");
-  const dialect = clean(dialectEl?.value || "");
-
-  if(!q){
-    hideSuggestions_();
-    return;
-  }
-
-  const list = rows
-    .filter(r => (!dialect || r.pays_code === dialect) && r._search.includes(q))
-    .slice(0, 8);
-
-  if(!list.length){
-    const safeQ = encodeURIComponent((qEl?.value || "").trim());
-    const url = `/contribuer/?mot=${safeQ}` + (dialect ? `&pays=${encodeURIComponent(dialect)}` : "");
-    suggEl.innerHTML = `
-      <div class="suggest-item muted">
-        ${escapeHtml(t("no_results"))}
-        <a class="suggest-link" href="${url}">→ ${escapeHtml(t("contribute_btn"))}</a>
-      </div>
-    `;
-    suggEl.style.display = "block";
-    return;
-  }
-
-  suggEl.innerHTML = list.map(r => {
-    const flag = isoToFlagEmoji(r.pays_code);
-    const label = r.fr || r.en || r.nl || "";
-    return `
-      <button type="button" class="suggest-item" data-id="${escapeHtml(r.mot_id)}">
-        <span class="suggest-ar">${escapeHtml(r.mot_arabe || "—")}</span>
-        <span class="suggest-tr">${escapeHtml(r.transliteration || "")}</span>
-        <span class="suggest-meta">${flag} ${escapeHtml(label)}</span>
-      </button>
-    `;
-  }).join("");
-
-  suggEl.style.display = "block";
-
-  // click selection
-  suggEl.querySelectorAll(".suggest-item[data-id]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-id");
-      const target = rows.find(x => x.mot_id === id);
-      if(target){
-        hideSuggestions_();
-        openModal(target);
-      }
-    });
-  });
-}
-
-function performSearch_(){
-  hideSuggestions_();
-  applyFilters();
-}
-
-function performSearch_(){
-  hideSuggestions_();
-  applyFilters();
-}
-
 /* =========================================================
    [APP-5] HELPERS (local)
    ========================================================= */
@@ -262,26 +169,6 @@ function setAppStatus(msg){
 
 function safeDirRTL(ar){
   return `<span dir="rtl" style="direction:rtl; unicode-bidi:plaintext;">${escapeHtml(ar)}</span>`;
-}
-
-function readCache_(){
-  try{
-    const raw = localStorage.getItem(CACHE_KEY);
-    if(!raw) return null;
-    const obj = JSON.parse(raw);
-    if(!obj || !Array.isArray(obj.data)) return null;
-    if(!obj.ts) return null;
-    if((Date.now() - obj.ts) > CACHE_MAX_AGE_MS) return null;
-    return obj.data;
-  }catch(e){
-    return null;
-  }
-}
-
-function writeCache_(data){
-  try{
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-  }catch(e){}
 }
 
 /* =========================================================
@@ -367,47 +254,26 @@ function openFromCurrentHash(){
 
 async function loadData(){
   setAppStatus(t("loading"));
-
-  // 1) Fast path: cached data
-  const cached = readCache_();
-  if(cached){
-    try{
-      rows = cached.map(normalizeRow).filter(r => r.actifBool);
-      synIndex = buildSynIndex(rows);
-      buildDialectDropdown(rows);
-      setAppStatus(t("ok")(rows.length));
-      // do not auto-search: wait for user action
-      openFromCurrentHash();
-    }catch(e){
-      // ignore cache parsing issues
-    }
-  }
-
-  // 2) Network path: fetch fresh data (with timeout)
   try{
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(API_URL, { cache: "no-store", signal: controller.signal });
-    clearTimeout(timer);
+    const res = await fetch(API_URL, { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
     if(!Array.isArray(data)) throw new Error("Réponse JSON invalide (pas un tableau)");
 
-    writeCache_(data);
     rows = data.map(normalizeRow).filter(r => r.actifBool);
+
+    // Synonyms index (FR + EN)
     synIndex = buildSynIndex(rows);
 
     buildDialectDropdown(rows);
-    // keep current query/dialect; do not auto-search unless user already searched
-    if(hasActiveSearch_()) performSearch_();
+    applyFilters();
     openFromCurrentHash();
 
     setAppStatus(t("ok")(rows.length));
   }catch(e){
     console.error(e);
-    // only show error if we have no cache at all
-    if(!cached) setAppStatus(t("error"));
+    setAppStatus(t("error"));
   }
 }
 
@@ -514,19 +380,7 @@ function renderList(data){
   resultsEl.innerHTML = "";
 
   if(!data.length){
-    const q = (qEl?.value || "").trim();
-    const dial = (dialectEl?.value || "").trim();
-    const canSuggest = hasActiveSearch_() && q.length > 0;
-    const href = canSuggest
-      ? `/contribuer/?mot=${encodeURIComponent(q)}${dial ? `&pays=${encodeURIComponent(dial)}` : ""}`
-      : `/contribuer`;
-
-    resultsEl.innerHTML = `
-      <div class="muted small" style="padding:10px; line-height:1.5;">
-        ${escapeHtml(t("no_results"))}
-        ${canSuggest ? `<div style="margin-top:10px;"><a class="cta" href="${href}">➕ Ajouter ce mot</a></div>` : ""}
-      </div>
-    `;
+    resultsEl.innerHTML = `<div class="muted small" style="padding:10px;">${escapeHtml(t("no_results"))}</div>`;
     return;
   }
 
@@ -681,22 +535,8 @@ function renderSynonyms(baseRow){
    [APP-10] EVENTS + HASH ROUTING
    ========================================================= */
 
-qEl?.addEventListener("input", updateSuggestions_);
-qEl?.addEventListener("keydown", (e) => {
-  if(e.key === "Enter"){
-    e.preventDefault();
-    performSearch_();
-  }
-});
-
-searchBtn?.addEventListener("click", () => {
-  performSearch_();
-});
-
-dialectEl?.addEventListener("change", () => {
-  // if user already has something selected/typed, run search immediately
-  if(hasActiveSearch_()) performSearch_();
-});
+qEl?.addEventListener("input", applyFilters);
+dialectEl?.addEventListener("change", applyFilters);
 
 elClose?.addEventListener("click", closeModal);
 elBackdrop?.addEventListener("click", closeModal);
