@@ -29,7 +29,7 @@ function initThemeToggle(){
    [APP-1] CONFIG
    ========================================================= */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbxjmksJSupiO3d9CwO5GrXzqmTjEkb9NtN2bsHRqO3zvhtkqqIb9Fwx3ggJBx6s9vno/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyvwBHRDqOP0OGGCXk1K0TODk1Q9B8L1UZgFcd3_M1kiTjC-7ft6dQHrQVUkzY69WJX/exec";
 
 /* =========================================================
    [APP-2] DOM ELEMENTS
