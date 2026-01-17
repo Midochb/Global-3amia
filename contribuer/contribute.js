@@ -22,6 +22,8 @@ const I18N_CONTRIB = {
     hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
     word_lab: "Mot (arabe)",
     word_ph: "اكتب الكلمة هنا",
+    phon_lab: "Phonétique (suggestion auto)",
+    phon_ph: "ex : 7iit / hiit",
     fr_lab: "Traduction (FR)",
     fr_ph: "ex : beaucoup, énormément, vachement",
     ex_lab: "Exemple",
@@ -37,6 +39,8 @@ const I18N_CONTRIB = {
     hint: "Tip: if there are multiple meanings, separate with commas (e.g., a lot, very much, tons).",
     word_lab: "Word (Arabic)",
     word_ph: "Type the word here",
+    phon_lab: "Phonetic (auto suggestion)",
+    phon_ph: "e.g. 7iit / hiit",
     fr_lab: "Meaning (French)",
     fr_ph: "e.g., beaucoup, énormément, vachement",
     ex_lab: "Example",
@@ -52,6 +56,8 @@ const I18N_CONTRIB = {
     hint: "ملاحظة: إذا كانت هناك عدة معانٍ، افصل بينها بفواصل (مثال: كثير، جدًا، بزّاف).",
     word_lab: "الكلمة (بالعربية)",
     word_ph: "اكتب الكلمة هنا",
+    phon_lab: "النطق (اقتراح تلقائي)",
+    phon_ph: "مثال: 7iit / hiit",
     fr_lab: "المعنى بالفرنسية",
     fr_ph: "مثال: beaucoup, énormément, vachement",
     ex_lab: "مثال",
@@ -73,6 +79,7 @@ function applyContribI18n(){
   const elHint = document.getElementById("t_hint");
 
   const labWord = document.getElementById("t_word_ar_lab");
+  const labPhon = document.getElementById("t_phon_lab");
   const labFr = document.getElementById("t_trad_fr_lab");
   const labEx = document.getElementById("t_example_lab");
   const labDialect = document.getElementById("t_dialect_lab");
@@ -83,6 +90,7 @@ function applyContribI18n(){
   if(elHint) elHint.textContent = t.hint;
 
   if(labWord) labWord.textContent = t.word_lab;
+  if(labPhon) labPhon.textContent = t.phon_lab;
   if(labFr) labFr.textContent = t.fr_lab;
   if(labEx) labEx.textContent = t.ex_lab;
   if(labDialect) labDialect.textContent = t.dialect_lab;
@@ -90,6 +98,7 @@ function applyContribI18n(){
 
   // placeholders
   if(wordArEl) wordArEl.setAttribute("placeholder", t.word_ph);
+  if(phoneticEl) phoneticEl.setAttribute("placeholder", t.phon_ph);
   if(tradFrEl) tradFrEl.setAttribute("placeholder", t.fr_ph);
   if(exampleEl) exampleEl.setAttribute("placeholder", t.ex_ph);
   if(cityEl) cityEl.setAttribute("placeholder", t.city_ph);
@@ -154,6 +163,106 @@ function applyContribI18n(){
     });
   }
 }
+
+/* =========================================================
+   AUTO-SUGGEST PHONETIC (very simple)
+   - Generates an editable "arabizi" suggestion from Arabic input
+   - Not perfect (Arabic vowels are ambiguous) but fast + practical
+   ========================================================= */
+
+function stripArabicDiacritics(s){
+  return (s || "")
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "") // harakat + Quran marks
+    .replace(/\u0640/g, ""); // tatweel
+}
+
+function isArabicVowelLike(ch){
+  return ch === "ا" || ch === "و" || ch === "ي" || ch === "ى" || ch === "ة" || ch === "ه";
+}
+
+function suggestPhonetic(ar){
+  const s = stripArabicDiacritics(ar).trim();
+  if(!s) return "";
+
+  const MAP = {
+    "ا":"a","أ":"a","إ":"i","آ":"aa","ٱ":"a",
+    "ب":"b","ت":"t","ث":"th","ج":"j","ح":"7","خ":"5",
+    "د":"d","ذ":"dh","ر":"r","ز":"z","س":"s","ش":"ch",
+    "ص":"s","ض":"dh","ط":"t","ظ":"dh","ع":"3","غ":"gh",
+    "ف":"f","ق":"9","ك":"k","ل":"l","م":"m","ن":"n",
+    "ه":"h","ة":"a","و":"w","ي":"y","ى":"a",
+    "ء":"'","ؤ":"w","ئ":"y",
+    "ﻻ":"la","لا":"la"
+  };
+
+  let out = "";
+  let last = "";
+
+  for(let i=0;i<s.length;i++){
+    const ch = s[i];
+    const next = s[i+1] || "";
+
+    // shadda -> double previous
+    if(ch === "ّ"){
+      if(last) out += last;
+      continue;
+    }
+
+    // spaces/punct
+    if(/\s/.test(ch)) { out += " "; last = ""; continue; }
+
+    if(ch === "ي"){
+      // heuristic: between consonants or at end => long "ii"
+      if(!next || !isArabicVowelLike(next)) {
+        out += "ii";
+        last = "i";
+      } else {
+        out += "i";
+        last = "i";
+      }
+      continue;
+    }
+
+    if(ch === "و"){
+      // heuristic: before consonant/end => "ou", else "w"
+      if(!next || !isArabicVowelLike(next)) {
+        out += "ou";
+        last = "u";
+      } else {
+        out += "w";
+        last = "w";
+      }
+      continue;
+    }
+
+    const mapped = MAP[ch];
+    if(mapped){
+      out += mapped;
+      last = mapped.slice(-1);
+    } else {
+      out += ch;
+      last = "";
+    }
+  }
+
+  return out.replace(/\s+/g," ").trim();
+}
+
+function initPhoneticAutosuggest(){
+  if(!wordArEl || !phoneticEl) return;
+
+  let dirty = false;
+  phoneticEl.addEventListener("input", () => { dirty = true; });
+
+  const sync = () => {
+    const current = (phoneticEl.value || "").trim();
+    if(dirty && current) return; // user wrote something -> don't overwrite
+    phoneticEl.value = suggestPhonetic(wordArEl.value);
+  };
+
+  wordArEl.addEventListener("input", sync);
+  wordArEl.addEventListener("blur", sync);
+}
 /* =========================================================
    [CONTRIB-2] DOM
    ========================================================= */
@@ -170,6 +279,7 @@ const themeBtn = document.getElementById("themeToggle");
 // fields
 const websiteEl = document.getElementById("website");
 const wordArEl = document.getElementById("word_ar");
+const phoneticEl = document.getElementById("phonetic");
 const tradFrEl = document.getElementById("trad_fr");
 const exampleEl = document.getElementById("example");
 const dialectEl = document.getElementById("dialect");
@@ -335,4 +445,5 @@ applyContribI18n();
 initThemeToggle();
 initHomeClick();
 initPrefill();
+initPhoneticAutosuggest();
 initSubmit();
