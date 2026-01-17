@@ -443,6 +443,7 @@ function readSearchParams(){
 function hideSuggestions(){
   if(!suggestionsEl) return;
   suggestionsEl.hidden = true;
+  suggestionsEl.style.display = "none";
   suggestionsEl.innerHTML = '';
 }
 
@@ -459,6 +460,7 @@ function updateSuggestions(){
 
   if(!list.length){
     suggestionsEl.hidden = false;
+    suggestionsEl.style.display = "block";
     const qs = new URLSearchParams();
     if(d) qs.set('pays', d);
     if(q) qs.set('mot', q);
@@ -471,6 +473,7 @@ function updateSuggestions(){
   }
 
   suggestionsEl.hidden = false;
+    suggestionsEl.style.display = "block";
   suggestionsEl.innerHTML = list.map(r => {
     const label = (r.mot_arabe || r.transliteration || '—');
     const sub = r.fr ? ` <span class="muted">• ${escapeHtml(r.fr)}</span>` : '';

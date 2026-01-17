@@ -148,7 +148,7 @@ a{ color:inherit; }
   align-items:center;
 }
 
-.searchwrap{ flex:1; }
+.searchwrap{ flex:1; position:relative; }
 .search{
   width:100%;
   padding:14px 14px;
