@@ -42,6 +42,8 @@ const resultsEl = document.getElementById("results");
 const countEl = document.getElementById("count");
 const statusEl = document.getElementById("status");
 const homeBtn = document.getElementById("homeBtn");
+const searchBtn = document.getElementById("searchBtn");
+const suggestionsEl = document.getElementById("suggestions");
 
 // Modal elements
 const elBackdrop = document.getElementById("backdrop");
@@ -64,7 +66,10 @@ const I18N = {
     ok: (n) => `OK — ${n} entrées`,
     error: "Erreur chargement (ouvre la console)",
     search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)...",
+    search_btn: "Rechercher",
     contribute_btn: "➕ Contribuer",
+    not_available: "Ton mot n'est pas encore disponible.",
+    add_word: "Tu peux l'ajouter ici",
     all_dialects: "Tous les dialectes",
     modal_close: "Fermer",
     results_count: (n) => `${n} résultat(s)`,
@@ -76,7 +81,10 @@ const I18N = {
     ok: (n) => `OK — ${n} entries`,
     error: "Load error (open console)",
     search_ph: "Search a word (Arabic, translit, FR, EN, NL, Fusha)...",
+    search_btn: "Search",
     contribute_btn: "➕ Contribute",
+    not_available: "This word is not available yet.",
+    add_word: "You can add it here",
     all_dialects: "All dialects",
     modal_close: "Close",
     results_count: (n) => `${n} result(s)`,
@@ -88,7 +96,10 @@ const I18N = {
     ok: (n) => `تم — ${n} مدخلة`,
     error: "خطأ في التحميل (افتح وحدة التحكم)",
     search_ph: "ابحث عن كلمة (عربي، translit، FR، EN، NL، فصحى)...",
+    search_btn: "بحث",
     contribute_btn: "➕ ساهم",
+    not_available: "هذه الكلمة غير متوفرة بعد.",
+    add_word: "يمكنك إضافتها هنا",
     all_dialects: "كل اللهجات",
     modal_close: "إغلاق",
     results_count: (n) => `${n} نتيجة`,
@@ -142,6 +153,7 @@ function applyI18nStatic(){
 
   // modal close text
   if(elClose) elClose.textContent = t("modal_close");
+  if(searchBtn) searchBtn.textContent = t("search_btn");
 }
 
 function setCount(n){
@@ -157,6 +169,9 @@ function setCount(n){
 let rows = [];
 let filteredRows = [];
 let synIndex = null;
+let searchPerformed = false;
+let lastSearchQ = "";
+let lastSearchDialect = "";
 
 /* =========================================================
    [APP-5] HELPERS (local)
@@ -267,7 +282,16 @@ async function loadData(){
     synIndex = buildSynIndex(rows);
 
     buildDialectDropdown(rows);
-    applyFilters();
+
+    // Prefill from URL (?q=...&d=...)
+    const sp = readSearchParams();
+    if(qEl && sp.q) qEl.value = sp.q;
+    if(dialectEl && sp.d){
+      const opt = Array.from(dialectEl.options).find(o => (o.value||"" ).toUpperCase() === sp.d.toUpperCase());
+      if(opt) dialectEl.value = opt.value;
+    }
+
+    performSearch();
     openFromCurrentHash();
 
     setAppStatus(t("ok")(rows.length));
@@ -375,12 +399,156 @@ function applyFilters(){
   setCount(filteredRows.length);
 }
 
+/* =========================================================
+   [APP-8.5] SUGGESTIONS + SEARCH URL
+   - Suggestions while typing (no auto render)
+   - Search button generates shareable URL (?q=...&d=...)
+   ========================================================= */
+
+function getMatches(q, dialect, limit){
+  const qq = norm(q || '');
+  const dd = clean(dialect || '');
+  if(!qq && !dd) return [];
+  const out = [];
+  for(const r of rows){
+    if(dd && r.pays_code !== dd) continue;
+    if(qq && !r._search.includes(qq)) continue;
+    out.push(r);
+    if(limit && out.length >= limit) break;
+  }
+  return out;
+}
+
+function setSearchParams(q, d){
+  try{
+    const url = new URL(window.location.href);
+    if(q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+    if(d) url.searchParams.set('d', d); else url.searchParams.delete('d');
+    history.replaceState({}, '', url.pathname + '?' + url.searchParams.toString() + (location.hash || ''));
+  }catch(e){}
+}
+
+function readSearchParams(){
+  try{
+    const url = new URL(window.location.href);
+    return {
+      q: (url.searchParams.get('q') || ''),
+      d: (url.searchParams.get('d') || '')
+    };
+  }catch(e){
+    return { q:'', d:'' };
+  }
+}
+
+function hideSuggestions(){
+  if(!suggestionsEl) return;
+  suggestionsEl.hidden = true;
+  suggestionsEl.innerHTML = '';
+}
+
+function updateSuggestions(){
+  if(!suggestionsEl) return;
+  const q = (qEl?.value || '').trim();
+  const d = (dialectEl?.value || '').trim();
+  const list = getMatches(q, d, 8);
+
+  if(!q && !d){
+    hideSuggestions();
+    return;
+  }
+
+  if(!list.length){
+    suggestionsEl.hidden = false;
+    const qs = new URLSearchParams();
+    if(d) qs.set('pays', d);
+    if(q) qs.set('mot', q);
+    const href = `/contribuer/?${qs.toString()}`;
+    suggestionsEl.innerHTML = `
+      <div class="sug-item muted">${escapeHtml(t('not_available'))}</div>
+      <a class="sug-item sug-link" href="${href}">➕ ${escapeHtml(t('add_word'))}</a>
+    `;
+    return;
+  }
+
+  suggestionsEl.hidden = false;
+  suggestionsEl.innerHTML = list.map(r => {
+    const label = (r.mot_arabe || r.transliteration || '—');
+    const sub = r.fr ? ` <span class="muted">• ${escapeHtml(r.fr)}</span>` : '';
+    const flag = isoToFlagEmoji(r.pays_code);
+    return `
+      <button type="button" class="sug-item" data-id="${escapeHtml(r.mot_id)}">
+        <span class="sug-flag">${flag}</span>
+        <span class="sug-label">${escapeHtml(label)}</span>${sub}
+      </button>
+    `;
+  }).join('');
+
+  suggestionsEl.querySelectorAll('[data-id]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = btn.getAttribute('data-id');
+      const target = rows.find(x => x.mot_id === id);
+      if(target) openModal(target);
+      hideSuggestions();
+    });
+  });
+}
+
+function performSearch(){
+  const q = (qEl?.value || '').trim();
+  const d = (dialectEl?.value || '').trim();
+
+  lastSearchQ = q;
+  lastSearchDialect = d;
+  searchPerformed = !!(q || d);
+
+  hideSuggestions();
+
+  // Apply filters + render
+  const qNorm = norm(q);
+  const dialect = clean(d);
+
+  if(!searchPerformed){
+    filteredRows = [];
+    renderList([]);
+    setCount(0);
+    setSearchParams('', '');
+    return;
+  }
+
+  filteredRows = rows.filter(r => {
+    const okDialect = !dialect || r.pays_code === dialect;
+    const okQ = !qNorm || r._search.includes(qNorm);
+    return okDialect && okQ;
+  });
+
+  renderList(filteredRows);
+  setCount(filteredRows.length);
+  setSearchParams(q, d);
+}
+
+
 function renderList(data){
   if(!resultsEl) return;
   resultsEl.innerHTML = "";
 
   if(!data.length){
-    resultsEl.innerHTML = `<div class="muted small" style="padding:10px;">${escapeHtml(t("no_results"))}</div>`;
+    if(searchPerformed){
+      const q = (lastSearchQ || '').trim();
+      const d = (lastSearchDialect || '').trim();
+      const qs = new URLSearchParams();
+      if(d) qs.set('pays', d);
+      if(q) qs.set('mot', q);
+      const href = `/contribuer/?${qs.toString()}`;
+      resultsEl.innerHTML = `
+        <div class="muted small" style="padding:10px;">${escapeHtml(t('not_available'))}</div>
+        <div style="padding:0 10px 10px;">
+          <a class="cta" href="${href}">${escapeHtml(t('add_word'))}</a>
+        </div>
+      `;
+    } else {
+      resultsEl.innerHTML = '';
+    }
     return;
   }
 
@@ -535,8 +703,28 @@ function renderSynonyms(baseRow){
    [APP-10] EVENTS + HASH ROUTING
    ========================================================= */
 
-qEl?.addEventListener("input", applyFilters);
-dialectEl?.addEventListener("change", applyFilters);
+qEl?.addEventListener("input", updateSuggestions);
+
+// Enter = lancer la recherche
+qEl?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    performSearch();
+  }
+});
+
+searchBtn?.addEventListener("click", () => performSearch());
+
+dialectEl?.addEventListener("change", () => {
+  updateSuggestions();
+});
+
+// click ailleurs => cache suggestions
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  const inside = (t && suggestionsEl && (suggestionsEl.contains(t) || t === qEl));
+  if (!inside) hideSuggestions();
+});
 
 elClose?.addEventListener("click", closeModal);
 elBackdrop?.addEventListener("click", closeModal);

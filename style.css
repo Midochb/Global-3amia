@@ -439,3 +439,56 @@ a{ color:inherit; }
 .modal input, .modal select, .modal textarea{
   font-size: 16px;
 }
+
+/* ========== Search button + suggestions ========== */
+.searchrow{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.searchrow .search{
+  flex:1;
+}
+.searchBtn{
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:var(--card);
+  color:var(--text);
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.searchBtn:hover{
+  filter:brightness(1.05);
+}
+.suggestions{
+  margin-top:10px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--card);
+  overflow:hidden;
+}
+.suggestion-item{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:10px 12px;
+  cursor:pointer;
+}
+.suggestion-item:hover{
+  background:rgba(255,255,255,0.04);
+}
+.suggestion-word{
+  font-weight:900;
+  font-size:18px;
+}
+.suggestion-meta{
+  font-size:12px;
+  opacity:0.75;
+}
+.suggestion-right{
+  margin-left:auto;
+  font-size:12px;
+  opacity:0.8;
+}

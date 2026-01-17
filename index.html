@@ -44,14 +44,18 @@
   <!-- Recherche -->
   <section class="controls">
     <div class="searchwrap">
-      <input
-        id="q"
-        class="search"
-        type="search"
-        autocomplete="off"
-        data-i18n-placeholder="home_search_ph"
-        placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
-      />
+      <div class="searchrow">
+        <input
+          id="q"
+          class="search"
+          type="search"
+          autocomplete="off"
+          data-i18n-placeholder="home_search_ph"
+          placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
+        />
+        <button id="searchBtn" class="searchBtn" type="button" data-i18n="home_search_btn">Rechercher</button>
+      </div>
+      <div id="suggestions" class="suggestions" aria-label="Suggestions" role="listbox" style="display:none;"></div>
     </div>
 
     <select id="dialect" class="select" data-i18n="home_all_dialects">
