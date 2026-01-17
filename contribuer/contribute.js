@@ -31,6 +31,8 @@ const I18N_CONTRIB = {
     dialect_lab: "Dialecte / pays",
     city_lab: "Ville / région",
     city_ph: "ex : Zarzis, Casablanca...",
+    user_lab: "Ton nom / ID (optionnel)",
+    user_ph: "ex : Mehdi, @zeedna...",
     send: "Envoyer"
   },
   en: {
@@ -48,6 +50,8 @@ const I18N_CONTRIB = {
     dialect_lab: "Dialect / country",
     city_lab: "City / region",
     city_ph: "e.g., Zarzis, Casablanca...",
+    user_lab: "Your name / ID (optional)",
+    user_ph: "e.g., Mehdi, @zeedna...",
     send: "Send"
   },
   ar: {
@@ -65,6 +69,8 @@ const I18N_CONTRIB = {
     dialect_lab: "اللهجة / البلد",
     city_lab: "المدينة / المنطقة",
     city_ph: "مثال: زرڨيس، الدار البيضاء…",
+    user_lab: "اسمك / معرّفك (اختياري)",
+    user_ph: "مثال: Mehdi، @zeedna...",
     send: "إرسال"
   }
 };
@@ -84,6 +90,7 @@ function applyContribI18n(){
   const labEx = document.getElementById("t_example_lab");
   const labDialect = document.getElementById("t_dialect_lab");
   const labCity = document.getElementById("t_city_lab");
+  const labUser = document.getElementById("t_user_id_lab");
 
   if(elSubtitle) elSubtitle.textContent = t.subtitle;
   if(elTitle) elTitle.textContent = t.title;
@@ -95,6 +102,7 @@ function applyContribI18n(){
   if(labEx) labEx.textContent = t.ex_lab;
   if(labDialect) labDialect.textContent = t.dialect_lab;
   if(labCity) labCity.textContent = t.city_lab;
+  if(labUser) labUser.textContent = t.user_lab;
 
   // placeholders
   if(wordArEl) wordArEl.setAttribute("placeholder", t.word_ph);
@@ -102,6 +110,8 @@ function applyContribI18n(){
   if(tradFrEl) tradFrEl.setAttribute("placeholder", t.fr_ph);
   if(exampleEl) exampleEl.setAttribute("placeholder", t.ex_ph);
   if(cityEl) cityEl.setAttribute("placeholder", t.city_ph);
+  const userIdEl = document.getElementById("user_id");
+  if(userIdEl) userIdEl.setAttribute("placeholder", t.user_ph);
 
   // button text
   if(submitBtn) submitBtn.textContent = t.send;
