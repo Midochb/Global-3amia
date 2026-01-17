@@ -2,154 +2,86 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- SEO (on ne touche pas, comme demandé) -->
-  <title>Zeedna 3amiat – Dictionnaire des dialectes arabes (darija, tunisien, marocain)</title>
-  <meta name="description" content="Zeedna 3amiat est un dictionnaire participatif des dialectes arabes. Découvre la darija marocaine, le tunisien, l’algérien, l’égyptien et plus encore. Compare les traductions, les usages et propose tes propres mots." />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zeedna 3amiat – Dictionnaire participatif des dialectes arabes</title>
+  <meta name="description" content="Zeedna 3amiat est un dictionnaire participatif des dialectes arabes. Cherche des mots, compare les variantes par pays, et contribue pour enrichir la base." />
   <link rel="stylesheet" href="style.css" />
 </head>
-
-<body>
-
-<!-- ===================== HEADER ===================== -->
-<header class="topbar">
-
-  <!-- Logo + retour home -->
-  <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
-    <div class="logo">
-      <img src="./LogoV2.png" alt="Zeedna 3amiat" />
-    </div>
-    <div class="brandText">
-      <div class="title">Zeedna 3amiat</div>
-    </div>
-  </div>
-
-  <!-- Actions -->
-  <div class="headerActions">
-    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">
-      🌙
-    </button>
-    <a class="cta" href="/contribuer" data-i18n="home_contribute_btn">
-      ➕ Contribuer
+<body data-theme="dark">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Zeedna 3amiat">
+      <img src="LogoV2.png" alt="Zeedna 3amiat" class="logo" />
+      <span class="brand-name">Zeedna 3amiat</span>
     </a>
-  </div>
 
-</header>
+    <div class="topbar-actions">
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
 
-<!-- ===================== MAIN ===================== -->
-<main class="container">
+  <main class="container">
+    <section class="hero">
+      <h1 data-i18n="home_title">Le dico participatif des dialectes arabes</h1>
+      <p class="muted" data-i18n="home_subtitle">
+        Darija, tunisien, algérien, égyptien, levantin, khaliji… Tout au même endroit.
+      </p>
 
-  <!-- ===================== HERO / ABOUT ===================== -->
-  <section class="hero" aria-label="À propos de Zeedna 3amiat">
-    <h1 class="heroTitle">Zeedna 3amiat</h1>
-    <p class="heroText">
-      Un dictionnaire participatif des dialectes arabes (darija, tunisien, algérien, égyptien, levantin, khaliji…).
-      Le but : retrouver rapidement un mot, comparer les variations, et construire une base propre grâce aux contributions.
-    </p>
-
-    <div class="heroGrid">
-      <div class="heroCard">
-        <h2>Comment ça marche</h2>
-        <ol>
-          <li>Tu recherches un mot (arabe, translit, FR/EN)</li>
-          <li>Tu filtres par pays/dialecte si besoin</li>
-          <li>Si le mot n’existe pas, tu le proposes via <strong>Contribute</strong></li>
-        </ol>
+      <div class="hero-actions">
+        <a class="btn" href="/recherche/" data-i18n="home_cta_search">Commence à chercher</a>
+        <a class="btn btn-ghost" href="/contribuer/" data-i18n="home_cta_contribute">Contribuer</a>
       </div>
 
-      <div class="heroCard">
-        <h2>Pourquoi</h2>
-        <ul>
-          <li>Apprendre du vrai vocabulaire du quotidien</li>
-          <li>Garder une trace (exemples, régions, translittération)</li>
-          <li>Projet communautaire, simple et gratuit</li>
-        </ul>
+      <div class="hero-note small muted" data-i18n="home_note">
+        Objectif: comparer les mots entre pays, comprendre l’usage, et construire une base fiable avec la communauté.
       </div>
-    </div>
+    </section>
 
-    <div class="heroCtas">
-      <a class="btn primary" href="/contribuer/">Ajouter un mot</a>
-      <a class="btn ghost" href="#search">Rechercher</a>
-    </div>
-  </section>
-  <!-- =================== /HERO / ABOUT =================== -->
+    <section class="panel">
+      <h2 data-i18n="home_how_title">Comment ça marche</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title" data-i18n="home_step1_title">Cherche un mot</div>
+            <div class="muted" data-i18n="home_step1_desc">Écris en arabe, en translit, ou en français. Tu vois des suggestions au fur et à mesure.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title" data-i18n="home_step2_title">Compare les variantes</div>
+            <div class="muted" data-i18n="home_step2_desc">Filtre par pays, ouvre une fiche, et découvre les synonymes proches.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title" data-i18n="home_step3_title">Ajoute une contribution</div>
+            <div class="muted" data-i18n="home_step3_desc">Si le mot n’existe pas, propose-le. On garde une trace (log) pour éviter les pertes.</div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <!-- Recherche -->
-  <section class="controls" id="search">
-    <div class="searchwrap">
-      <input
-        id="q"
-        class="search"
-        type="search"
-        autocomplete="off"
-        data-i18n-placeholder="home_search_ph"
-        placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
-      />
-    </div>
+    <section class="panel">
+      <h2 data-i18n="home_why_title">Pourquoi Zeedna 3amiat</h2>
+      <ul class="bullets">
+        <li data-i18n="home_why_1">Un seul endroit pour les dialectes: pas 10 glossaires éclatés.</li>
+        <li data-i18n="home_why_2">Des exemples d’usage pour comprendre le contexte.</li>
+        <li data-i18n="home_why_3">Un modèle communautaire: tu contribues, tu améliores la qualité.</li>
+      </ul>
+    </section>
 
-    <select id="dialect" class="select" data-i18n="home_all_dialects">
-      <option value="">Tous les dialectes</option>
-    </select>
-  </section>
+    <footer class="footer muted small">
+      <span>© Zeedna 3amiat</span>
+      <span class="dot">•</span>
+      <a href="/recherche/" class="link" data-i18n="home_footer_search">Recherche</a>
+      <span class="dot">•</span>
+      <a href="/contribuer/" class="link" data-i18n="home_footer_contribute">Contribuer</a>
+    </footer>
+  </main>
 
-  <!-- Status -->
-  <section class="meta">
-    <div id="status" class="status muted" data-i18n="home_status_ready">
-      Prêt
-    </div>
-    <div id="count" class="count">
-      0 résultat(s)
-    </div>
-  </section>
-
-  <!-- Résultats -->
-  <section id="results" class="results"></section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div>© Zeedna 3amiat</div>
-    <div class="muted">v1.0.0</div>
-  </footer>
-
-</main>
-
-<!-- ===================== MODAL ===================== -->
-<div id="backdrop" class="modal-backdrop" aria-hidden="true"></div>
-
-<div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-
-  <div class="modal-header">
-    <div>
-      <div id="m_word" class="word-ar"></div>
-      <div id="m_translit" class="translit"></div>
-    </div>
-    <button id="m_close" class="close-btn" data-i18n="modal_close">
-      Fermer
-    </button>
-  </div>
-
-  <div id="m_meta" class="trads"></div>
-  <div id="m_kv" class="kv"></div>
-
-  <div class="syn-wrap">
-    <div class="tag" data-i18n="modal_synonyms_title">
-      Autres dialectes / synonymes
-    </div>
-    <div id="m_syn" class="syn-list"></div>
-    <div class="small muted" style="margin-top:10px;" data-i18n="modal_synonyms_hint">
-      Astuce : correspondances trouvées automatiquement via les sens FR + EN.
-    </div>
-  </div>
-
-</div>
-
-<!-- ===================== SCRIPTS ===================== -->
-<!-- ⚠️ ordre important -->
-<script src="utils.js"></script>
-<script src="synonyms.js"></script>
-<script src="app.js"></script>
-
+  <script src="utils.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>

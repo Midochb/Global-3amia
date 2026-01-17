@@ -565,20 +565,8 @@ window.addEventListener("hashchange", () => {
    ========================================================= */
 
 function goHome(){
-  // ferme la modale si ouverte
-  closeModal();
-
-  // reset filtres
-  if(qEl) qEl.value = "";
-  if(dialectEl) dialectEl.value = "";
-
-  // vide résultats
-  filteredRows = [];
-  renderList([]);
-  setCount(0);
-
-  // reset url
-  history.pushState({}, "", "/");
+  // Retour à la page d'accueil
+  window.location.href = '/';
 }
 
 if(homeBtn){
