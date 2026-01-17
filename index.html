@@ -2,53 +2,86 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Zeedna 3amiat – Traduction dialectes arabes, darija, fous7a</title>
-  <meta name="description" content="Zeedna 3amiat est un dictionnaire collaboratif multi-dialectes arabes. Trouve la traduction des mots en darija, tunisien, algérien, égyptien, arabe fous7a et langues européennes." />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zeedna 3amiat – Dictionnaire participatif des dialectes arabes</title>
+  <meta name="description" content="Zeedna 3amiat est un dictionnaire participatif des dialectes arabes. Cherche des mots, compare les variantes par pays, et contribue pour enrichir la base." />
   <link rel="stylesheet" href="style.css" />
 </head>
+<body data-theme="dark">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Zeedna 3amiat">
+      <img src="Zeedna3amia.png" alt="Zeedna 3amiat" class="logo" />
+      <span class="brand-name">Zeedna 3amiat</span>
+    </a>
 
-<body>
-  <main class="homepage">
-    <header class="hero">
-      <img src="Zeedna3amia.png" alt="Zeedna 3amiat logo" class="hero-logo" />
-      <h1>Comprendre l’arabe, au-delà des frontières</h1>
-      <h2>Un dictionnaire collaboratif pour relier les dialectes arabes, le fous7a et les langues européennes</h2>
+    <div class="topbar-actions">
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">🌙</button>
+    </div>
+  </header>
 
-      <a href="/recherche" class="cta-main">🔍 Commencer à chercher un mot</a>
-    </header>
-
-    <section class="intro">
-      <p>
-        Zeedna 3amiat est un <strong>dictionnaire collaboratif multi-dialectes arabes</strong>.
-        Il permet de trouver l’équivalent d’un mot d’un pays arabe à un autre, et de le relier à
-        l’arabe classique (fous7a) ainsi qu’au français, anglais, néerlandais ou allemand.
+  <main class="container">
+    <section class="hero">
+      <h1 data-i18n="home_title">Le dico participatif des dialectes arabes</h1>
+      <p class="muted" data-i18n="home_subtitle">
+        Darija, tunisien, algérien, égyptien, levantin, khaliji… Tout au même endroit.
       </p>
 
-      <p>
-        Ce projet est né d’un besoin simple : <strong>être compris</strong>.
-        Comprendre un autre dialecte n’est pas toujours naturel, surtout pour celles et ceux
-        nés à l’extérieur du monde arabe.
-      </p>
+      <div class="hero-actions">
+        <a class="btn btnPrimary btnBig" href="/recherche/" data-i18n="home_cta_search">Commence à chercher</a>
+        <a class="btn btn-ghost" href="/contribuer/" data-i18n="home_cta_contribute">Contribuer</a>
+      </div>
 
-      <p>
-        L’objectif est de faciliter la compréhension du monde arabe, renforcer les liens culturels
-        et offrir une porte d’entrée accessible vers l’arabe et ses usages réels.
-      </p>
+      <div class="hero-note small muted" data-i18n="home_note">
+        Objectif: comparer les mots entre pays, comprendre l’usage, et construire une base fiable avec la communauté.
+      </div>
     </section>
 
-    <section class="how">
-      <h3>Comment ça fonctionne ?</h3>
-      <ul>
-        <li>🔎 Recherche un mot en arabe, dialecte ou traduction</li>
-        <li>🌍 Découvre toutes les variantes dialectales et régionales</li>
-        <li>🤝 Contribue et fais vivre le dictionnaire</li>
+    <section class="panel">
+      <h2 data-i18n="home_how_title">Comment ça marche</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title" data-i18n="home_step1_title">Cherche un mot</div>
+            <div class="muted" data-i18n="home_step1_desc">Écris en arabe, en translit, ou en français. Tu vois des suggestions au fur et à mesure.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title" data-i18n="home_step2_title">Compare les variantes</div>
+            <div class="muted" data-i18n="home_step2_desc">Filtre par pays, ouvre une fiche, et découvre les synonymes proches.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title" data-i18n="home_step3_title">Ajoute une contribution</div>
+            <div class="muted" data-i18n="home_step3_desc">Si le mot n’existe pas, propose-le. On garde une trace (log) pour éviter les pertes.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i18n="home_why_title">Pourquoi Zeedna 3amiat</h2>
+      <ul class="bullets">
+        <li data-i18n="home_why_1">Un seul endroit pour les dialectes: pas 10 glossaires éclatés.</li>
+        <li data-i18n="home_why_2">Des exemples d’usage pour comprendre le contexte.</li>
+        <li data-i18n="home_why_3">Un modèle communautaire: tu contribues, tu améliores la qualité.</li>
       </ul>
     </section>
 
-    <footer class="footer">
-      <p><strong>Zeedna 3amiat</strong> — Un dictionnaire vivant, communautaire et en évolution.</p>
+    <footer class="footer muted small">
+      <span>© Zeedna 3amiat</span>
+      <span class="dot">•</span>
+      <a href="/recherche/" class="link" data-i18n="home_footer_search">Recherche</a>
+      <span class="dot">•</span>
+      <a href="/contribuer/" class="link" data-i18n="home_footer_contribute">Contribuer</a>
     </footer>
   </main>
+
+  <script src="utils.js"></script>
+  <script src="home.js"></script>
 </body>
 </html>
