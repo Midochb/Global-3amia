@@ -172,8 +172,17 @@ let bootedFromCache = false;
    ========================================================= */
 
 function setAppStatus(msg){
-  // setStatus must exist in utils.js
-  try { setStatus(statusEl, msg); } catch(e) { if(statusEl) statusEl.textContent = msg; }
+  if(!statusEl) return;
+
+  // Replace the "Loading..." text by a visible spinner
+  const loadingMsg = t ? t("loading") : "Loading";
+  if (msg === loadingMsg) {
+    statusEl.innerHTML = '<span class="spinner" aria-label="Loading"></span>';
+    return;
+  }
+
+  // Default: plain text
+  statusEl.textContent = msg || "";
 }
 
 function safeDirRTL(ar){

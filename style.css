@@ -80,6 +80,16 @@ a{ color:inherit; }
   border-bottom:1px solid var(--border);
 }
 
+/* Search header layout */
+.homeIcon{ text-decoration:none; }
+.brand-center{ flex:1; display:flex; justify-content:center; align-items:center; }
+.brandLogo{ height:44px; width:auto; display:block; }
+.headerActions{ display:flex; gap:10px; align-items:center; }
+
+/* Remove unwanted borders around icon buttons */
+.iconBtn{ border:none; box-shadow:none; }
+.iconBtn:focus{ outline:2px solid color-mix(in srgb, var(--acc) 55%, transparent); outline-offset:2px; }
+
 .brand{ display:flex; gap:12px; align-items:center; min-width:0; }
 .logo{
   width:68px;
@@ -225,6 +235,22 @@ a{ color:inherit; }
   margin:12px 2px 6px;
 }
 .status{ font-size:12px; }
+
+/* Loading spinner (used instead of text) */
+.spinner{
+  display:inline-block;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+  vertical-align:middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 .count{ font-size:12px; color:var(--muted); }
 
 .results{ margin-top:6px; }
