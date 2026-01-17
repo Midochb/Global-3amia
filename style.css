@@ -20,11 +20,6 @@
   --chip: rgba(255,255,255,.10);
   --chip2: rgba(255,255,255,.06);
   --shadow: 0 12px 30px rgba(0,0,0,.35);
-
-  /* Dropdown / suggestions */
-  --dropdown-bg: rgba(10, 12, 20, .92);
-  --dropdown-border: rgba(255,255,255,.14);
-  --dropdown-hover: rgba(255,255,255,.08);
 }
 
 /* Light theme overrides */
@@ -39,11 +34,6 @@ body[data-theme="light"]{
   --chip: rgba(10,20,40,.08);
   --chip2: rgba(10,20,40,.05);
   --shadow: 0 12px 26px rgba(10,20,40,.10);
-
-  /* Dropdown / suggestions */
-  --dropdown-bg: rgba(255,255,255,.98);
-  --dropdown-border: rgba(10,20,40,.14);
-  --dropdown-hover: rgba(10,20,40,.06);
 }
 
 /* -------------------------
@@ -92,14 +82,14 @@ a{ color:inherit; }
 
 .brand{ display:flex; gap:12px; align-items:center; min-width:0; }
 .logo{
-  width:52px;
-  height:52px;
-  border-radius:14px;
+  width:56px;
+  height:56px;
+  border-radius:16px;
   display:flex;
   align-items:center;
   justify-content:center;
-  background: rgba(255,255,255,.08);
-  border:1px solid var(--border);
+  background: rgba(255,255,255,.92);
+  border:none;
   overflow:hidden;
 }
 
@@ -107,6 +97,7 @@ a{ color:inherit; }
   width:100%;
   height:100%;
   object-fit:contain;
+  transform: scale(1.05);
 }
 
 .title{ font-weight:800; letter-spacing:.2px; }
@@ -120,7 +111,7 @@ a{ color:inherit; }
 
 /* Theme button (needs id="themeToggle" in HTML) */
 .theme-btn{
-  border:0;
+  border:none;
   background: var(--chip2);
   color: var(--text);
   padding:10px 12px;
@@ -158,44 +149,7 @@ a{ color:inherit; }
   align-items:center;
 }
 
-.searchwrap{ flex:1; position:relative; }
-
-/* =========================================================
-   Search suggestions dropdown (Google-like)
-   (Used by app.js: #suggestionsBox + .sug-item)
-   ========================================================= */
-.suggestions-box{
-  position:absolute;
-  left:0;
-  right:0;
-  top: calc(100% + 8px);
-  background: var(--dropdown-bg);
-  border: 1px solid var(--dropdown-border);
-  border-radius: 14px;
-  box-shadow: var(--shadow);
-  overflow:hidden;
-  z-index: 999;
-  display:none; /* app.js toggles */
-}
-
-.sug-item{
-  width:100%;
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:12px 14px;
-  cursor:pointer;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-body[data-theme="light"] .sug-item{
-  border-bottom: 1px solid rgba(16,24,40,.10);
-}
-
-.sug-item:hover{ background: var(--dropdown-hover); }
-
-.sug-ar{ font-size:18px; font-weight:700; }
-.sug-meta{ font-size:12px; opacity:.75; }
+.searchwrap{ flex:1; }
 .search{
   width:100%;
   padding:14px 14px;
@@ -487,55 +441,88 @@ body[data-theme="light"] .sug-item{
   font-size: 16px;
 }
 
-/* ========== Search button + suggestions ========== */
-.searchrow{
-  display:flex;
-  gap:10px;
-  align-items:center;
+/* ===================== HERO / ABOUT ===================== */
+.hero{
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 16px 14px;
+  margin: 14px 0 14px;
 }
-.searchrow .search{
-  flex:1;
+
+[data-theme="light"] .hero{
+  background: rgba(255,255,255,.65);
 }
-.searchBtn{
-  padding:12px 14px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:var(--card);
-  color:var(--text);
-  font-weight:800;
-  cursor:pointer;
-  white-space:nowrap;
+
+.heroTitle{
+  margin: 0 0 8px;
+  font-size: 20px;
+  letter-spacing: .2px;
 }
-.searchBtn:hover{
-  filter:brightness(1.05);
+
+.heroText{
+  margin: 0 0 10px;
+  color: var(--muted);
+  line-height: 1.35;
 }
-.suggestions{
-  margin-top:10px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:var(--card);
-  overflow:hidden;
+
+.heroGrid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 10px;
 }
-.suggestion-item{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  padding:10px 12px;
-  cursor:pointer;
+
+.heroCard{
+  background: rgba(0,0,0,.12);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
 }
-.suggestion-item:hover{
-  background:rgba(255,255,255,0.04);
+
+[data-theme="light"] .heroCard{
+  background: rgba(255,255,255,.55);
 }
-.suggestion-word{
-  font-weight:900;
-  font-size:18px;
+
+.heroCardTitle{
+  margin: 0 0 6px;
+  font-size: 14px;
 }
-.suggestion-meta{
-  font-size:12px;
-  opacity:0.75;
+
+.heroList{
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
 }
-.suggestion-right{
-  margin-left:auto;
-  font-size:12px;
-  opacity:0.8;
+
+.heroCtas{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btnPrimary{
+  background: rgba(255,255,255,.14);
+}
+
+[data-theme="light"] .btn{
+  background: rgba(255,255,255,.7);
+}
+
+[data-theme="light"] .btnPrimary{
+  background: rgba(255,255,255,.9);
 }

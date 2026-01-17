@@ -19,7 +19,7 @@
   <!-- Logo + retour home -->
   <div class="brand" id="homeBtn" role="button" tabindex="0" title="Retour à l’accueil">
     <div class="logo">
-      <img src="./logo_3amia.png" alt="Zeedna 3amiat" />
+      <img src="./LogoV2.png" alt="Zeedna 3amiat" />
     </div>
     <div class="brandText">
       <div class="title">Zeedna 3amiat</div>
@@ -41,22 +41,52 @@
 <!-- ===================== MAIN ===================== -->
 <main class="container">
 
-  <!-- Recherche -->
-  <section class="controls">
-    <div class="searchwrap">
-      <div class="searchrow">
-        <input
-          id="q"
-          class="search"
-          type="search"
-          autocomplete="off"
-          data-i18n-placeholder="home_search_ph"
-          placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
-        />
-        <button id="searchBtn" class="searchBtn" type="button" data-i18n="home_search_btn">Rechercher</button>
+  <!-- ===================== HERO / ABOUT ===================== -->
+  <section class="hero" aria-label="À propos de Zeedna 3amiat">
+    <h1 class="heroTitle">Zeedna 3amiat</h1>
+    <p class="heroText">
+      Un dictionnaire participatif des dialectes arabes (darija, tunisien, algérien, égyptien, levantin, khaliji…).
+      Le but : retrouver rapidement un mot, comparer les variations, et construire une base propre grâce aux contributions.
+    </p>
+
+    <div class="heroGrid">
+      <div class="heroCard">
+        <h2>Comment ça marche</h2>
+        <ol>
+          <li>Tu recherches un mot (arabe, translit, FR/EN)</li>
+          <li>Tu filtres par pays/dialecte si besoin</li>
+          <li>Si le mot n’existe pas, tu le proposes via <strong>Contribute</strong></li>
+        </ol>
       </div>
-      <!-- Suggestions dropdown (Google-like) -->
-      <div id="suggestions" class="suggestions" aria-label="Suggestions" role="listbox" hidden></div>
+
+      <div class="heroCard">
+        <h2>Pourquoi</h2>
+        <ul>
+          <li>Apprendre du vrai vocabulaire du quotidien</li>
+          <li>Garder une trace (exemples, régions, translittération)</li>
+          <li>Projet communautaire, simple et gratuit</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="heroCtas">
+      <a class="btn primary" href="/contribuer/">Ajouter un mot</a>
+      <a class="btn ghost" href="#search">Rechercher</a>
+    </div>
+  </section>
+  <!-- =================== /HERO / ABOUT =================== -->
+
+  <!-- Recherche -->
+  <section class="controls" id="search">
+    <div class="searchwrap">
+      <input
+        id="q"
+        class="search"
+        type="search"
+        autocomplete="off"
+        data-i18n-placeholder="home_search_ph"
+        placeholder="Chercher un mot (arabe, translit, FR, EN, NL, Fouss7a)..."
+      />
     </div>
 
     <select id="dialect" class="select" data-i18n="home_all_dialects">
