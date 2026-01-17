@@ -388,19 +388,73 @@ function initSubmit() {
   // ✅ Zéro CORS : on envoie comme un vrai form HTML
   form.action = API_URL;
 
-  // Quand l’iframe charge, c’est que Google a répondu
-  // (on ne lit pas la réponse, mais on sait que c’est parti)
+  // =====================
+  // TRACEABILITE / ACK
+  // =====================
+  // Objectif : avoir une preuve côté front que Google a bien reçu,
+  // et afficher un ID de contribution.
+  // -> nécessite un Apps Script qui répond via postMessage (voir /apps-script/Code.gs)
+
+  let ackTimer = null;
+  let awaitingAck = false;
+
+  function finishOk(receipt) {
+    awaitingAck = false;
+    if (ackTimer) clearTimeout(ackTimer);
+    ackTimer = null;
+
+    form.dataset.sending = "";
+    disableSubmit(false);
+
+    // Message + receipt
+    if (receipt?.id) {
+      setMsg(`✅ Envoyé. ID : ${receipt.id}`, "success");
+      try {
+        const k = "zeedna_last_receipts";
+        const prev = JSON.parse(localStorage.getItem(k) || "[]");
+        prev.unshift({ id: receipt.id, at: receipt.at || new Date().toISOString() });
+        localStorage.setItem(k, JSON.stringify(prev.slice(0, 20)));
+      } catch (e) {}
+    } else {
+      setMsg("✅ Envoyé.", "success");
+    }
+
+    try { form.reset(); } catch (e) {}
+  }
+
+  function finishErr(msg) {
+    awaitingAck = false;
+    if (ackTimer) clearTimeout(ackTimer);
+    ackTimer = null;
+
+    form.dataset.sending = "";
+    disableSubmit(false);
+    setMsg(msg || "❌ Erreur lors de l’envoi.", "error");
+  }
+
+  // Réception de l'ACK du serveur (Apps Script renvoie une page HTML dans l'iframe)
+  window.addEventListener("message", (ev) => {
+    // On accepte uniquement les messages de Google Apps Script
+    const origin = (ev.origin || "").toLowerCase();
+    const okOrigin = origin.includes("script.google.com") || origin.includes("googleusercontent.com");
+    if (!okOrigin) return;
+
+    const data = ev.data || {};
+    if (!awaitingAck) return;
+
+    if (data && data.type === "zeedna_contrib") {
+      if (data.ok) finishOk({ id: data.id, at: data.at });
+      else finishErr(data.error || "❌ Envoi refusé.");
+    }
+  });
+
+  // Fallback : si l'iframe charge mais qu'on n'a pas de postMessage (ancien script)
   if (iframe) {
     iframe.addEventListener("load", () => {
-      // Si on était en train d'envoyer
-      if (!form.dataset.sending) return;
-
-      form.dataset.sending = "";
-      disableSubmit(false);
-
-      // reset + message
-      setMsg("✅ Merci ! Contribution envoyée.", "success");
-      try { form.reset(); } catch (e) {}
+      if (!awaitingAck) return;
+      // L'iframe a chargé : on considère que c'est probablement reçu,
+      // mais on prévient l'utilisateur que l'ID n'a pas été confirmé.
+      finishOk(null);
     });
   }
 
@@ -430,8 +484,18 @@ function initSubmit() {
     setMsg("⏳ Envoi…", "info");
     disableSubmit(true);
 
-    // marqueur pour l’event load
+    // marqueur + ACK
     form.dataset.sending = "1";
+    awaitingAck = true;
+    if (ackTimer) clearTimeout(ackTimer);
+    ackTimer = setTimeout(() => {
+      // Si rien n'est revenu, on ne sait pas où c'est tombé.
+      // On garde la possibilité de retry.
+      awaitingAck = false;
+      form.dataset.sending = "";
+      disableSubmit(false);
+      setMsg("⚠️ Envoi non confirmé. Vérifie ta connexion et réessaie.", "error");
+    }, 12000);
 
     // ✅ on laisse le submit normal partir (POST -> iframe)
     // pas de fetch => pas de CORS
