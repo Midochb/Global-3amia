@@ -1,0 +1,8 @@
+{
+  "name": "zeedna-3amiat",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/generate-seo-pages.mjs"
+  }
+}

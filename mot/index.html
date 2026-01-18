@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zeedna 3amiat — Mot</title>
+  <meta name="description" content="Zeedna 3amiat — dictionnaire collaboratif multi-dialectes arabes. Page mot avec traductions et suggestions." />
+  <link rel="stylesheet" href="../style.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="iconBtn" href="/" aria-label="Accueil" title="Accueil">🏠</a>
+
+    <div class="brand" id="searchBtn" role="button" tabindex="0" title="Recherche">
+      <div class="logo">
+        <img src="../logo_icon.png" alt="Zeedna 3amiat" />
+      </div>
+      <div class="brandText">
+        <div class="title">Zeedna 3amiat</div>
+      </div>
+    </div>
+
+    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">🌙</button>
+    <a class="cta" href="/contribuer" data-i18n="word_contribute_btn">➕ Contribuer</a>
+  </header>
+
+  <main class="container">
+    <section class="card" style="cursor:default;">
+      <div id="wordStatus" class="status muted">Chargement…</div>
+
+      <div id="wordView" style="display:none;">
+        <div style="font-weight:800;font-size:22px;margin-bottom:4px;" id="w_ar"></div>
+        <div class="muted" id="w_tr" style="margin-bottom:12px;"></div>
+
+        <div id="w_trads" class="trads"></div>
+
+        <div id="w_kv" class="kv" style="margin-top:10px;"></div>
+
+        <div class="syn-wrap" style="margin-top:14px;">
+          <div class="tag" data-i18n="word_more">Autres mots suggérés</div>
+          <div id="w_suggest" class="syn-list"></div>
+        </div>
+      </div>
+
+      <div id="wordNotFound" style="display:none;">
+        <div style="font-weight:800;font-size:18px;margin-bottom:6px;" data-i18n="word_nf_title">Mot introuvable</div>
+        <div class="muted small" style="margin-bottom:12px;" data-i18n="word_nf_hint">Ce mot n’est pas encore dans la base.</div>
+        <a class="cta" id="nfContrib" href="/contribuer">➕ Contribuer</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="../utils.js"></script>
+  <script src="../synonyms.js"></script>
+  <script src="./mot.js"></script>
+</body>
+</html>

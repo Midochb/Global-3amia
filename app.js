@@ -45,6 +45,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbyvwBHRDqOP0OGGCXk1K0TO
 const CACHE_KEY = "zeedna_words_cache_v1";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 
+// UX: limite d'affichage pour éviter les grosses listes sur mobile
+const MAX_RESULTS = 50;
+
 /* =========================================================
    [APP-2] i18n (Search)
    ========================================================= */
@@ -61,7 +64,8 @@ const I18N = {
     modal_close: "Fermer",
     results_count: (n) => `${n} résultat(s)` ,
     no_results: "Ton mot n’est pas encore dispo",
-    no_results_cta: "➕ L’ajouter en contribution"
+    no_results_cta: "➕ L’ajouter en contribution",
+    limited_notice: (shown, total) => `Affichage des ${shown} premiers résultats sur ${total}. Affine ta recherche.`
   },
   en: {
     ready: "Ready",
@@ -74,7 +78,8 @@ const I18N = {
     modal_close: "Close",
     results_count: (n) => `${n} result(s)` ,
     no_results: "This word isn’t available yet",
-    no_results_cta: "➕ Add it as a contribution"
+    no_results_cta: "➕ Add it as a contribution",
+    limited_notice: (shown, total) => `Showing the first ${shown} results out of ${total}. Refine your search.`
   },
   ar: {
     ready: "جاهز",
@@ -87,7 +92,8 @@ const I18N = {
     modal_close: "إغلاق",
     results_count: (n) => `${n} نتيجة`,
     no_results: "الكلمة غير متوفّرة بعد",
-    no_results_cta: "➕ أضِفها كمساهمة"
+    no_results_cta: "➕ أضِفها كمساهمة",
+    limited_notice: (shown, total) => `عرض أول ${shown} نتيجة من أصل ${total}. حدّد البحث أكثر.`
   }
 };
 
@@ -238,6 +244,21 @@ function buildHashForRow(row){
   const base = a || tr || "mot";
   const cc = (row.pays_code || "").toUpperCase().trim();
   return `#mot=${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
+}
+
+// Real page id (same format as hash, but stored in ?id=...)
+function buildIdForRow(row){
+  const a = slugify(row.mot_arabe || "");
+  const tr = slugify(row.transliteration || "");
+  const base = a || tr || "mot";
+  const cc = (row.pays_code || "").toUpperCase().trim();
+  return `${base}--${cc}`;
+}
+
+function wordPageUrlForRow(row){
+  const id = buildIdForRow(row);
+  // SEO-friendly static pages generated at build time
+  return `/mot/${encodeURIComponent(id)}/`;
 }
 
 function parseHash(){
@@ -522,7 +543,9 @@ function applyFilters(){
   const q = norm(qEl?.value || "");
   const dialect = clean(dialectEl?.value || "");
 
-  const hasSearch = q.length > 0 || dialect.length > 0;
+  // UX: ne pas afficher toute la base quand l'utilisateur choisit seulement un dialecte.
+  // Les résultats s'affichent uniquement quand il y a une requête.
+  const hasSearch = q.length > 0;
 
   if(!hasSearch){
     filteredRows = [];
@@ -533,7 +556,7 @@ function applyFilters(){
 
   filteredRows = rows.filter(r => {
     const okDialect = !dialect || r.pays_code === dialect;
-    const okQ = !q || r._search.includes(q);
+    const okQ = r._search.includes(q);
     return okDialect && okQ;
   });
 
@@ -549,7 +572,9 @@ function renderList(data, ctx){
     const qRaw = (ctx && ctx.qRaw) ? ctx.qRaw : "";
     const dialect = (ctx && ctx.dialect) ? ctx.dialect : "";
 
-    if(qRaw || dialect){
+    // On n'affiche le bloc "mot introuvable" que si l'utilisateur a vraiment tapé un mot.
+    // Sélectionner uniquement un dialecte ne doit pas lister (ou suggérer) toute la base.
+    if(qRaw){
       const params = new URLSearchParams();
       if(qRaw) params.set("mot", qRaw);
       if(dialect) params.set("pays", dialect);
@@ -566,7 +591,19 @@ function renderList(data, ctx){
     return;
   }
 
-  for(const row of data){
+  // Limite d'affichage (on garde le total dans le compteur en haut)
+  const total = data.length;
+  const shown = Math.min(total, MAX_RESULTS);
+  if(total > MAX_RESULTS){
+    const note = document.createElement("div");
+    note.className = "limitNote";
+    note.textContent = (typeof t("limited_notice") === "function") ? t("limited_notice")(shown, total) : `Showing first ${shown} / ${total}`;
+    resultsEl.appendChild(note);
+  }
+
+  const toRender = (total > MAX_RESULTS) ? data.slice(0, MAX_RESULTS) : data;
+
+  for(const row of toRender){
     resultsEl.appendChild(renderCard(row));
   }
 }
@@ -601,7 +638,10 @@ function renderCard(row){
     </div>
   `;
 
-  card.addEventListener("click", () => openModal(row));
+  // Open in dedicated page (shareable URL)
+  card.addEventListener("click", () => {
+    window.location.href = wordPageUrlForRow(row);
+  });
   return card;
 }
 
@@ -703,7 +743,7 @@ function renderSynonyms(baseRow){
       e.stopPropagation();
       const id = c.getAttribute("data-id");
       const target = rows.find(x => x.mot_id === id);
-      if(target) openModal(target);
+      if(target) window.location.href = wordPageUrlForRow(target);
     });
   });
 }
