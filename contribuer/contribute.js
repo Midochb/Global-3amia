@@ -498,7 +498,7 @@ function initHomeClick() {
   if (!homeBtn) return;
 
   const goHome = () => {
-    window.location.href = "/";
+    window.location.href = "/recherche";
   };
 
   // clic souris

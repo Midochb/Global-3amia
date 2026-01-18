@@ -84,6 +84,19 @@ a{ color:inherit; }
 .homeIcon{ text-decoration:none; }
 .brand-center{flex:1;display:flex;align-items:center;justify-content:center;}
 .brandLogo{ height:64px; width:auto; display:block; filter:drop-shadow(0 6px 14px rgba(0,0,0,.25)); }
+
+/* Lamp-only logo (search + contribute) */
+.brandLogo--lamp{
+  height:72px;
+  width:auto;
+  display:block;
+  object-fit:contain;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.22));
+}
+
+@media (max-width:520px){
+  .brandLogo--lamp{ height:64px; }
+}
 .headerActions{ display:flex; gap:10px; align-items:center; }
 
 /* Icon buttons (Home / Theme) */
