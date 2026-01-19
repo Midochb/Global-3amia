@@ -122,6 +122,11 @@ a{ color:inherit; }
 .theme-btn{ background:transparent; border:1px solid transparent; }
 .theme-btn:active{ background: var(--chip2); border-color: var(--border); }
 
+/* Home button: softer + minimal */
+.home-btn{ background:transparent; border:1px solid transparent; }
+.home-btn:hover{ background: var(--chip2); border-color: var(--border); }
+.home-btn:active{ background: var(--chip2); border-color: var(--border); }
+
 .brand{ display:flex; gap:12px; align-items:center; min-width:0; }
 .logo{
   width:68px;

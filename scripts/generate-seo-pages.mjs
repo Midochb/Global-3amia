@@ -212,7 +212,13 @@ function renderWordPage(row, group, kind) {
 </head>
 <body>
   <header class="topbar">
-    <a class="iconBtn" href="/" aria-label="Accueil">🏠</a>
+    <a class="iconBtn home-btn" href="/" aria-label="Accueil" title="Accueil">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </a>
     <div class="brand" style="cursor:pointer" onclick="location.href='/recherche/'">
       <div class="logo"><img src="/assets/brandmark.png" alt="Zeedna" /></div>
       <div class="brandText"><div class="title">Zeedna 3amiat</div></div>
