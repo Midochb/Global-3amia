@@ -129,14 +129,24 @@ function applyI18nStatic(){
 
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const k = el.getAttribute("data-i18n");
-    if(k === "word_contribute_btn") el.textContent = t("contribute_btn");
-    if(k === "word_more") el.textContent = t("more");
-    if(k === "word_nf_title") el.textContent = t("not_found_title");
-    if(k === "word_nf_hint") el.textContent = t("not_found_hint");
+    if(!k) return;
+    // mapping legacy -> new i18n keys
+    const mapped = (k === "word_contribute_btn") ? "contribute_btn"
+                 : (k === "word_more") ? "more"
+                 : (k === "word_nf_title") ? "not_found_title"
+                 : (k === "word_nf_hint") ? "not_found_hint"
+                 : k;
+
+    const val = t(mapped);
+    if(val) el.textContent = val;
   });
 
   if(wordStatusEl) wordStatusEl.textContent = t("loading");
   if(nfContribEl) nfContribEl.textContent = t("contribute_btn");
+
+  // link under transliteration (some browsers won't show if empty)
+  const trLink = document.getElementById("trHelpLink");
+  if(trLink) trLink.textContent = t("tr_help_link");
 }
 
 /* =====================

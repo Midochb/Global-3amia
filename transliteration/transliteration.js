@@ -17,7 +17,7 @@
       g_col_2: "Lettre arabe",
       g_col_3: "Exemple",
       g_examples_title: "Exemples",
-      g_note: "Important : sans voyelles, plusieurs lectures sont possibles. La translittération est une aide, pas une vérité absolue."
+      g_note: "Important : sans voyelles, plusieurs lectures sont possibles. La translittération est une aide (pratique), mais le mieux reste d’apprendre l’arabe."
     },
     en: {
       g_beta: "Beta version",
@@ -30,7 +30,7 @@
       g_col_2: "Arabic letter",
       g_col_3: "Example",
       g_examples_title: "Examples",
-      g_note: "Important: without vowels, multiple readings are possible. Transliteration is a helper, not a perfect truth."
+      g_note: "Important: without vowels, multiple readings are possible. Transliteration is a helpful guide, but learning Arabic is best."
     },
     ar: {
       g_beta: "نسخة تجريبية",
@@ -43,7 +43,7 @@
       g_col_2: "الحرف العربي",
       g_col_3: "مثال",
       g_examples_title: "أمثلة",
-      g_note: "مهم: بدون الحركات قد توجد قراءات متعددة. هذه الكتابة مجرد مساعدة وليست دقيقة 100%."
+      g_note: "مهم: بدون الحركات قد توجد قراءات متعددة. هذه الكتابة مجرد مساعدة، والأفضل هو تعلّم العربية."
     }
   };
 
