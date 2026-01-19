@@ -33,7 +33,8 @@ const I18N_CONTRIB = {
     city_ph: "ex : Zarzis, Casablanca...",
     user_lab: "Ton nom / ID (optionnel)",
     user_ph: "ex : Mehdi, @zeedna...",
-    send: "Envoyer"
+    send: "Envoyer",
+    tr_help_link: "Comment lire la translittération ?"
   },
   en: {
     subtitle: "Contribute",
@@ -52,7 +53,8 @@ const I18N_CONTRIB = {
     city_ph: "e.g., Zarzis, Casablanca...",
     user_lab: "Your name / ID (optional)",
     user_ph: "e.g., Mehdi, @zeedna...",
-    send: "Send"
+    send: "Send",
+    tr_help_link: "How to read transliteration?"
   },
   ar: {
     subtitle: "المساهمة",
@@ -71,7 +73,8 @@ const I18N_CONTRIB = {
     city_ph: "مثال: زرڨيس، الدار البيضاء…",
     user_lab: "اسمك / معرّفك (اختياري)",
     user_ph: "مثال: Mehdi، @zeedna...",
-    send: "إرسال"
+    send: "إرسال",
+    tr_help_link: "كيف نقرأ النقل الصوتي؟"
   }
 };
 
@@ -103,6 +106,11 @@ function applyContribI18n(){
   if(labDialect) labDialect.textContent = t.dialect_lab;
   if(labCity) labCity.textContent = t.city_lab;
   if(labUser) labUser.textContent = t.user_lab;
+
+
+  // transliteration help link
+  const trHelp = document.querySelector("[data-i18n=\"c_tr_help_link\"]");
+  if(trHelp) trHelp.textContent = t.tr_help_link;
 
   // placeholders
   if(wordArEl) wordArEl.setAttribute("placeholder", t.word_ph);
