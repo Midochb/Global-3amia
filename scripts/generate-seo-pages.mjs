@@ -222,10 +222,9 @@ function renderWordPage(row, group, kind) {
         <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </a>
-    <div class="brand" style="cursor:pointer" onclick="location.href='/recherche/'">
-      <div class="logo"><img src="/assets/LogoV2.png" alt="Zeedna" /></div>
-      <div class="brandText"><div class="title">Zeedna 3amiat</div></div>
-    </div>
+    <a class="brand brand-center" href="/recherche" aria-label="Recherche" title="Recherche">
+      <img class="brandLogo brandLogo--lamp" src="/assets/LogoV2.png" alt="Zeedna" />
+    </a>
     <a class="cta" href="/contribuer">➕ Contribuer</a>
   </header>
 
