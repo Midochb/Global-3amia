@@ -4,7 +4,7 @@
    ========================================================= */
 
 // Keep same API as the rest of the site
-const API_URL = "https://script.google.com/macros/s/AKfycbyvwBHRDqOP0OGGCXk1K0TODk1Q9B8L1UZgFcd3_M1kiTjC-7ft6dQHrQVUkzY69WJX/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyPqIFStzGEdjx4NwZl9fkixRZMR1DNBOX5hCemj4I9UNVvcp6XsbHw9nk1KfDP9ewC/exec";
 
 // DOM
 const wordStatusEl = document.getElementById("wordStatus");
@@ -126,11 +126,11 @@ function getMeaningForLang(row){
   if(!row) return { label: "", value: "" };
 
   if(LANG === "fr"){
-    const v = clean(row.fr) || clean(row.en);
+    const v = clean(row.fr);
     return { label: "FR", value: v };
   }
   if(LANG === "en"){
-    const v = clean(row.en) || clean(row.fr);
+    const v = clean(row.en);
     return { label: "EN", value: v };
   }
   // UI AR: pas de traduction FR/EN affichée
@@ -238,9 +238,16 @@ function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  const fr = clean(r.sens_dialectal) || clean(r.traduction_fr) || clean(r.sens_fr);
-  const en = clean(r.traduction_eng) || clean(r.traduction_en);
-  const nl = clean(r.traduction_nl);
+  const tr = clean(r.traduction);
+
+  let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
+  let en = clean(r.traduction_en) || clean(r.traduction_eng);
+  const nl = "";
+
+  if(tr){
+    if(LANG === "fr") fr = tr;
+    else if(LANG === "en") en = tr;
+  }
   const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 
   const obj = {
@@ -376,26 +383,38 @@ async function main(){
   }
 
   try{
-    const res = await fetch(API_URL, { cache: "no-store" });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    // 1) Charger l'index leger (rapide)
+    const indexRes = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
+    if(!indexRes.ok) throw new Error(`HTTP `);
+    const indexData = await indexRes.json();
+    if(!Array.isArray(indexData)) throw new Error("Invalid JSON (index not an array)");
 
-    const data = await res.json();
-    if(!Array.isArray(data)) throw new Error("Invalid JSON (not an array)");
-
-    const rows = data.map(normalizeRow).filter(r => r.actifBool);
+    const rows = indexData.map(normalizeRow).filter(r => r.actifBool);
     const synIndex = (typeof buildSynIndex === "function") ? buildSynIndex(rows, LANG) : null;
 
-    const found = findRowById(route, rows);
-    if(!found){
+    const foundMini = findRowById(route, rows);
+    if(!foundMini){
       showNotFound(route);
       return;
+    }
+
+    // 2) Charger le detail uniquement pour CE mot
+    let fullRow = foundMini;
+    if(foundMini.mot_id){
+      const detailRes = await fetch(API_URL + "?action=word&id=" + encodeURIComponent(foundMini.mot_id) + "&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
+      if(detailRes.ok){
+        const detailData = await detailRes.json();
+        const detailObj = Array.isArray(detailData) ? (detailData[0] || {}) : (detailData || {});
+        const detailNorm = normalizeRow(detailObj);
+        fullRow = Object.assign({}, foundMini, detailNorm);
+      }
     }
 
     if(wordStatusEl) wordStatusEl.style.display = "none";
     if(wordNotFoundEl) wordNotFoundEl.style.display = "none";
     if(wordViewEl) wordViewEl.style.display = "block";
 
-    renderWord(found, rows, synIndex);
+    renderWord(fullRow, rows, synIndex);
 
   }catch(e){
     console.error(e);

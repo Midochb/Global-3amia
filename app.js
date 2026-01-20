@@ -39,10 +39,10 @@ function initThemeToggle(){
    ========================================================= */
 
 // ✅ API Apps Script (JSON)
-const API_URL = "https://script.google.com/macros/s/AKfycbyvwBHRDqOP0OGGCXk1K0TODk1Q9B8L1UZgFcd3_M1kiTjC-7ft6dQHrQVUkzY69WJX/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyPqIFStzGEdjx4NwZl9fkixRZMR1DNBOX5hCemj4I9UNVvcp6XsbHw9nk1KfDP9ewC/exec";
 
 // Cache localStorage for faster boot
-const CACHE_KEY = "zeedna_words_cache_v1";
+const CACHE_KEY_BASE = "zeedna_words_cache_v2";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 
 // UX: limite d'affichage pour éviter les grosses listes sur mobile
@@ -122,12 +122,12 @@ function getMeaningForLang(row){
   if(!row) return { label: "", value: "" };
 
   if(LANG === "fr"){
-    const v = clean(row.fr) || clean(row.en);
+    const v = clean(row.fr);
     return { label: "FR", value: v };
   }
 
   if(LANG === "en"){
-    const v = clean(row.en) || clean(row.fr);
+    const v = clean(row.en);
     return { label: "EN", value: v };
   }
 
@@ -245,15 +245,19 @@ function debounce(fn, wait){
   };
 }
 
+function cacheKey(){
+  return CACHE_KEY_BASE + "_" + LANG;
+}
+
 function saveCache(data){
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data }));
+    localStorage.setItem(cacheKey(), JSON.stringify({ at: Date.now(), data }));
   } catch(e){}
 }
 
 function readCache(){
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(cacheKey());
     if(!raw) return null;
     const obj = JSON.parse(raw);
     if(!obj || !obj.at || !Array.isArray(obj.data)) return null;
@@ -403,7 +407,7 @@ async function loadData(){
 
   // 2) fetch fresh
   try{
-    const res = await fetch(API_URL, { cache: "no-store" });
+    const res = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if(!Array.isArray(data)) throw new Error("Réponse JSON invalide (pas un tableau)");
@@ -438,9 +442,16 @@ function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  const fr = clean(r.sens_dialectal) || clean(r.traduction_fr) || clean(r.sens_fr);
-  const en = clean(r.traduction_eng) || clean(r.traduction_en);
-  const nl = clean(r.traduction_nl);
+  const tr = clean(r.traduction);
+
+  let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
+  let en = clean(r.traduction_en) || clean(r.traduction_eng);
+  const nl = "";
+
+  if(tr){
+    if(LANG === "fr") fr = tr;
+    else if(LANG === "en") en = tr;
+  }
   const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 
   const obj = {
