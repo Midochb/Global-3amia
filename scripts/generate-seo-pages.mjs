@@ -298,12 +298,38 @@ function renderWordPage(row, group, kind) {
 
 async function main() {
   console.log("[SEO] Fetching:", API_URL);
-  const res = await fetch(API_URL, { cache: "no-store" });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  if (!Array.isArray(json)) throw new Error("API did not return an array");
+  const res = await fetch(API_URL + "?action=index&lang=fr", { cache: "no-store" });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    throw new Error(`HTTP ${res.status} from API. Body (first 300 chars): ${t.slice(0, 300)}`);
+  }
 
-  const rows = json.map(pickRow).filter(r => r.actifBool);
+  // Apps Script may return either an array (legacy) or an object wrapper like:
+  // { ok:true, data:[...] } or { ok:true, items:[...] }
+  const rawText = await res.text();
+  let parsed;
+  try {
+    parsed = JSON.parse(rawText);
+  } catch (e) {
+    throw new Error(
+      `API response is not valid JSON. First 300 chars: ${rawText.slice(0, 300)}`
+    );
+  }
+
+  const arr = Array.isArray(parsed)
+    ? parsed
+    : (parsed && (Array.isArray(parsed.data) ? parsed.data
+      : Array.isArray(parsed.items) ? parsed.items
+      : Array.isArray(parsed.rows) ? parsed.rows
+      : null));
+
+  if (!arr) {
+    throw new Error(
+      `API did not return an array. Got: ${JSON.stringify(parsed).slice(0, 600)}`
+    );
+  }
+
+  const rows = arr.map(pickRow).filter(r => r.actifBool);
   console.log("[SEO] Entries:", rows.length);
 
   // Precompute paths
