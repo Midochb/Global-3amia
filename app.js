@@ -409,8 +409,12 @@ async function loadData(){
   try{
     const res = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if(!Array.isArray(data)) throw new Error("Réponse JSON invalide (pas un tableau)");
+    const raw = await res.json();
+    const data = (Array.isArray(raw) ? raw : (raw && (raw.data||raw.items||raw.rows||raw.result))) || [];
+    if(!Array.isArray(data)) {
+      console.error("Unexpected API payload", raw);
+      throw new Error("Réponse JSON invalide (pas un tableau)" );
+    }
 
     saveCache(data);
 
