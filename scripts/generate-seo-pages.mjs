@@ -197,6 +197,9 @@ function renderWordPage(row, group, kind) {
     .seo-kv{display:grid;grid-template-columns:140px 1fr;gap:10px 14px;margin-top:12px}
     .seo-kv .k{color:var(--muted);font-size:13px}
     .seo-kv .v{font-size:16px}
+    .seo-kv .v.seo-ar{font-size:clamp(40px,7vw,72px);line-height:1.05;font-weight:950}
+    .seo-tr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .seo-tr a{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);text-decoration:none;font-size:12px;white-space:nowrap}
     .seo-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
     .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);text-decoration:none}
     .seo-suggest{margin-top:18px}
@@ -220,7 +223,7 @@ function renderWordPage(row, group, kind) {
       </svg>
     </a>
     <div class="brand" style="cursor:pointer" onclick="location.href='/recherche/'">
-      <div class="logo"><img src="/assets/brandmark.png" alt="Zeedna" /></div>
+      <div class="logo"><img src="/assets/LogoV2.png" alt="Zeedna" /></div>
       <div class="brandText"><div class="title">Zeedna 3amiat</div></div>
     </div>
     <a class="cta" href="/contribuer">➕ Contribuer</a>
@@ -237,10 +240,13 @@ function renderWordPage(row, group, kind) {
 
       <div class="seo-kv">
         <div class="k">Mot (arabe)</div>
-        <div class="v" dir="rtl">${escapeHtml(row.mot_arabe || "—")}</div>
+        <div class="v seo-ar" dir="rtl">${escapeHtml(row.mot_arabe || "—")}</div>
 
         <div class="k">Phonétique</div>
-        <div class="v">${escapeHtml(row.transliteration || "—")}</div>
+        <div class="v seo-tr">
+          <span>${escapeHtml(row.transliteration || "—")}</span>
+          <a href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
+        </div>
 
         ${row.fr ? `<div class="k">FR</div><div class="v">${escapeHtml(row.fr)}</div>` : ""}
         ${row.en ? `<div class="k">EN</div><div class="v">${escapeHtml(row.en)}</div>` : ""}

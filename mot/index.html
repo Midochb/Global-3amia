@@ -20,7 +20,7 @@
 
     <div class="brand" id="searchBtn" role="button" tabindex="0" title="Recherche">
       <div class="logo">
-        <img src="../logo_icon.png" alt="Zeedna 3amiat" />
+        <img src="../assets/LogoV2.png" alt="Zeedna 3amiat" />
       </div>
       <div class="brandText">
         <div class="title">Zeedna 3amiat</div>
@@ -36,10 +36,11 @@
       <div id="wordStatus" class="status muted">Chargement…</div>
 
       <div id="wordView" style="display:none;">
-        <div style="font-weight:800;font-size:22px;margin-bottom:4px;" id="w_ar"></div>
-        <div class="muted" id="w_tr" style="margin-bottom:12px;"></div>
-
-        <a id="tr_help_link" class="small muted" data-i18n="tr_help_link" href="/transliteration/" style="display:inline-block; margin-bottom:12px; text-decoration:underline;">Guide translittération</a>
+        <div id="w_ar" class="word-ar word-ar--page" dir="rtl"></div>
+        <div class="tr-row" style="margin-bottom:12px;">
+          <div class="muted" id="w_tr"></div>
+          <a id="trHelpLink" class="tr-help-link" data-i18n="tr_help_link" href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
+        </div>
 <div id="w_trads" class="trads"></div>
 
         <div id="w_kv" class="kv" style="margin-top:10px;"></div>

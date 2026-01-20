@@ -678,3 +678,45 @@ a{ color:inherit; }
   color: var(--text);
   font-size: 13px;
 }
+
+/* ===================== WORD PAGE ENHANCEMENTS (Patch 29) ===================== */
+/* Bigger Arabic word in word pages (fiches) */
+.word-ar--page{
+  font-size: clamp(40px, 7vw, 72px);
+  line-height: 1.05;
+  font-weight: 950;
+  letter-spacing: 0;
+  margin-bottom: 6px;
+}
+
+/* Link to phonetic/transliteration guide inside fiches */
+.tr-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.tr-help-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tr-help-link:hover{
+  text-decoration: underline;
+}
+
+
+/* Make sure Arabic blocks stay readable */
+.word-ar--page[dir="rtl"], #w_ar[dir="rtl"]{
+  text-align: right;
+}
