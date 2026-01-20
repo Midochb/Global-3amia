@@ -247,9 +247,8 @@ function renderWordPage(row, group, kind) {
           <a href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
         </div>
 
-        ${row.fr ? `<div class="k">FR</div><div class="v">${escapeHtml(row.fr)}</div>` : ""}
-        ${row.en ? `<div class="k">EN</div><div class="v">${escapeHtml(row.en)}</div>` : ""}
-        ${row.nl ? `<div class="k">NL</div><div class="v">${escapeHtml(row.nl)}</div>` : ""}
+        ${row.fr ? `<div class="k" data-tr="fr">FR</div><div class="v" data-tr="fr">${escapeHtml(row.fr)}</div>` : ""}
+        ${row.en ? `<div class="k" data-tr="en">EN</div><div class="v" data-tr="en">${escapeHtml(row.en)}</div>` : ""}
         ${row.fu ? `<div class="k">Arabe classique</div><div class="v" dir="rtl">${escapeHtml(row.fu)}</div>` : ""}
         ${row.region ? `<div class="k">Région</div><div class="v">${escapeHtml(row.region)}</div>` : ""}
       </div>
@@ -272,6 +271,18 @@ function renderWordPage(row, group, kind) {
       </div>
     </div>
   </main>
+  <script>
+    (function(){
+      // Affiche uniquement la traduction correspondant à la langue du navigateur (FR/EN).
+      // UI AR : on masque FR/EN et on conserve l'Arabe classique.
+      var nav = (navigator.language || 'en').toLowerCase();
+      var lang = nav.startsWith('fr') ? 'fr' : (nav.startsWith('ar') ? 'ar' : 'en');
+      var nodes = document.querySelectorAll('[data-tr]');
+      nodes.forEach(function(el){
+        el.style.display = (lang !== 'ar' && el.getAttribute('data-tr') === lang) ? '' : 'none';
+      });
+    })();
+  </script>
 </body>
 </html>`;
 }

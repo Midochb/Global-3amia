@@ -62,21 +62,25 @@ function synTokenizeEN(text){
    - clés token : fr:tk:enormement
    ========================================================= */
 
-function synExtractSenseKeys(row){
+function synExtractSenseKeys(row, lang="fr"){
   const keys = new Set();
 
-  // FR (prioritaire)
-  for(const item of synSplitItems(row.fr)){
-    const phrase = norm(item);
-    if(phrase) keys.add(`fr:ph:${phrase}`);
-    for(const tok of synTokenizeFR(item)) keys.add(`fr:tk:${tok}`);
-  }
+  // UI AR: pas de clustering par traduction (on évite les faux matchs)
+  if(lang === "ar") return keys;
 
-  // EN (bonus)
-  for(const item of synSplitItems(row.en)){
-    const phrase = norm(item);
-    if(phrase) keys.add(`en:ph:${phrase}`);
-    for(const tok of synTokenizeEN(item)) keys.add(`en:tk:${tok}`);
+  // ✅ On extrait uniquement la langue UI
+  if(lang === "fr"){
+    for(const item of synSplitItems(row.fr)){
+      const phrase = norm(item);
+      if(phrase) keys.add(`fr:ph:${phrase}`);
+      for(const tok of synTokenizeFR(item)) keys.add(`fr:tk:${tok}`);
+    }
+  } else {
+    for(const item of synSplitItems(row.en)){
+      const phrase = norm(item);
+      if(phrase) keys.add(`en:ph:${phrase}`);
+      for(const tok of synTokenizeEN(item)) keys.add(`en:tk:${tok}`);
+    }
   }
 
   return keys;
@@ -87,13 +91,13 @@ function synExtractSenseKeys(row){
    - à appeler 1 fois après loadData()
    ========================================================= */
 
-function buildSynIndex(allRows){
+function buildSynIndex(allRows, lang="fr"){
   const index = new Map();
 
   for(const r of allRows){
     if(!r || !r.actifBool) continue;
 
-    const keys = synExtractSenseKeys(r);
+    const keys = synExtractSenseKeys(r, lang);
     r._synKeys = keys; // cache
 
     for(const k of keys){
@@ -113,10 +117,10 @@ function buildSynIndex(allRows){
    - tri: hits desc, autres pays en priorité
    ========================================================= */
 
-function findSynonyms(row, allRows, synIndex, limit=10){
+function findSynonyms(row, allRows, synIndex, limit=10, lang="fr"){
   if(!row || !synIndex) return [];
 
-  const baseKeys = row._synKeys || synExtractSenseKeys(row);
+  const baseKeys = row._synKeys || synExtractSenseKeys(row, lang);
   if(!baseKeys.size) return [];
 
   const hitCount = new Map(); // id -> {row, hits}

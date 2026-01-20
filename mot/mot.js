@@ -117,6 +117,26 @@ function detectLang(){
 }
 const LANG = detectLang();
 
+// =====================
+// Lang-aware meaning/translation
+// - Objectif: n'afficher que la traduction de la langue UI
+//   (évite les correspondances parasites via d'autres langues)
+// =====================
+function getMeaningForLang(row){
+  if(!row) return { label: "", value: "" };
+
+  if(LANG === "fr"){
+    const v = clean(row.fr) || clean(row.en);
+    return { label: "FR", value: v };
+  }
+  if(LANG === "en"){
+    const v = clean(row.en) || clean(row.fr);
+    return { label: "EN", value: v };
+  }
+  // UI AR: pas de traduction FR/EN affichée
+  return { label: "", value: "" };
+}
+
 function t(key){
   const pack = I18N[LANG] || I18N.en;
   const fr = I18N.fr;
@@ -218,10 +238,10 @@ function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  const fr = clean(r.sens_dialectal) || clean(r.traduction_fr);
+  const fr = clean(r.sens_dialectal) || clean(r.traduction_fr) || clean(r.sens_fr);
   const en = clean(r.traduction_eng) || clean(r.traduction_en);
   const nl = clean(r.traduction_nl);
-  const fu = clean(r.Fouss7a);
+  const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 
   const obj = {
     mot_id: clean(r.mot_id),
@@ -271,9 +291,9 @@ function renderWord(row, rows, synIndex){
 
   const lines = [];
   lines.push(`<div class="trad-line"><span class="tag">${flag}</span>${row.registre ? `<span class="small">${escapeHtml(row.registre)}</span>` : ""}</div>`);
-  if(row.fr) lines.push(`<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(row.fr)}</span></div>`);
-  if(row.en) lines.push(`<div class="trad-line"><span class="tag">EN</span><span>${escapeHtml(row.en)}</span></div>`);
-  if(row.nl) lines.push(`<div class="trad-line"><span class="tag">NL</span><span>${escapeHtml(row.nl)}</span></div>`);
+  // ✅ Traduction : uniquement langue UI (FR ou EN)
+  const tr = getMeaningForLang(row);
+  if(tr.value) lines.push(`<div class="trad-line"><span class="tag">${escapeHtml(tr.label)}</span><span>${escapeHtml(tr.value)}</span></div>`);
   if(row.fu) lines.push(`<div class="trad-line"><span class="tag">Arabe classique</span>${safeDirRTL(row.fu)}</div>`);
   if(wTradsEl) wTradsEl.innerHTML = lines.join("");
 
@@ -297,7 +317,7 @@ function renderWord(row, rows, synIndex){
   // Suggestions
   if(wSuggestEl){
     const list = (typeof findSynonyms === "function" && synIndex)
-      ? findSynonyms(row, rows, synIndex, 12)
+      ? findSynonyms(row, rows, synIndex, 12, LANG)
       : [];
 
     wSuggestEl.innerHTML = (list || []).map(it => {
@@ -315,8 +335,10 @@ function renderWord(row, rows, synIndex){
             </div>
           </div>
           <div class="trads" style="margin-top:10px;">
-            ${r.fr ? `<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(r.fr)}</span></div>` : ""}
-            ${r.en ? `<div class="trad-line"><span class="tag">EN</span><span>${escapeHtml(r.en)}</span></div>` : ""}
+            ${(() => {
+              const tr2 = getMeaningForLang(r);
+              return tr2.value ? `<div class="trad-line"><span class="tag">${escapeHtml(tr2.label)}</span><span>${escapeHtml(tr2.value)}</span></div>` : "";
+            })()}
           </div>
         </div>
       `;
@@ -361,7 +383,7 @@ async function main(){
     if(!Array.isArray(data)) throw new Error("Invalid JSON (not an array)");
 
     const rows = data.map(normalizeRow).filter(r => r.actifBool);
-    const synIndex = (typeof buildSynIndex === "function") ? buildSynIndex(rows) : null;
+    const synIndex = (typeof buildSynIndex === "function") ? buildSynIndex(rows, LANG) : null;
 
     const found = findRowById(route, rows);
     if(!found){

@@ -58,7 +58,8 @@ const I18N = {
     loading: "Chargement…",
     ok: (n) => `OK — ${n} entrées`,
     error: "Erreur chargement (ouvre la console)",
-    search_ph: "Chercher un mot (arabe, translit, FR, EN, NL, Arabe classique)...",
+    // ✅ On ne recherche plus via EN/NL quand l'UI est en FR (évite les faux matchs)
+    search_ph: "Chercher un mot (arabe, translit, FR, arabe classique)...",
     search_btn: "Rechercher",
     all_dialects: "Tous les dialectes",
     modal_close: "Fermer",
@@ -72,7 +73,8 @@ const I18N = {
     loading: "Loading…",
     ok: (n) => `OK — ${n} entries`,
     error: "Load error (open console)",
-    search_ph: "Search a word (Arabic, translit, FR, EN, NL, Classical Arabic)...",
+    // ✅ On ne recherche plus via FR/NL quand l'UI est en EN (évite les faux matchs)
+    search_ph: "Search a word (Arabic, translit, EN, Classical Arabic)...",
     search_btn: "Search",
     all_dialects: "All dialects",
     modal_close: "Close",
@@ -86,7 +88,8 @@ const I18N = {
     loading: "جارٍ التحميل…",
     ok: (n) => `تم — ${n} مدخلة`,
     error: "خطأ في التحميل (افتح وحدة التحكم)",
-    search_ph: "ابحث عن كلمة (عربي، كتابة لاتينية، FR، EN، NL، العربية الكلاسيكية)...",
+    // ✅ UI عربي: البحث على العربي/الترانسلِت/العربية الفصحى فقط
+    search_ph: "ابحث عن كلمة (عربي، كتابة لاتينية، العربية الكلاسيكية)...",
     search_btn: "بحث",
     all_dialects: "كل اللهجات",
     modal_close: "إغلاق",
@@ -105,6 +108,30 @@ function detectLang(){
 }
 
 const LANG = detectLang();
+
+// =====================
+// Lang-aware meaning/translation
+// - Objectif: n'afficher + ne rechercher que la traduction de la langue UI
+//   (évite les correspondances parasites via d'autres langues)
+// =====================
+
+function getMeaningForLang(row){
+  if(!row) return { label: "", value: "" };
+
+  if(LANG === "fr"){
+    const v = clean(row.fr) || clean(row.en);
+    return { label: "FR", value: v };
+  }
+
+  if(LANG === "en"){
+    const v = clean(row.en) || clean(row.fr);
+    return { label: "EN", value: v };
+  }
+
+  // UI AR : pas de 'traduction' FR/EN affichée.
+  // On garde plutôt l'Arabe classique (fu) dans l'UI.
+  return { label: "", value: "" };
+}
 
 function t(key){
   const pack = I18N[LANG] || I18N.en;
@@ -343,7 +370,7 @@ async function loadData(){
     bootedFromCache = true;
     try{
       rows = cached.map(normalizeRow).filter(r => r.actifBool);
-      synIndex = buildSynIndex(rows);
+      synIndex = buildSynIndex(rows, LANG);
       buildDialectDropdown(rows);
       setAppStatus(t("ok")(rows.length));
       // If URL had search, run it immediately
@@ -369,7 +396,7 @@ async function loadData(){
     saveCache(data);
 
     rows = data.map(normalizeRow).filter(r => r.actifBool);
-    synIndex = buildSynIndex(rows);
+    synIndex = buildSynIndex(rows, LANG);
     buildDialectDropdown(rows);
 
     // Keep UI consistent
@@ -428,12 +455,16 @@ function normalizeRow(r){
     fr, en, nl, fu
   };
 
+  // ✅ Search index : uniquement la langue UI + champs neutres
+  // - FR UI => cherche sur FR (fallback EN)
+  // - EN UI => cherche sur EN (fallback FR)
+  // - AR UI => pas de recherche sur FR/EN/NL
+  const meaning = getMeaningForLang(obj).value;
+
   obj._search = norm([
     obj.mot_arabe,
     obj.transliteration,
-    obj.fr,
-    obj.en,
-    obj.nl,
+    (LANG === "ar") ? "" : meaning,
     obj.fu,
     obj.pays_code,
     obj.region,
@@ -615,9 +646,12 @@ function renderCard(row){
   const flag = isoToFlagEmoji(row.pays_code);
 
   const lines = [];
-  if(row.fr) lines.push(`<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(row.fr)}</span></div>`);
-  if(row.en) lines.push(`<div class="trad-line"><span class="tag">EN</span><span>${escapeHtml(row.en)}</span></div>`);
-  if(row.nl) lines.push(`<div class="trad-line"><span class="tag">NL</span><span>${escapeHtml(row.nl)}</span></div>`);
+
+  // ✅ Traduction : uniquement la langue UI (FR ou EN)
+  const tr = getMeaningForLang(row);
+  if(tr.value) lines.push(`<div class="trad-line"><span class="tag">${escapeHtml(tr.label)}</span><span>${escapeHtml(tr.value)}</span></div>`);
+
+  // UI AR : on n'affiche pas FR/EN, mais on garde l'Arabe classique
   if(row.fu) lines.push(`<div class="trad-line"><span class="tag">Arabe classique</span>${safeDirRTL(row.fu)}</div>`);
 
   card.innerHTML = `
@@ -662,9 +696,11 @@ function openModal(row){
   // Meta
   const metaLines = [];
   metaLines.push(`<div class="trad-line"><span class="tag">${flag}</span>${row.registre ? `<span class="small">${escapeHtml(row.registre)}</span>` : ""}</div>`);
-  if(row.fr) metaLines.push(`<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(row.fr)}</span></div>`);
-  if(row.en) metaLines.push(`<div class="trad-line"><span class="tag">EN</span><span>${escapeHtml(row.en)}</span></div>`);
-  if(row.nl) metaLines.push(`<div class="trad-line"><span class="tag">NL</span><span>${escapeHtml(row.nl)}</span></div>`);
+  // ✅ Traduction : uniquement langue UI (FR ou EN)
+  const tr = getMeaningForLang(row);
+  if(tr.value) metaLines.push(`<div class="trad-line"><span class="tag">${escapeHtml(tr.label)}</span><span>${escapeHtml(tr.value)}</span></div>`);
+
+  // UI AR : on garde l'Arabe classique
   if(row.fu) metaLines.push(`<div class="trad-line"><span class="tag">Arabe classique</span>${safeDirRTL(row.fu)}</div>`);
   mMeta.innerHTML = metaLines.join("");
 
@@ -706,7 +742,7 @@ function closeModal(){
 
 function renderSynonyms(baseRow){
   if(!mSyn) return;
-  const list = findSynonyms(baseRow, rows, synIndex, 12);
+  const list = findSynonyms(baseRow, rows, synIndex, 12, LANG);
   if(!list.length){
     mSyn.innerHTML = "";
     return;
@@ -716,8 +752,10 @@ function renderSynonyms(baseRow){
     const r = it.row;
     const flag = isoToFlagEmoji(r.pays_code);
 
-    const frLine = r.fr ? `<div class="trad-line"><span class="tag">FR</span><span>${escapeHtml(r.fr)}</span></div>` : "";
-    const enLine = r.en ? `<div class="trad-line"><span class="tag">EN</span><span>${escapeHtml(r.en)}</span></div>` : "";
+    const tr = getMeaningForLang(r);
+    const trLine = tr.value
+      ? `<div class="trad-line"><span class="tag">${escapeHtml(tr.label)}</span><span>${escapeHtml(tr.value)}</span></div>`
+      : "";
 
     return `
       <div class="card syn-card" data-id="${escapeHtml(r.mot_id)}" style="margin:10px 0; padding:12px;">
@@ -731,8 +769,7 @@ function renderSynonyms(baseRow){
           </div>
         </div>
         <div class="trads" style="margin-top:10px;">
-          ${frLine}
-          ${enLine}
+          ${trLine}
         </div>
       </div>
     `;
