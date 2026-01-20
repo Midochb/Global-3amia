@@ -16,7 +16,7 @@ const I18N_HOME = {
     home_title: 'Dictionnaire collaboratif des dialectes arabes',
     home_subtitle: 'Version bêta. Compare darija, tunisien, algérien, égyptien, levantin, khaliji… reliés à l’arabe classique et aux langues européennes.',
     home_cta_search: 'Commence à chercher',
-    home_cta_contribute: 'Contribuer',
+    home_cta_contribute: 'Ajoute ton mot',
     home_tr_help_link: 'Comment lire la translittération ?',
     home_note: 'Idée de départ: faciliter la compréhension du monde arabe, surtout pour celles et ceux nés à l\'extérieur qui veulent (re)découvrir leurs racines et les bases de l’arabe classique.',
     home_how_title: 'Comment ça marche',
@@ -31,13 +31,13 @@ const I18N_HOME = {
     home_why_2: 'Des traductions reliées au FR/EN/NL/DE + exemples d\'usage.',
     home_why_3: 'Un projet vivant: tu contribues et la base s\'enrichit.',
     home_footer_search: 'Recherche',
-    home_footer_contribute: 'Contribuer'
+    home_footer_contribute: 'Ajoute ton mot'
   },
   en: {
     home_title: 'Community Arabic dialect dictionary',
     home_subtitle: 'Beta. Compare Darija, Tunisian, Algerian, Egyptian, Levantine, Gulf… linked to Classical Arabic and European languages.',
     home_cta_search: 'Start searching',
-    home_cta_contribute: 'Contribute',
+    home_cta_contribute: 'Add your word',
     home_tr_help_link: 'How to read transliteration?',
     home_note: 'Starting point: make Arabic dialect understanding easier, especially for people born abroad who want to reconnect with their roots and learn the basics of Classical Arabic.',
     home_how_title: 'How it works',
@@ -52,13 +52,13 @@ const I18N_HOME = {
     home_why_2: 'Translations linked to FR/EN/NL/DE + usage examples.',
     home_why_3: 'A living project: you contribute and the database grows.',
     home_footer_search: 'Search',
-    home_footer_contribute: 'Contribute'
+    home_footer_contribute: 'Add your word'
   },
   ar: {
     home_title: 'قاموس مجتمعي للهجات العربية',
     home_subtitle: 'نسخة تجريبية (بيتا). قارن الدارجة والتونسي والجزائري والمصري والشامي والخليجي… مع ربطها بالعربية الكلاسيكية وباللغات الأوروبية.',
     home_cta_search: 'ابدأ البحث',
-    home_cta_contribute: 'ساهم',
+    home_cta_contribute: 'أضف كلمتك',
     home_tr_help_link: 'كيف نقرأ النقل الصوتي؟',
     home_note: 'الفكرة: تسهيل فهم اللهجات العربية، خصوصاً لمن وُلدوا خارج الوطن ويريدون العودة للجذور وتعلّم أساسيات العربية الكلاسيكية.',
     home_how_title: 'كيف يعمل',
@@ -73,7 +73,7 @@ const I18N_HOME = {
     home_why_2: 'ترجمات مرتبطة بـ FR/EN/NL/DE + أمثلة استعمال.',
     home_why_3: 'مشروع حي: مساهمتك تُنمّي القاعدة.',
     home_footer_search: 'بحث',
-    home_footer_contribute: 'ساهم'
+    home_footer_contribute: 'أضف كلمتك'
   }
 };
 

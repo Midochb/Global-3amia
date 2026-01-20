@@ -66,6 +66,7 @@ const I18N = {
     results_count: (n) => `${n} résultat(s)` ,
     no_results: "Ton mot n’est pas encore dispo",
     no_results_cta: "➕ L’ajouter en contribution",
+    add_word_btn: "➕ Ajoute ton mot",
     limited_notice: (shown, total) => `Affichage des ${shown} premiers résultats sur ${total}. Affine ta recherche.`
   },
   en: {
@@ -81,6 +82,7 @@ const I18N = {
     results_count: (n) => `${n} result(s)` ,
     no_results: "This word isn’t available yet",
     no_results_cta: "➕ Add it as a contribution",
+    add_word_btn: "➕ Add your word",
     limited_notice: (shown, total) => `Showing the first ${shown} results out of ${total}. Refine your search.`
   },
   ar: {
@@ -96,6 +98,7 @@ const I18N = {
     results_count: (n) => `${n} نتيجة`,
     no_results: "الكلمة غير متوفّرة بعد",
     no_results_cta: "➕ أضِفها كمساهمة",
+    add_word_btn: "➕ أضف كلمتك",
     limited_notice: (shown, total) => `عرض أول ${shown} نتيجة من أصل ${total}. حدّد البحث أكثر.`
   }
 };
@@ -158,6 +161,18 @@ function applyI18nStatic(){
 
   // search btn
   if(searchBtn) searchBtn.textContent = t("search_btn");
+
+  // header CTA (add word)
+  document.querySelectorAll("[data-i18n=\"add_word_btn\"]").forEach(el => {
+    el.textContent = t("add_word_btn");
+  });
+
+  // generic data-i18n (e.g., header CTA)
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const k = el.getAttribute("data-i18n");
+    const v = t(k);
+    if(v) el.textContent = v;
+  });
 }
 
 function setCount(n){

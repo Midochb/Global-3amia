@@ -225,7 +225,7 @@ function renderWordPage(row, group, kind) {
     <a class="brand brand-center" href="/recherche" aria-label="Recherche" title="Recherche">
       <img class="brandLogo brandLogo--lamp" src="/assets/LogoV2.png" alt="Zeedna" />
     </a>
-    <a class="cta" href="/contribuer">➕ Contribuer</a>
+    <a class="cta" href="/contribuer" data-i18n="add_word_btn">➕ Ajoute ton mot</a>
   </header>
 
   <main class="seo-wrap">
@@ -277,6 +277,15 @@ function renderWordPage(row, group, kind) {
       // UI AR : on masque FR/EN et on conserve l'Arabe classique.
       var nav = (navigator.language || 'en').toLowerCase();
       var lang = nav.startsWith('fr') ? 'fr' : (nav.startsWith('ar') ? 'ar' : 'en');
+      var i18n = {
+        fr: { add_word_btn: '➕ Ajoute ton mot' },
+        en: { add_word_btn: '➕ Add your word' },
+        ar: { add_word_btn: '➕ أضف كلمتك' }
+      };
+      document.querySelectorAll('[data-i18n="add_word_btn"]').forEach(function(el){
+        el.textContent = (i18n[lang] && i18n[lang].add_word_btn) ? i18n[lang].add_word_btn : i18n.en.add_word_btn;
+      });
+
       var nodes = document.querySelectorAll('[data-tr]');
       nodes.forEach(function(el){
         el.style.display = (lang !== 'ar' && el.getAttribute('data-tr') === lang) ? '' : 'none';

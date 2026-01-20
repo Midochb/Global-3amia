@@ -30,6 +30,9 @@ function replaceTopbar(html){
   topbar = topbar.replaceAll('/assets/logo_search.png','/assets/LogoV2.png');
   topbar = topbar.replaceAll('/assets/logo_icon.png','/assets/LogoV2.png');
 
+  // Update contribute CTA label (avoid monetary connotation)
+  topbar = topbar.replace(/<a class=\"cta\" href=\"\/contribuer\"[^>]*>[^<]*<\/a>/g, '<a class=\"cta\" href=\"\/contribuer\" data-i18n=\"add_word_btn\">➕ Ajoute ton mot<\/a>');
+
   // If we still have a <div class="brand" ...> legacy block, replace it.
   const legacyBrandRe = /<div class="brand"[^>]*>[\s\S]*?<\/div>\s*(?=<a class="cta"|<button|<a class="cta")/m;
   if(legacyBrandRe.test(topbar)){

@@ -17,7 +17,7 @@ function getBrowserLang(){
 
 const I18N_CONTRIB = {
   fr: {
-    subtitle: "Contribuer",
+    subtitle: "Ajoute ton mot",
     title: "Proposer un mot",
     hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
     word_lab: "Mot (arabe)",
@@ -37,7 +37,7 @@ const I18N_CONTRIB = {
     tr_help_link: "Comment lire la translittération ?"
   },
   en: {
-    subtitle: "Contribute",
+    subtitle: "Add your word",
     title: "Suggest a word",
     hint: "Tip: if there are multiple meanings, separate with commas (e.g., a lot, very much, tons).",
     word_lab: "Word (Arabic)",
