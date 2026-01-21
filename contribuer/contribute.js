@@ -8,24 +8,20 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_
    [CONTRIB-i18n] Language (Browser)
    ========================================================= */
 
-function getBrowserLang(){
-  const raw = (navigator.language || "fr").toLowerCase();
-  if (raw.startsWith("ar")) return "ar";
-  if (raw.startsWith("en")) return "en";
-  return "fr";
-}
+function getBrowserLang(){ return getPreferredLang(); }
 
 const I18N_CONTRIB = {
   fr: {
     subtitle: "Ajoute ton mot",
     title: "Proposer un mot",
     hint: "Astuce : si plusieurs sens, sépare avec des virgules (ex : beaucoup, énormément, vachement).",
+    back_to_search: "Retour à la recherche",
     word_lab: "Mot (arabe)",
     word_ph: "اكتب الكلمة هنا",
     phon_lab: "Phonétique (suggestion auto)",
     phon_ph: "ex : 7iit / hiit",
-    fr_lab: "Traduction (FR)",
-    fr_ph: "ex : beaucoup, énormément, vachement",
+    fr_lab: "Sens (ta langue)",
+    fr_ph: "ex : beaucoup / a lot / كثير...",
     ex_lab: "Exemple",
     ex_ph: "ex : أنا لوّاج على خدمة",
     dialect_lab: "Dialecte / pays",
@@ -40,6 +36,7 @@ const I18N_CONTRIB = {
     subtitle: "Add your word",
     title: "Suggest a word",
     hint: "Tip: if there are multiple meanings, separate with commas (e.g., a lot, very much, tons).",
+    back_to_search: "Back to search",
     word_lab: "Word (Arabic)",
     word_ph: "Type the word here",
     phon_lab: "Phonetic (auto suggestion)",
@@ -60,6 +57,7 @@ const I18N_CONTRIB = {
     subtitle: "المساهمة",
     title: "اقترح كلمة",
     hint: "ملاحظة: إذا كانت هناك عدة معانٍ، افصل بينها بفواصل (مثال: كثير، جدًا، بزّاف).",
+    back_to_search: "الرجوع إلى البحث",
     word_lab: "الكلمة (بالعربية)",
     word_ph: "اكتب الكلمة هنا",
     phon_lab: "النطق (اقتراح تلقائي)",
@@ -126,7 +124,7 @@ const I18N_CONTRIB = {
 };
 
 function applyContribI18n(){
-  const lang = getBrowserLang();
+  const lang = getPreferredLang();
   const t = I18N_CONTRIB[lang] || I18N_CONTRIB.fr;
 
   // texts
@@ -154,6 +152,10 @@ function applyContribI18n(){
   if(labCity) labCity.textContent = t.city_lab;
   if(labUser) labUser.textContent = t.user_lab;
 
+  // page title + tooltips
+  document.title = `Zeedna 3amiat — ${t.subtitle}`;
+  const homeBtn = document.getElementById("homeBtn");
+  if(homeBtn) homeBtn.setAttribute("title", t.back_to_search);
 
   // transliteration help link
   const trHelp = document.querySelector("[data-i18n=\"c_tr_help_link\"]");
@@ -219,7 +221,7 @@ function applyContribI18n(){
   };
 
   if (dialectEl) {
-    const lang = getBrowserLang();
+    const lang = getPreferredLang();
     const map = COUNTRY_LABELS[lang] || COUNTRY_LABELS.fr;
 
     Array.from(dialectEl.options).forEach(opt => {
