@@ -807,3 +807,78 @@ a{ color:inherit; }
   .autocomplete-item .main{ font-size:14px; }
   .autocomplete-item .sub{ font-size:12px; }
 }
+
+
+/* === Suggestions dropdown (search) === */
+#suggestions{
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 10px);
+  z-index:9999;
+  background:rgba(10, 14, 28, 0.98);
+  border:1px solid rgba(255,255,255,0.16);
+  border-radius:16px;
+  box-shadow:0 18px 40px rgba(0,0,0,0.55);
+  overflow:hidden;
+}
+
+.suggestItem{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  background:transparent;
+  border:0;
+  text-align:left;
+  color:rgba(255,255,255,0.92);
+  cursor:pointer;
+}
+
+.suggestItem:hover,
+.suggestItem:focus{
+  background:rgba(255,255,255,0.10);
+  outline:none;
+}
+
+.sLeft{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+
+.sMain{
+  font-weight:800;
+  font-size:18px;
+  line-height:1.15;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.sSub{
+  font-size:13px;
+  color:rgba(255,255,255,0.72);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.suggestMeta{
+  flex:0 0 auto;
+  font-size:12px;
+  font-weight:700;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.14);
+  color:rgba(255,255,255,0.90);
+}
+
+@media (max-width: 720px){
+  #suggestions{ top:calc(100% + 8px); border-radius:14px; }
+  .sMain{ font-size:16px; }
+}

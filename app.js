@@ -571,39 +571,41 @@ function clearSuggestions(){
 
 function renderSuggestions(items){
   if(!suggestionsEl) return;
-  if(!items.length){
+  if(!items || !items.length){
     clearSuggestions();
     return;
   }
 
   suggestionsEl.innerHTML = items.map(it => {
-    const ar = it.ar ? `<span class="suggestWord" dir="rtl" style="direction:rtl; unicode-bidi:plaintext;">${escapeHtml(it.ar)}</span>` : `<span class="suggestWord">${escapeHtml(it.q)}</span>`;
-    const tr = it.tr ? ` <span class="muted">(${escapeHtml(it.tr)})</span>` : "";
-    const meaning = it.meaning ? ` <span class="muted">— ${escapeHtml(it.meaning)}</span>` : "";
+    const arText = it.ar || it.q || "";
+    const trText = it.tr || "";
+    const meaningText = it.meaning || "";
+
+    const main = arText
+      ? `<span class="sMain" dir="rtl">${escapeHtml(arText)}</span>`
+      : `<span class="sMain">${escapeHtml(it.q || "")}</span>`;
+
+    const subParts = [];
+    if(trText) subParts.push(escapeHtml(trText));
+    if(meaningText) subParts.push(escapeHtml(meaningText));
+    const sub = subParts.length ? `<span class="sSub">${subParts.join(" — ")}</span>` : "";
+
     const meta = `${escapeHtml(it.flag || "")} ${escapeHtml(it.code || "")}`.trim();
+
     return `
-      <button type="button" class="suggestItem" role="option" data-q="${escapeHtml(it.q)}" data-id="${escapeHtml(it.id || "")}">
-        ${ar}${tr}${meaning}
+      <button type="button" class="suggestItem" role="option"
+        data-q="${escapeHtml(it.q || "")}" data-id="${escapeHtml(it.id || "")}">
+        <span class="sLeft">
+          ${main}
+          ${sub}
+        </span>
         ${meta ? `<span class="suggestMeta">${meta}</span>` : ""}
       </button>
     `;
   }).join("");
 
   suggestionsEl.style.display = "block";
-
-  suggestionsEl.querySelectorAll(".suggestItem").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const q = btn.getAttribute("data-q") || "";
-      if(qEl) qEl.value = q;
-      // store a small local history to rank future suggestions
-      const id = btn.getAttribute("data-id") || "";
-      if(id) bumpLocalPopularity(id);
-      clearSuggestions();
-      performSearch();
-    });
-  });
 }
-
 const updateSuggestions = debounce(() => {
   if(!qEl) return;
   const q = (qEl.value || "").trim();
