@@ -6,6 +6,18 @@
 // Keep same API as the rest of the site
 const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
 
+// Apps Script may return either an array OR a wrapper object (e.g. { ok:true, data:[...] }).
+function unwrapArrayPayload(payload){
+  if(Array.isArray(payload)) return payload;
+  if(payload && typeof payload === "object"){
+    if(Array.isArray(payload.data)) return payload.data;
+    if(Array.isArray(payload.rows)) return payload.rows;
+    if(Array.isArray(payload.items)) return payload.items;
+    if(Array.isArray(payload.result)) return payload.result;
+  }
+  return null;
+}
+
 // DOM
 const wordStatusEl = document.getElementById("wordStatus");
 const wordViewEl = document.getElementById("wordView");
@@ -386,8 +398,9 @@ async function main(){
     // 1) Charger l'index leger (rapide)
     const indexRes = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
     if(!indexRes.ok) throw new Error(`HTTP `);
-    const indexData = await indexRes.json();
-    if(!Array.isArray(indexData)) throw new Error("Invalid JSON (index not an array)");
+    const indexPayload = await indexRes.json();
+    const indexData = unwrapArrayPayload(indexPayload);
+    if(!Array.isArray(indexData)) throw new Error("Invalid JSON (index missing data[])");
 
     const rows = indexData.map(normalizeRow).filter(r => r.actifBool);
     const synIndex = (typeof buildSynIndex === "function") ? buildSynIndex(rows, LANG) : null;
@@ -403,8 +416,21 @@ async function main(){
     if(foundMini.mot_id){
       const detailRes = await fetch(API_URL + "?action=word&id=" + encodeURIComponent(foundMini.mot_id) + "&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
       if(detailRes.ok){
-        const detailData = await detailRes.json();
-        const detailObj = Array.isArray(detailData) ? (detailData[0] || {}) : (detailData || {});
+        const detailPayload = await detailRes.json();
+        const detailArr = unwrapArrayPayload(detailPayload);
+
+        // detail can be:
+        // - array: [...] (handled by unwrapArrayPayload)
+        // - wrapper with array: { data:[...] }
+        // - wrapper with object: { data:{...} }
+        let detailObj = {};
+        if(Array.isArray(detailArr)){
+          detailObj = detailArr[0] || {};
+        }else if(detailPayload && typeof detailPayload === "object" && detailPayload.data && typeof detailPayload.data === "object" && !Array.isArray(detailPayload.data)){
+          detailObj = detailPayload.data;
+        }else{
+          detailObj = detailPayload || {};
+        }
         const detailNorm = normalizeRow(detailObj);
         fullRow = Object.assign({}, foundMini, detailNorm);
       }
