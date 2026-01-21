@@ -577,16 +577,27 @@ function renderSuggestions(items){
   }
 
   suggestionsEl.innerHTML = items.map(it => {
-    const label = it.label;
-    return `<button type="button" class="suggest-item" data-q="${escapeHtml(it.q)}">${label}</button>`;
+    const ar = it.ar ? `<span class="suggestWord" dir="rtl" style="direction:rtl; unicode-bidi:plaintext;">${escapeHtml(it.ar)}</span>` : `<span class="suggestWord">${escapeHtml(it.q)}</span>`;
+    const tr = it.tr ? ` <span class="muted">(${escapeHtml(it.tr)})</span>` : "";
+    const meaning = it.meaning ? ` <span class="muted">— ${escapeHtml(it.meaning)}</span>` : "";
+    const meta = `${escapeHtml(it.flag || "")} ${escapeHtml(it.code || "")}`.trim();
+    return `
+      <button type="button" class="suggestItem" role="option" data-q="${escapeHtml(it.q)}" data-id="${escapeHtml(it.id || "")}">
+        ${ar}${tr}${meaning}
+        ${meta ? `<span class="suggestMeta">${meta}</span>` : ""}
+      </button>
+    `;
   }).join("");
 
   suggestionsEl.style.display = "block";
 
-  suggestionsEl.querySelectorAll(".suggest-item").forEach(btn => {
+  suggestionsEl.querySelectorAll(".suggestItem").forEach(btn => {
     btn.addEventListener("click", () => {
       const q = btn.getAttribute("data-q") || "";
       if(qEl) qEl.value = q;
+      // store a small local history to rank future suggestions
+      const id = btn.getAttribute("data-id") || "";
+      if(id) bumpLocalPopularity(id);
       clearSuggestions();
       performSearch();
     });
@@ -606,29 +617,96 @@ const updateSuggestions = debounce(() => {
   if(nq === lastSuggestQuery) return;
   lastSuggestQuery = nq;
 
-  // limit suggestions
-  const MAX = 8;
-  const out = [];
+  // limit suggestions (Google-like)
+  const MAX = 5;
+
+  const pop = getLocalPopularityMap();
+
+  const scored = [];
   for(const r of rows){
-    if(!r || !r._search) continue;
-    if(!r._search.includes(nq)) continue;
+    if(!r) continue;
 
-    const ar = r.mot_arabe ? `<span dir="rtl" style="direction:rtl; unicode-bidi:plaintext;">${escapeHtml(r.mot_arabe)}</span>` : "";
-    const tr = r.transliteration ? ` <span class="muted">(${escapeHtml(r.transliteration)})</span>` : "";
-    const fr = r.fr ? ` <span class="muted">— ${escapeHtml(r.fr)}</span>` : "";
-    const flag = isoToFlagEmoji(r.pays_code);
+    const ar = clean(r.mot_arabe);
+    const tr = clean(r.transliteration);
+    const meaning = (LANG === "ar") ? "" : clean(getMeaningForLang(r).value);
 
-    const display = `${flag} ${ar}${tr}${fr}`;
+    // Build searchable fields for typeahead (fast)
+    const nar = ar ? norm(ar) : "";
+    const ntr = tr ? norm(tr) : "";
+    const nme = meaning ? norm(meaning) : "";
 
-    // use Arabic if available, else transliteration, else query
-    const qUse = r.mot_arabe || r.transliteration || q;
+    // Prefer prefix matches, then contains
+    let score = 0;
+    const isPrefix = (nar && nar.startsWith(nq)) || (ntr && ntr.startsWith(nq)) || (nme && nme.startsWith(nq));
+    const isContains = (!isPrefix) && ((nar && nar.includes(nq)) || (ntr && ntr.includes(nq)) || (nme && nme.includes(nq)));
 
-    out.push({ q: qUse, label: display });
-    if(out.length >= MAX) break;
+    if(isPrefix) score += 3;
+    else if(isContains) score += 1;
+    else continue;
+
+    // Small local ranking boost based on user clicks
+    const pid = clean(r.mot_id);
+    const p = pid ? (pop[pid] || 0) : 0;
+    if(p) score += Math.log(1 + p) * 0.6;
+
+    // Slightly prefer shorter matches
+    const len = (ar || tr || "").length || 999;
+    score += Math.max(0, 1.2 - (len / 50));
+
+    scored.push({ score, r, meaning });
   }
+
+  scored.sort((a,b) => b.score - a.score);
+
+  const out = scored.slice(0, MAX).map(({r, meaning}) => {
+    const flag = isoToFlagEmoji(r.pays_code);
+    return {
+      id: r.mot_id || "",
+      q: r.mot_arabe || r.transliteration || q,
+      ar: r.mot_arabe || "",
+      tr: r.transliteration || "",
+      meaning: meaning || "",
+      flag,
+      code: r.pays_code || ""
+    };
+  });
 
   renderSuggestions(out);
 }, 120);
+
+/* =========================================================
+   [APP-8b] LOCAL POPULARITY (client-only)
+   - stores only ids + counts in localStorage (no PII)
+   ========================================================= */
+
+const POP_KEY = "zeedna_popularity_v1";
+
+function getLocalPopularityMap(){
+  try{
+    const raw = localStorage.getItem(POP_KEY);
+    const obj = raw ? JSON.parse(raw) : {};
+    return (obj && typeof obj === "object") ? obj : {};
+  }catch(e){
+    return {};
+  }
+}
+
+function bumpLocalPopularity(motId){
+  try{
+    if(!motId) return;
+    const m = getLocalPopularityMap();
+    m[motId] = (m[motId] || 0) + 1;
+    // keep it small
+    const entries = Object.entries(m);
+    if(entries.length > 400){
+      entries.sort((a,b) => b[1]-a[1]);
+      const trimmed = Object.fromEntries(entries.slice(0, 250));
+      localStorage.setItem(POP_KEY, JSON.stringify(trimmed));
+    } else {
+      localStorage.setItem(POP_KEY, JSON.stringify(m));
+    }
+  }catch(e){}
+}
 
 /* =========================================================
    [APP-9] FILTER + RENDER LIST (triggered by Search button)
@@ -738,6 +816,8 @@ function renderCard(row){
 
   // Open in dedicated page (shareable URL)
   card.addEventListener("click", () => {
+    // remember this word as often visited (for smarter suggestions)
+    if(row.mot_id) bumpLocalPopularity(row.mot_id);
     window.location.href = wordPageUrlForRow(row);
   });
   return card;
