@@ -3,7 +3,7 @@
    ========================================================= */
 
 (function(){
-  const LANG = detectLang();
+  const LANG = getPreferredLang();
 
   const I18N = {
     fr: {
@@ -116,3 +116,9 @@
   applyI18n();
   buildTable();
 })();
+
+
+// Lang switcher
+document.addEventListener('DOMContentLoaded', () => {
+  try { mountLangSwitcher(document.querySelector('.headerActions')); } catch(e) {}
+});

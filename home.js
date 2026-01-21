@@ -9,7 +9,7 @@ function detectLang(){
   return 'en';
 }
 
-const LANG = detectLang();
+const LANG = getPreferredLang();
 
 const I18N_HOME = {
   fr: {
@@ -74,7 +74,39 @@ const I18N_HOME = {
     home_why_3: 'مشروع حي: مساهمتك تُنمّي القاعدة.',
     home_footer_search: 'بحث',
     home_footer_contribute: 'أضف كلمتك'
+  },
+
+  nl: {
+    home_title: 'Collaboratief woordenboek van Arabische dialecten',
+    home_subtitle: 'Bèta. Vergelijk darija, Tunesisch, Algerijns… (en meer) gelinkt aan klassiek Arabisch en Europese talen.',
+    home_cta_search: 'Begin met zoeken',
+    home_cta_contribute: 'Voeg je woord toe',
+    home_tr_help_link: 'Hoe lees je de transliteratie?',
+    home_note: 'Startidee: het leren en doorgeven van dialecten makkelijker maken — vooral voor de diaspora.',
+    nav_search: 'Zoeken',
+    nav_contribute: 'Voeg je woord toe'
+  },
+  es: {
+    home_title: 'Diccionario colaborativo de dialectos árabes',
+    home_subtitle: 'Beta. Compara darija, tunecino, argelino… (y más) conectados al árabe clásico y a lenguas europeas.',
+    home_cta_search: 'Empezar a buscar',
+    home_cta_contribute: 'Añade tu palabra',
+    home_tr_help_link: '¿Cómo leer la transliteración?',
+    home_note: 'Idea inicial: facilitar el aprendizaje y la transmisión de dialectos — especialmente para la diáspora.',
+    nav_search: 'Buscar',
+    nav_contribute: 'Añade tu palabra'
+  },
+  it: {
+    home_title: 'Dizionario collaborativo dei dialetti arabi',
+    home_subtitle: 'Beta. Confronta darija, tunisino, algerino… (e altro) collegati all’arabo classico e alle lingue europee.',
+    home_cta_search: 'Inizia a cercare',
+    home_cta_contribute: 'Aggiungi la tua parola',
+    home_tr_help_link: 'Come leggere la traslitterazione?',
+    home_note: 'Idea iniziale: rendere più facile imparare e trasmettere i dialetti — soprattutto per la diaspora.',
+    nav_search: 'Cerca',
+    nav_contribute: 'Aggiungi la tua parola'
   }
+
 };
 
 function t(key){
@@ -122,3 +154,9 @@ function initThemeToggle(){
 
 applyHomeI18n();
 initThemeToggle();
+
+
+// Lang switcher
+document.addEventListener('DOMContentLoaded', () => {
+  try { mountLangSwitcher(document.querySelector('.headerActions')); } catch(e) {}
+});

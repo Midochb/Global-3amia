@@ -882,3 +882,23 @@ a{ color:inherit; }
   #suggestions{ top:calc(100% + 8px); border-radius:14px; }
   .sMain{ font-size:16px; }
 }
+
+
+
+/* =====================
+   Lang switcher
+   ===================== */
+.lang-switch{ display:inline-flex; align-items:center; }
+.lang-select{
+  appearance:none;
+  -webkit-appearance:none;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(20, 24, 40, .90);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:14px;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+.lang-select:focus{ outline:none; box-shadow:0 0 0 3px rgba(140,170,255,.18); }
+html[dir="rtl"] .lang-select{ direction:ltr; }

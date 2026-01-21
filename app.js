@@ -124,7 +124,54 @@ const I18N = {
     no_results_cta: "➕ أضِفها كمساهمة",
     add_word_btn: "➕ أضف كلمتك",
     limited_notice: (shown, total) => `عرض أول ${shown} نتيجة من أصل ${total}. حدّد البحث أكثر.`
+  },
+
+  nl: {
+    ready: "Klaar",
+    loading: "Laden…",
+    ok: (n) => `OK — ${n} items`,
+    error: "Laadfout (open console)",
+    search_ph: "Zoek een woord (Arabisch, translit, NL, Klassiek Arabisch)...",
+    search_btn: "Zoeken",
+    all_dialects: "Alle dialecten",
+    modal_close: "Sluiten",
+    results_count: (n) => `${n} resultaat(en)` ,
+    no_results: "Dit woord is nog niet beschikbaar",
+    no_results_cta: "➕ Voeg het toe als bijdrage",
+    add_word_btn: "➕ Voeg je woord toe",
+    limited_notice: (shown, total) => `Eerste ${shown} resultaten van ${total}. Verfijn je zoekopdracht.`
+  },
+  es: {
+    ready: "Listo",
+    loading: "Cargando…",
+    ok: (n) => `OK — ${n} entradas`,
+    error: "Error de carga (abre la consola)",
+    search_ph: "Buscar una palabra (árabe, translit, ES, árabe clásico)...",
+    search_btn: "Buscar",
+    all_dialects: "Todos los dialectos",
+    modal_close: "Cerrar",
+    results_count: (n) => `${n} resultado(s)` ,
+    no_results: "Esta palabra aún no está disponible",
+    no_results_cta: "➕ Añadir como contribución",
+    add_word_btn: "➕ Añade tu palabra",
+    limited_notice: (shown, total) => `Mostrando los primeros ${shown} resultados de ${total}. Afina tu búsqueda.`
+  },
+  it: {
+    ready: "Pronto",
+    loading: "Caricamento…",
+    ok: (n) => `OK — ${n} voci`,
+    error: "Errore di caricamento (apri la console)",
+    search_ph: "Cerca una parola (arabo, translit, IT, arabo classico)...",
+    search_btn: "Cerca",
+    all_dialects: "Tutti i dialetti",
+    modal_close: "Chiudi",
+    results_count: (n) => `${n} risultato(i)` ,
+    no_results: "Questa parola non è ancora disponibile",
+    no_results_cta: "➕ Aggiungila come contributo",
+    add_word_btn: "➕ Aggiungi la tua parola",
+    limited_notice: (shown, total) => `Mostro i primi ${shown} risultati su ${total}. Affina la ricerca.`
   }
+
 };
 
 function detectLang(){
@@ -134,7 +181,7 @@ function detectLang(){
   return "en";
 }
 
-const LANG = detectLang();
+const LANG = getPreferredLang();
 
 // =====================
 // Lang-aware meaning/translation
@@ -1025,3 +1072,9 @@ renderList([]);
 
 // load data (cache + fetch)
 loadData();
+
+
+// Lang switcher
+document.addEventListener('DOMContentLoaded', () => {
+  try { mountLangSwitcher(document.querySelector('.headerActions')); } catch(e) {}
+});

@@ -61,10 +61,54 @@ function isoToFlagEmoji(iso){
 // =====================
 function detectLang() {
   const raw = (navigator.language || navigator.userLanguage || "fr").toLowerCase();
-
   if (raw.startsWith("ar")) return "ar";
   if (raw.startsWith("fr")) return "fr";
+  if (raw.startsWith("nl")) return "nl";
+  if (raw.startsWith("es")) return "es";
+  if (raw.startsWith("it")) return "it";
+  if (raw.startsWith("en")) return "en";
   return "en";
+}
+
+function getPreferredLang() {
+  try {
+    const saved = localStorage.getItem('zeed_lang');
+    if (saved) return saved;
+  } catch(e) {}
+  return detectLang();
+}
+
+function setPreferredLang(lang) {
+  try { localStorage.setItem('zeed_lang', lang); } catch(e) {}
+  // reload to ensure every page applies the same language consistently
+  location.reload();
+}
+
+function mountLangSwitcher(container) {
+  if (!container) return;
+  const current = getPreferredLang();
+  const options = [
+    {v:'fr', label:'FR'},
+    {v:'en', label:'EN'},
+    {v:'ar', label:'AR'},
+    {v:'nl', label:'NL'},
+    {v:'es', label:'ES'},
+    {v:'it', label:'IT'},
+  ];
+  const wrap = document.createElement('div');
+  wrap.className = 'lang-switch';
+  const select = document.createElement('select');
+  select.className = 'lang-select';
+  select.setAttribute('aria-label','Language');
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.v; opt.textContent = o.label;
+    if (o.v === current) opt.selected = true;
+    select.appendChild(opt);
+  });
+  select.addEventListener('change', () => setPreferredLang(select.value));
+  wrap.appendChild(select);
+  container.appendChild(wrap);
 }
 
 function applyI18n(dict) {
