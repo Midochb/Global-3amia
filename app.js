@@ -39,7 +39,7 @@ function initThemeToggle(){
    ========================================================= */
 
 // ✅ API Apps Script (JSON)
-const API_URL = "https://script.google.com/macros/s/AKfycbyPqIFStzGEdjx4NwZl9fkixRZMR1DNBOX5hCemj4I9UNVvcp6XsbHw9nk1KfDP9ewC/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
 
 // Cache localStorage for faster boot
 const CACHE_KEY_BASE = "zeedna_words_cache_v2";
@@ -409,12 +409,8 @@ async function loadData(){
   try{
     const res = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const raw = await res.json();
-    const data = (Array.isArray(raw) ? raw : (raw && (raw.data||raw.items||raw.rows||raw.result))) || [];
-    if(!Array.isArray(data)) {
-      console.error("Unexpected API payload", raw);
-      throw new Error("Réponse JSON invalide (pas un tableau)" );
-    }
+    const data = await res.json();
+    if(!Array.isArray(data)) throw new Error("Réponse JSON invalide (pas un tableau)");
 
     saveCache(data);
 

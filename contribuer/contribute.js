@@ -3,7 +3,7 @@
    ========================================================= */
 
 // ✅ Mets TON URL Apps Script ici (le nouveau)
-const API_URL = "https://script.google.com/macros/s/AKfycbyPqIFStzGEdjx4NwZl9fkixRZMR1DNBOX5hCemj4I9UNVvcp6XsbHw9nk1KfDP9ewC/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
 /* =========================================================
    [CONTRIB-i18n] Language (Browser)
    ========================================================= */
