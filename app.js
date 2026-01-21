@@ -41,6 +41,30 @@ function initThemeToggle(){
 // ✅ API Apps Script (JSON)
 const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
 
+// Unwrap API payloads.
+// Apps Script may return either an array directly OR an object wrapper like:
+// { ok:true, action:"index", data:[...] }
+function unwrapArrayPayload(payload){
+  if(Array.isArray(payload)) return payload;
+  if(payload && typeof payload === "object"){
+    // Common wrappers
+    if(Array.isArray(payload.data)) return payload.data;
+    if(Array.isArray(payload.rows)) return payload.rows;
+    if(Array.isArray(payload.items)) return payload.items;
+    if(Array.isArray(payload.result)) return payload.result;
+
+    // Some proxies serialize the array as a JSON string
+    const maybe = payload.data ?? payload.rows ?? payload.items ?? payload.result;
+    if(typeof maybe === "string"){
+      try {
+        const parsed = JSON.parse(maybe);
+        if(Array.isArray(parsed)) return parsed;
+      } catch(e) {}
+    }
+  }
+  return null;
+}
+
 // Cache localStorage for faster boot
 const CACHE_KEY_BASE = "zeedna_words_cache_v2";
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6h
@@ -409,8 +433,22 @@ async function loadData(){
   try{
     const res = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if(!Array.isArray(data)) throw new Error("Réponse JSON invalide (pas un tableau)");
+
+    // Read as text first so we can debug non‑JSON payloads (HTML login pages, etc.)
+    const rawText = await res.text();
+    let payload;
+    try {
+      payload = JSON.parse(rawText);
+    } catch(parseErr){
+      console.error("[API] Non-JSON response (first 200 chars):", rawText.slice(0, 200));
+      throw new Error("Réponse API non-JSON");
+    }
+
+    const data = unwrapArrayPayload(payload);
+    if(!Array.isArray(data)){
+      console.error("[API] Unexpected payload shape:", payload);
+      throw new Error("Réponse JSON invalide (pas un tableau)");
+    }
 
     saveCache(data);
 

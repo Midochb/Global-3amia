@@ -14,6 +14,15 @@ function unwrapArrayPayload(payload){
     if(Array.isArray(payload.rows)) return payload.rows;
     if(Array.isArray(payload.items)) return payload.items;
     if(Array.isArray(payload.result)) return payload.result;
+
+    // Some proxies serialize arrays as JSON strings
+    const maybe = payload.data ?? payload.rows ?? payload.items ?? payload.result;
+    if(typeof maybe === "string"){
+      try {
+        const parsed = JSON.parse(maybe);
+        if(Array.isArray(parsed)) return parsed;
+      } catch(e) {}
+    }
   }
   return null;
 }
@@ -397,8 +406,16 @@ async function main(){
   try{
     // 1) Charger l'index leger (rapide)
     const indexRes = await fetch(API_URL + "?action=index&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
-    if(!indexRes.ok) throw new Error(`HTTP `);
-    const indexPayload = await indexRes.json();
+    if(!indexRes.ok) throw new Error(`HTTP ${indexRes.status}`);
+
+    // Read as text first so we can debug non‑JSON payloads (HTML login pages, etc.)
+    const indexText = await indexRes.text();
+    let indexPayload;
+    try { indexPayload = JSON.parse(indexText); }
+    catch(e){
+      console.error("[API] Non-JSON index response (first 200 chars):", indexText.slice(0,200));
+      throw new Error("Réponse API non-JSON (index)");
+    }
     const indexData = unwrapArrayPayload(indexPayload);
     if(!Array.isArray(indexData)) throw new Error("Invalid JSON (index missing data[])");
 
@@ -416,7 +433,13 @@ async function main(){
     if(foundMini.mot_id){
       const detailRes = await fetch(API_URL + "?action=word&id=" + encodeURIComponent(foundMini.mot_id) + "&lang=" + encodeURIComponent(LANG), { cache: "no-store" });
       if(detailRes.ok){
-        const detailPayload = await detailRes.json();
+        const detailText = await detailRes.text();
+        let detailPayload;
+        try { detailPayload = JSON.parse(detailText); }
+        catch(e){
+          console.error("[API] Non-JSON word response (first 200 chars):", detailText.slice(0,200));
+          detailPayload = null;
+        }
         const detailArr = unwrapArrayPayload(detailPayload);
 
         // detail can be:
