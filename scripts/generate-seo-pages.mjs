@@ -39,6 +39,24 @@ const DIALECT = {
   SD: { fr: "soudanais", en: "Sudanese Arabic", ar: "سوداني" },
 };
 
+// Grouping used by the SEO generator when it iterates over sheets like
+// "Tounsi", "Maghribi", "Other dialect" etc.
+function dialectGroupFromSheet(sheetName = "") {
+  const s = String(sheetName).trim().toLowerCase();
+  if (s.includes("tounsi")) return "tounsi";
+  if (s.includes("maghribi")) return "maghribi";
+  // default bucket for everything else (levantine, egyptian, khaleiji, etc.)
+  return "other";
+}
+
+// Minimal lookup table expected by renderWordPage (DIALECTS[group]).
+// Keep it small: it only impacts the SEO H1/title strings.
+const DIALECTS = {
+  tounsi: { fr: "tunisien", en: "Tunisian", ar: "تونسي" },
+  maghribi: { fr: "maghrébin", en: "Maghrebi", ar: "مغاربي" },
+  other: { fr: "dialectal", en: "Dialectal", ar: "عامي" },
+};
+
 
 function getCountryStyle(group){
   // Dialect/country visual identity for social-friendly pages
