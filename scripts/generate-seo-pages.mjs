@@ -39,6 +39,18 @@ const DIALECT = {
   SD: { fr: "soudanais", en: "Sudanese Arabic", ar: "سوداني" },
 };
 
+
+function getCountryStyle(group){
+  // Dialect/country visual identity for social-friendly pages
+  // Feel free to tweak colors later; they only affect SEO/static pages.
+  const styles = {
+    tounsi:   { flag: '🇹🇳', icon: '🌶️', accent:'#ff4d4d', accent2:'#ffd166', wash:'rgba(255,77,77,.18)', wash2:'rgba(255,209,102,.12)' },
+    maghribi: { flag: '🌍', icon: '🧿', accent:'#22c55e', accent2:'#60a5fa', wash:'rgba(34,197,94,.14)', wash2:'rgba(96,165,250,.10)' },
+    other:    { flag: '🌍', icon: '✨', accent:'#7c3aed', accent2:'#06b6d4', wash:'rgba(124,58,237,.14)', wash2:'rgba(6,182,212,.10)' },
+  };
+  return styles[group] || styles.other;
+}
+
 function clean(v) {
   return (v === null || v === undefined) ? "" : String(v).trim();
 }
@@ -116,182 +128,126 @@ function makeFaqJsonLd({ question, answer, url }) {
 }
 
 function renderWordPage(row, group, kind) {
-  const d = DIALECT[row.pays_code] || { fr: row.pays_code || "dialecte", en: row.pays_code || "Dialect" };
-  const qFr = row.fr || row.en || row.mot_arabe || "";
+  const dialect = DIALECTS[group] || { fr: group, en: group, emoji: '🌍' };
+  const country = getCountryStyle(group);
 
-  const title = qFr
-    ? `Comment dire ${qFr} en ${d.fr} ? — Zeedna 3amiat (bêta)`
-    : `Mot en ${d.fr} — Zeedna 3amiat (bêta)`;
+  const title = kind === 'from_fr'
+    ? `« ${escapeHtml(row.fr)} » en ${escapeHtml(dialect.fr)}`
+    : `« ${escapeHtml(row.ar)} » en ${escapeHtml(dialect.fr)}`;
 
-  const h1 = qFr
-    ? `Comment dire « ${qFr} » en ${d.fr} ?`
-    : `Traduction en ${d.fr}`;
+  const subtitle = kind === 'from_fr'
+    ? `Traduction et usage du mot « ${escapeHtml(row.fr)} » en ${escapeHtml(dialect.fr)}.`
+    : `Traduction et usage du mot « ${escapeHtml(row.ar)} » en ${escapeHtml(dialect.fr)}.`;
 
-  const descBits = [];
-  if (row.mot_arabe) descBits.push(`Écriture arabe : ${row.mot_arabe}`);
-  if (row.transliteration) descBits.push(`translittération : ${row.transliteration}`);
-  if (row.region) descBits.push(`région : ${row.region}`);
-  const description = qFr
-    ? `Traduction de “${qFr}” en ${d.fr}. ${descBits.join(", ")}. Dictionnaire collaboratif des dialectes arabes (bêta).`
-    : `Dictionnaire collaboratif des dialectes arabes (bêta). ${descBits.join(", ")}.`;
+  const faq = makeFaqJsonLd(row, dialect, kind);
 
-  const canonical = SITE_URL
-    ? `${SITE_URL}${kind === "mot" ? "/mot/" : "/comment-dire/"}${kind === "mot" ? row._motPath : row._cdPath}`.replace(/\/index\.html$/, "")
-    : null;
+  const labelFr = row.fr ? escapeHtml(row.fr) : '';
+  const labelAr = row.ar ? escapeHtml(row.ar) : '';
+  const labelPh = row.phon ? escapeHtml(row.phon) : '';
 
-  const faqQ = qFr ? `Comment dire ${qFr} en ${d.fr} ?` : `Que veut dire ce mot en ${d.fr} ?`;
-  const answerLines = [];
-  if (row.mot_arabe) answerLines.push(`En ${d.fr}, on peut dire : ${row.mot_arabe}.`);
-  if (row.transliteration) answerLines.push(`Translittération : ${row.transliteration}.`);
-  if (row.en) answerLines.push(`EN : ${row.en}.`);
-  if (row.nl) answerLines.push(`NL : ${row.nl}.`);
-  if (row.fu) answerLines.push(`Arabe classique : ${row.fu}.`);
-  const faqA = answerLines.join(" ");
-
-  const jsonLd = makeFaqJsonLd({ question: faqQ, answer: faqA, url: canonical || undefined });
-
-  const otherLinks = (group || [])
-    .filter(x => x !== row)
-    .slice(0, 10)
-    .map(x => {
-      const dd = DIALECT[x.pays_code] || { fr: x.pays_code || "dialecte" };
-      const label = `Comment dire en ${dd.fr}`;
-      return `<a class="pill" href="/comment-dire/${x._cdPath}">${escapeHtml(label)}</a>`;
-    })
-    .join("\n");
-
-  const suggestMore = (group || [])
-    .filter(x => x !== row)
-    .slice(0, 6)
-    .map(x => {
-      const dd = DIALECT[x.pays_code] || { fr: x.pays_code || "dialecte" };
-      return `
-        <li>
-          <a href="/mot/${x._motPath}">
-            <span class="k">${escapeHtml(dd.fr)}</span>
-            <span class="v" dir="rtl">${escapeHtml(x.mot_arabe || "—")}</span>
-            <span class="t">${escapeHtml(x.transliteration || "")}</span>
-          </a>
-        </li>`;
-    })
-    .join("");
+  const badgeLeft = `${country.flag} ${escapeHtml(dialect.fr)}`;
+  const badgeRight = country.icon;
 
   return `<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}" />
-  ${canonical ? `<link rel="canonical" href="${canonical}" />` : ""}
-  <meta property="og:title" content="${escapeHtml(title)}" />
-  <meta property="og:description" content="${escapeHtml(description)}" />
-  <meta property="og:type" content="website" />
-  ${canonical ? `<meta property="og:url" content="${canonical}" />` : ""}
-  <script type="application/ld+json">${jsonLd}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${title} | Zeedna</title>
+  <meta name="description" content="${escapeHtml(subtitle)}" />
+  <link rel="icon" href="/favicon.png" />
   <link rel="stylesheet" href="/style.css" />
+  <meta property="og:title" content="${title} | Zeedna" />
+  <meta property="og:description" content="${escapeHtml(subtitle)}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Zeedna" />
+  <meta name="theme-color" content="${country.accent}" />
+  ${faq}
   <style>
-    .seo-wrap{max-width:920px;margin:0 auto;padding:18px}
-    .seo-card{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:18px}
-    .seo-h1{font-size:28px;margin:0 0 10px;font-weight:900}
-    .seo-kv{display:grid;grid-template-columns:140px 1fr;gap:10px 14px;margin-top:12px}
-    .seo-kv .k{color:var(--muted);font-size:13px}
-    .seo-kv .v{font-size:16px}
-    .seo-kv .v.seo-ar{font-size:clamp(40px,7vw,72px);line-height:1.05;font-weight:950}
-    .seo-tr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .seo-tr a{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);text-decoration:none;font-size:12px;white-space:nowrap}
-    .seo-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:8px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);text-decoration:none}
-    .seo-suggest{margin-top:18px}
-    .seo-suggest ul{list-style:none;padding:0;margin:10px 0 0;display:grid;gap:10px}
-    .seo-suggest li a{display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--border);background:var(--card);border-radius:14px;padding:12px 14px;text-decoration:none}
-    .seo-suggest .k{color:var(--muted);min-width:120px}
-    .seo-suggest .v{font-size:22px;font-weight:900}
-    .seo-suggest .t{color:var(--muted)}
-    .seo-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-    .seo-cta a{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border-radius:12px;border:1px solid var(--border);text-decoration:none}
-    .seo-cta a.primary{background:var(--accent);color:var(--accentText);border-color:transparent}
+    :root{
+      --country-accent:${country.accent};
+      --country-accent-2:${country.accent2};
+      --country-wash:${country.wash};
+      --country-wash-2:${country.wash2};
+    }
+    body{ padding-top: 0; }
   </style>
 </head>
-<body>
-  <header class="topbar">
-    <a class="iconBtn home-btn" href="/" aria-label="Accueil" title="Accueil">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
+<body class="word-page">
+  <header class="header">
+    <a class="brand" href="/" aria-label="Accueil">
+      <span class="brand__logo">🏺</span>
+      <span class="brand__text">Zeedna</span>
     </a>
-    <a class="brand brand-center" href="/recherche" aria-label="Recherche" title="Recherche">
-      <img class="brandLogo brandLogo--lamp" src="/assets/LogoV2.png" alt="Zeedna" />
-    </a>
-    <a class="cta" href="/contribuer" data-i18n="add_word_btn">➕ Ajoute ton mot</a>
+    <nav class="header__nav">
+      <a class="btn btn--ghost" href="/#search">Rechercher</a>
+      <a class="btn" href="/add.html">+ Add your word</a>
+    </nav>
   </header>
 
-  <main class="seo-wrap">
-    <div class="seo-card">
-      <h1 class="seo-h1">${escapeHtml(h1)}</h1>
-
-      <div class="seo-cta">
-        <a class="primary" href="/recherche/?q=${encodeURIComponent(qFr)}">Rechercher</a>
-        <a href="/contribuer/?q=${encodeURIComponent(qFr)}">Ajouter / corriger</a>
+  <main class="container">
+    <section class="word-hero">
+      <div class="word-hero__badges">
+        <span class="badge">${badgeLeft}</span>
+        <span class="badge badge--icon" aria-hidden="true">${badgeRight}</span>
       </div>
 
-      <div class="seo-kv">
-        <div class="k">Mot (arabe)</div>
-        <div class="v seo-ar" dir="rtl">${escapeHtml(row.mot_arabe || "—")}</div>
+      <h1 class="word-hero__title">${title}</h1>
 
-        <div class="k">Phonétique</div>
-        <div class="v seo-tr">
-          <span>${escapeHtml(row.transliteration || "—")}</span>
-          <a href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
-        </div>
-
-        ${row.fr ? `<div class="k" data-tr="fr">FR</div><div class="v" data-tr="fr">${escapeHtml(row.fr)}</div>` : ""}
-        ${row.en ? `<div class="k" data-tr="en">EN</div><div class="v" data-tr="en">${escapeHtml(row.en)}</div>` : ""}
-        ${row.fu ? `<div class="k">Arabe classique</div><div class="v" dir="rtl">${escapeHtml(row.fu)}</div>` : ""}
-        ${row.region ? `<div class="k">Région</div><div class="v">${escapeHtml(row.region)}</div>` : ""}
+      <div class="word-hero__cta">
+        <a class="btn btn--ghost" href="/#search">Chercher un autre mot</a>
+        <a class="btn" href="/add.html">Ajouter / corriger</a>
       </div>
+    </section>
 
-      ${row.exemple ? `
-        <div style="margin-top:14px">
-          <div class="small muted">Exemple</div>
-          <div dir="rtl" style="font-size:20px;font-weight:800;margin-top:6px">${escapeHtml(row.exemple)}</div>
-        </div>
-      ` : ""}
+    <section class="word-grid">
+      <article class="card card--word">
+        <div class="card__label">Mot (français)</div>
+        <div class="card__value card__value--fr">${labelFr || '—'}</div>
+      </article>
 
-      ${otherLinks ? `
-        <div style="margin-top:16px" class="small muted">Autres dialectes</div>
-        <div class="seo-pills">${otherLinks}</div>
-      ` : ""}
+      <article class="card card--word">
+        <div class="card__label">Mot (dialecte)</div>
+        <div class="card__value card__value--ar">${labelAr || '—'}</div>
+        ${labelPh ? `<div class="card__sub">Phonétique : <b>${labelPh}</b></div>` : ''}
+      </article>
 
-      <div class="seo-suggest">
-        <div class="small muted">Suggestions</div>
-        <ul>${suggestMore}</ul>
+      ${row.fusha ? `
+      <article class="card card--word">
+        <div class="card__label">Arabe classique</div>
+        <div class="card__value card__value--ar">${escapeHtml(row.fusha)}</div>
+      </article>
+      ` : ''}
+
+      ${row.reg ? `
+      <article class="card card--word">
+        <div class="card__label">Région</div>
+        <div class="card__value">${escapeHtml(row.reg)}</div>
+      </article>
+      ` : ''}
+
+      ${row.desc ? `
+      <article class="card card--word card--wide">
+        <div class="card__label">Note / contexte</div>
+        <div class="card__value">${escapeHtml(row.desc)}</div>
+      </article>
+      ` : ''}
+    </section>
+
+    <section class="word-footer">
+      <p>💡 Tu peux proposer une variante, une autre région, ou voter pour les meilleures contributions directement sur Zeedna.</p>
+      <div class="word-footer__cta">
+        <a class="btn btn--ghost" href="/#search">Retour au site</a>
+        <a class="btn" href="/add.html">Contribuer</a>
       </div>
-    </div>
+    </section>
   </main>
-  <script>
-    (function(){
-      // Affiche uniquement la traduction correspondant à la langue du navigateur (FR/EN).
-      // UI AR : on masque FR/EN et on conserve l'Arabe classique.
-      var nav = (navigator.language || 'en').toLowerCase();
-      var lang = nav.startsWith('fr') ? 'fr' : (nav.startsWith('ar') ? 'ar' : 'en');
-      var i18n = {
-        fr: { add_word_btn: '➕ Ajoute ton mot' },
-        en: { add_word_btn: '➕ Add your word' },
-        ar: { add_word_btn: '➕ أضف كلمتك' }
-      };
-      document.querySelectorAll('[data-i18n="add_word_btn"]').forEach(function(el){
-        el.textContent = (i18n[lang] && i18n[lang].add_word_btn) ? i18n[lang].add_word_btn : i18n.en.add_word_btn;
-      });
 
-      var nodes = document.querySelectorAll('[data-tr]');
-      nodes.forEach(function(el){
-        el.style.display = (lang !== 'ar' && el.getAttribute('data-tr') === lang) ? '' : 'none';
-      });
-    })();
-  </script>
+  <footer class="footer">
+    <div class="container">
+      <small>© ${new Date().getFullYear()} Zeedna</small>
+    </div>
+  </footer>
 </body>
 </html>`;
 }
