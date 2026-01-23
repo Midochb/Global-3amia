@@ -39,8 +39,63 @@ const wTradsEl = document.getElementById("w_trads");
 const wKvEl = document.getElementById("w_kv");
 const wSuggestEl = document.getElementById("w_suggest");
 
+// Share-friendly hero (optional)
+const wordHeroEl = document.getElementById("wordHero");
+const heroTitleEl = document.getElementById("heroTitle");
+const heroSubEl = document.getElementById("heroSub");
+const heroChipEl = document.getElementById("heroChip");
+const countryFlagEl = document.getElementById("countryFlag");
+const countryIconEl = document.getElementById("countryIcon");
+
 const themeBtn = document.getElementById("themeToggle");
 const searchBtn = document.getElementById("searchBtn");
+
+/* =====================
+   SHARE THEME (per country)
+   ===================== */
+function countryIcon(cc){
+  const map = {
+    TN: "🌶️",  // Tunisie
+    MA: "🍊",  // Maroc
+    DZ: "🫒",  // Algérie
+    LY: "🐪",  // Libye
+    EG: "🏺",  // Egypte
+    LB: "🌲",  // Liban
+    SY: "🫒",  // Syrie
+    JO: "🏜️",  // Jordanie
+    IQ: "🏺",  // Irak
+    SD: "🌴",  // Soudan
+    SA: "🕋",  // Arabie Saoudite
+    AE: "🏙️",  // UAE
+    QA: "🏟️",  // Qatar
+    KW: "🛢️",  // Koweït
+    OM: "🕌",  // Oman
+    BH: "🛢️",  // Bahreïn
+  };
+  return map[cc] || "✨";
+}
+
+function countryPalette(cc){
+  const map = {
+    TN: { accent: "#E11D48", accent2: "#F59E0B" },
+    MA: { accent: "#DC2626", accent2: "#10B981" },
+    DZ: { accent: "#16A34A", accent2: "#FFFFFF" },
+    LY: { accent: "#16A34A", accent2: "#111827" },
+    EG: { accent: "#F59E0B", accent2: "#111827" },
+    LB: { accent: "#DC2626", accent2: "#16A34A" },
+    IQ: { accent: "#DC2626", accent2: "#16A34A" },
+    SD: { accent: "#F59E0B", accent2: "#16A34A" },
+  };
+  return map[cc] || { accent: "#60A5FA", accent2: "#A78BFA" };
+}
+
+function applyCountryTheme(cc){
+  if(!cc) return;
+  try { document.body.setAttribute("data-country", cc); } catch(e){}
+  const pal = countryPalette(cc);
+  document.documentElement.style.setProperty("--country-accent", pal.accent);
+  document.documentElement.style.setProperty("--country-accent2", pal.accent2);
+}
 
 /* =====================
    THEME (same logic)
@@ -357,7 +412,25 @@ function safeDirRTL(ar){
 }
 
 function renderWord(row, rows, synIndex){
-  document.title = `${row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
+  // Prefer meaning (French/EN) for share/screenshot readability
+  const trForTitle = getMeaningForLang(row);
+  const titleTerm = clean(trForTitle.value) || clean(row.transliteration) || clean(row.mot_arabe) || "Mot";
+  const dialectLabel = clean(row.dialecte_nom) || clean(row.pays_nom) || clean(row.pays_code) || "dialecte";
+  const isFR = (currentLang === "fr");
+  const pageTitle = isFR
+    ? `Comment dire « ${titleTerm} » en ${dialectLabel.toLowerCase()} ?`
+    : `How to say "${titleTerm}" in ${dialectLabel}?`;
+
+  document.title = `${pageTitle} — Zeedna 3amia`;
+
+  // Hero (if present)
+  if(heroTitleEl) heroTitleEl.textContent = pageTitle;
+  if(heroSubEl){
+    const subBits = [];
+    if(clean(row.mot_arabe)) subBits.push(`Mot (arabe) : ${row.mot_arabe}`);
+    if(clean(row.transliteration)) subBits.push(`Phonétique : ${row.transliteration}`);
+    heroSubEl.textContent = subBits.join(" • ");
+  }
 
   if(wArEl) wArEl.innerHTML = safeDirRTL(row.mot_arabe || "—");
   if(wTrEl) wTrEl.textContent = row.transliteration || "";
@@ -442,6 +515,14 @@ function showNotFound(route){
 async function main(){
   initThemeToggle();
   applyI18nStatic();
+
+  // Optional: make the page "screenshot-ready" for socials
+  try{
+    const sp = new URLSearchParams(location.search);
+    if(sp.get("share") === "1" || sp.get("social") === "1"){
+      document.body.classList.add("share-mode");
+    }
+  }catch(_e){/* no-op */}
 
   const id = getIdFromUrl();
   const route = parseId(id);
