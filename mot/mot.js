@@ -298,7 +298,21 @@ function applyI18nStatic(){
 function getIdFromUrl(){
   try{
     const url = new URL(window.location.href);
-    return (url.searchParams.get("id") || "").trim();
+
+    // 1) Legacy querystring: /mot/?id=<slug>--tn
+    const q = (url.searchParams.get("id") || "").trim();
+    if(q) return q;
+
+    // 2) Pretty path: /mot/<slug>--tn/  (or /mot/<slug>--tn)
+    //    Also tolerates Netlify SPA fallback (same path but served by /mot/index.html)
+    const path = decodeURIComponent(url.pathname || "").trim();
+    // Grab last non-empty segment
+    const segs = path.split("/").filter(Boolean);
+    const last = segs[segs.length - 1] || "";
+    // Expected: <slug>--<cc>
+    if(last.includes("--")) return last;
+
+    return "";
   }catch(e){
     return "";
   }
@@ -348,7 +362,8 @@ function buildWordUrl(row){
   const base = a || tr || "mot";
   const cc = (row.pays_code || "").toUpperCase().trim();
   const id = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
-  return `/mot/?id=${id}`;
+  // Pretty URL (also used by the SEO static pages generator)
+  return `/mot/${id}/`;
 }
 
 /* =====================

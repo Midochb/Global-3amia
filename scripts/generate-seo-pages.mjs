@@ -99,15 +99,20 @@ function escapeHtml(s) {
 }
 
 function pickRow(r) {
-  const mot_arabe = clean(r.mot_arabe);
-  const transliteration = clean(r.transliteration || r.phonetic || r.phonetique);
-  const fr = clean(r.sens_dialectal || r.sens_fr || r.traduction_fr || r.fr);
-  const en = clean(r.traduction_eng || r.traduction_en || r.en);
-  const nl = clean(r.traduction_nl || r.nl);
-  const fu = clean(r.Fouss7a || r.fouss7a || r.fu);
-  const pays_code = clean(r.pays_code).toUpperCase();
-  const region = clean(r.region);
-  const exemple = clean(r.exemple_phrase || r.exemple_usage || r.exemple);
+  // Support both the "clean" JSON export format and raw Excel headers (e.g. "Arabe", "Français").
+  const mot_arabe = clean(r.mot_arabe || r.Arabe || r.arabe || r.word_ar || r.ar);
+  const transliteration = clean(
+    r.transliteration || r.phonetic || r.phonetique || r['Phonétique'] || r['Phonetique']
+  );
+  const fr = clean(
+    r.sens_dialectal || r.sens_fr || r.traduction_fr || r.fr || r['Français'] || r['Francais']
+  );
+  const en = clean(r.traduction_eng || r.traduction_en || r.en || r['English'] || r['Anglais']);
+  const nl = clean(r.traduction_nl || r.nl || r['Nederlands']);
+  const fu = clean(r.Fouss7a || r.fouss7a || r.fu || r['Arabe classique']);
+  const pays_code = clean(r.pays_code || r['pays_code'] || r['Pays'] || r['pays']).toUpperCase();
+  const region = clean(r.region || r['Région'] || r['Region']);
+  const exemple = clean(r.exemple_phrase || r.exemple_usage || r.exemple || r['Exemple']);
   const actif = clean(r.actif);
   const actifBool = actif === "" ? true : ["true","1","oui","vrai"].includes(norm(actif));
 
@@ -125,7 +130,29 @@ function pickRow(r) {
   };
 }
 
-function makeFaqJsonLd({ question, answer, url }) {
+function makeFaqJsonLd(row, dialect, kind, pageUrl) {
+  const qWord = kind === 'from_fr' ? (row.fr || row.Francais || row["Français"] || '') : (row.ar || row.Arabe || row["Arabe"] || '');
+  const dialectLabel = dialect?.fr || dialect?.en || '';
+
+  const question = qWord
+    ? `Comment dire « ${qWord} » en ${dialectLabel} ?`
+    : `Traduction en ${dialectLabel}`;
+
+  const answerParts = [];
+  const dialectWord = row.word || row.dialect || row.dialect_ar || row.MotDialecte || row["Mot (dialecte)"] || '';
+  const phon = row.phon || row.phonetic || row["Phonétique"] || '';
+  const fu = row.fusha || row.ar_classic || row["Arabe classique"] || '';
+  const region = row.region || row["Région"] || '';
+
+  if (dialectWord) answerParts.push(`Mot (dialecte) : ${dialectWord}`);
+  if (phon) answerParts.push(`Phonétique : ${phon}`);
+  if (fu) answerParts.push(`Arabe classique : ${fu}`);
+  if (region) answerParts.push(`Région : ${region}`);
+
+  const answer = answerParts.length
+    ? answerParts.join(' • ')
+    : `Traduction et usages du mot en ${dialectLabel}.`;
+
   const obj = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -140,9 +167,8 @@ function makeFaqJsonLd({ question, answer, url }) {
       }
     ]
   };
-  // optional: attach url
-  if (url) obj.url = url;
-  return JSON.stringify(obj);
+  if (pageUrl) obj.url = pageUrl;
+  return obj;
 }
 
 function renderWordPage(row, group, kind) {
@@ -157,7 +183,10 @@ function renderWordPage(row, group, kind) {
     ? `Traduction et usage du mot « ${escapeHtml(row.fr)} » en ${escapeHtml(dialect.fr)}.`
     : `Traduction et usage du mot « ${escapeHtml(row.ar)} » en ${escapeHtml(dialect.fr)}.`;
 
-  const faq = makeFaqJsonLd(row, dialect, kind);
+  const faqObj = makeFaqJsonLd(row, dialect, kind);
+  // Prevent "</script>" injection / stray text by escaping '<'
+  const faqJson = JSON.stringify(faqObj).replace(/</g, '\\u003c');
+  const faqScript = `<script type="application/ld+json">${faqJson}</script>`;
 
   const labelFr = row.fr ? escapeHtml(row.fr) : '';
   const labelAr = row.ar ? escapeHtml(row.ar) : '';
@@ -180,7 +209,7 @@ function renderWordPage(row, group, kind) {
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Zeedna" />
   <meta name="theme-color" content="${country.accent}" />
-  ${faq}
+  ${faqScript}
   <style>
     :root{
       --country-accent:${country.accent};
