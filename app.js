@@ -641,7 +641,7 @@ function renderSuggestions(items){
 
     return `
       <button type="button" class="suggestItem" role="option"
-        data-q="${escapeHtml(it.q || "")}" data-id="${escapeHtml(it.id || "")}">
+        data-q="${escapeHtml(it.q || "")}" data-id="${escapeHtml(it.id || "")}" data-cc="${escapeHtml(it.code || "")}">
         <span class="sLeft">
           ${main}
           ${sub}
@@ -1026,6 +1026,23 @@ document.addEventListener("click", (e) => {
   const target = e.target;
   if(target === qEl || suggestionsEl.contains(target)) return;
   clearSuggestions();
+});
+
+// Clicking a suggestion chip should open the word page directly
+suggestionsEl?.addEventListener("click", (e) => {
+  const btn = e.target?.closest?.('.suggestItem');
+  if(!btn) return;
+  const id = (btn.dataset.id || "").trim();
+  const cc = (btn.dataset.cc || "").trim();
+  if(id && cc){
+    // Keep the same URL style as cards for consistency
+    window.location.href = `/mot/?id=${encodeURIComponent(id)}--${encodeURIComponent(cc)}`;
+    return;
+  }
+  // Fallback: populate the search box and run a search
+  const q = (btn.dataset.q || "").trim();
+  if(qEl) qEl.value = q;
+  performSearch();
 });
 
 // Modal events
