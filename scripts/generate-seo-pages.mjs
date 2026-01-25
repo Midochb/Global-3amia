@@ -135,29 +135,40 @@ function makeFaqJsonLd({ question, answer, url }) {
 
 function renderWordPage(row, group, kind) {
   const d = DIALECT[row.pays_code] || { fr: row.pays_code || "dialecte", en: row.pays_code || "Dialect" };
-  const qFr = row.fr || row.en || row.mot_arabe || "";
 
-  const title = qFr
-    ? `Comment dire ${qFr} en ${d.fr} ? — Zeedna 3amiat (bêta)`
+  // Dictionary principle: the query term should be a *meaning* (FR/EN/NL)
+  // and must NOT fall back to Arabic script in the visible H1.
+  // If the French meaning is missing, we still show a clean H1 and clearly flag the missing translation.
+  const qMeaning = (row.fr || row.en || row.nl || "").trim();
+  // For meta/FAQ we can still use Arabic as a last resort (better for recall/search),
+  // but we keep the visible H1 meaning-first.
+  const qForMeta = (row.fr || row.en || row.nl || row.mot_arabe || "").trim();
+  // For search links, prefer meaning, fallback to Arabic.
+  const qForSearch = (qMeaning || row.mot_arabe || "").trim();
+  const qFallback = kind === 'en' ? 'this word' : 'ce mot';
+  const qDisplay = qMeaning || qFallback;
+
+  const title = qDisplay
+    ? `Comment dire ${qDisplay} en ${d.fr} ? — Zeedna 3amiat (bêta)`
     : `Mot en ${d.fr} — Zeedna 3amiat (bêta)`;
 
-  const h1 = qFr
-    ? `Comment dire « ${qFr} » en ${d.fr} ?`
-    : `Traduction en ${d.fr}`;
+  const h1 = qDisplay
+    ? `Comment dire ${escapeHtml(qDisplay)} en ${escapeHtml(d.fr)} ?`
+    : `Traduction en ${escapeHtml(d.fr)}`;
 
   const descBits = [];
   if (row.mot_arabe) descBits.push(`Écriture arabe : ${row.mot_arabe}`);
   if (row.transliteration) descBits.push(`translittération : ${row.transliteration}`);
   if (row.region) descBits.push(`région : ${row.region}`);
-  const description = qFr
-    ? `Traduction de “${qFr}” en ${d.fr}. ${descBits.join(", ")}. Dictionnaire collaboratif des dialectes arabes (bêta).`
+  const description = qForMeta
+    ? `Traduction de “${qForMeta}” en ${d.fr}. ${descBits.join(", ")}. Dictionnaire collaboratif des dialectes arabes (bêta).`
     : `Dictionnaire collaboratif des dialectes arabes (bêta). ${descBits.join(", ")}.`;
 
   const canonical = SITE_URL
     ? `${SITE_URL}${kind === "mot" ? "/mot/" : "/comment-dire/"}${kind === "mot" ? row._motPath : row._cdPath}`.replace(/\/index\.html$/, "")
     : null;
 
-  const faqQ = qFr ? `Comment dire ${qFr} en ${d.fr} ?` : `Que veut dire ce mot en ${d.fr} ?`;
+  const faqQ = qDisplay ? `Comment dire ${qDisplay} en ${d.fr} ?` : `Que veut dire ce mot en ${d.fr} ?`;
   const answerLines = [];
   if (row.mot_arabe) answerLines.push(`En ${d.fr}, on peut dire : ${row.mot_arabe}.`);
   if (row.transliteration) answerLines.push(`Translittération : ${row.transliteration}.`);
@@ -216,6 +227,7 @@ function renderWordPage(row, group, kind) {
     .seo-kv{display:grid;grid-template-columns:140px 1fr;gap:10px 14px;margin-top:12px}
     .seo-kv .k{color:var(--muted);font-size:13px}
     .seo-kv .v{font-size:16px}
+    .seo-kv .missing{color:var(--muted);font-style:italic}
     .seo-kv .v.seo-ar{font-size:clamp(40px,7vw,72px);line-height:1.05;font-weight:950}
     .seo-tr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .seo-tr a{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--card);text-decoration:none;font-size:12px;white-space:nowrap}
@@ -252,8 +264,8 @@ function renderWordPage(row, group, kind) {
       <h1 class="seo-h1">${escapeHtml(h1)}</h1>
 
       <div class="seo-cta">
-        <a class="primary" href="/recherche/?q=${encodeURIComponent(qFr)}">Rechercher</a>
-        <a href="/contribuer/?q=${encodeURIComponent(qFr)}">Ajouter / corriger</a>
+        <a class="primary" href="/recherche/?q=${encodeURIComponent(qForSearch)}">Rechercher</a>
+        <a href="/contribuer/?q=${encodeURIComponent(qForSearch)}">Ajouter / corriger</a>
       </div>
 
       <div class="seo-kv">
@@ -266,8 +278,10 @@ function renderWordPage(row, group, kind) {
           <a href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
         </div>
 
-        ${row.fr ? `<div class="k" data-tr="fr">FR</div><div class="v" data-tr="fr">${escapeHtml(row.fr)}</div>` : ""}
-        ${row.en ? `<div class="k" data-tr="en">EN</div><div class="v" data-tr="en">${escapeHtml(row.en)}</div>` : ""}
+        <div class="k" data-tr="fr">Mot (français)</div>
+        <div class="v" data-tr="fr">${escapeHtml(row.fr || '—')}${row.fr ? '' : ' <span class="missing">(traduction manquante)</span>'}</div>
+
+        ${row.en ? `<div class="k" data-tr="en">Meaning (English)</div><div class="v" data-tr="en">${escapeHtml(row.en)}</div>` : ""}
         ${row.fu ? `<div class="k">Arabe classique</div><div class="v" dir="rtl">${escapeHtml(row.fu)}</div>` : ""}
         ${row.region ? `<div class="k">Région</div><div class="v">${escapeHtml(row.region)}</div>` : ""}
       </div>
