@@ -336,7 +336,8 @@ async function main() {
   // Precompute paths
   for (const r of rows) {
     const base = slugify(r.mot_arabe) || slugify(r.transliteration) || "mot";
-    const cc = (r.pays_code || "").toUpperCase() || "XX";
+    // use lowercase country suffix in SEO URLs: ...--ma/
+    const cc = (r.pays_code || "").toLowerCase() || "xx";
     r._motPath = `${base}--${cc}/index.html`;
 
     const q = slugify(r.fr || r.en || r.transliteration || r.mot_arabe || "mot");

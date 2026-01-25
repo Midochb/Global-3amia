@@ -249,13 +249,35 @@ function getIdFromUrl(){
   }
 }
 
+// Extract {slug, cc} from SEO path: /mot/<slug>--<cc>/
+function getSlugFromPath(){
+  try{
+    const path = window.location.pathname || "";
+    // supports: /mot/<slug>--<cc>/ or /mot/<slug>--<cc>
+    const m = path.match(/\/mot\/(.+?)(?:\/)?$/i);
+    if(!m) return null;
+    const last = (m[1] || "").trim();
+    if(!last || last === "index.html") return null;
+    // ignore the folder name "mot" itself
+    if(last.toLowerCase() === "mot") return null;
+    const parts = last.split("--");
+    if(parts.length < 2) return null;
+    const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
+    const cc = decodeURIComponent(parts[1] || "").toLowerCase().trim();
+    if(!slug || !cc) return null;
+    return { slug, cc };
+  }catch(e){
+    return null;
+  }
+}
+
 function parseId(id){
   // id is "slug--CC"
   const raw = (id || "").trim();
   if(!raw) return null;
   const parts = raw.split("--");
   const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
-  const cc = decodeURIComponent(parts[1] || "").toUpperCase().trim();
+  const cc = decodeURIComponent(parts[1] || "").toLowerCase().trim();
   if(!slug) return null;
   return { slug, cc };
 }
@@ -291,9 +313,10 @@ function buildWordUrl(row){
   const a = slugify(row.mot_arabe || "");
   const tr = slugify(row.transliteration || "");
   const base = a || tr || "mot";
-  const cc = (row.pays_code || "").toUpperCase().trim();
-  const id = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
-  return `/mot/?id=${id}`;
+  // lowercase country suffix in URLs: ...--ma/
+  const cc = (row.pays_code || "").toLowerCase().trim();
+  const slug = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
+  return `/mot/${slug}/`;
 }
 
 /* =====================
@@ -443,8 +466,9 @@ async function main(){
   initThemeToggle();
   applyI18nStatic();
 
+  // Prefer legacy query param (?id=...), fallback to SEO path (/mot/<slug>--<cc>/)
   const id = getIdFromUrl();
-  const route = parseId(id);
+  const route = id ? parseId(id) : getSlugFromPath();
   if(!route){
     showNotFound(null);
     return;

@@ -359,7 +359,8 @@ function buildHashForRow(row){
   const a = slugify(row.mot_arabe || "");
   const tr = slugify(row.transliteration || "");
   const base = a || tr || "mot";
-  const cc = (row.pays_code || "").toUpperCase().trim();
+  // keep country codes lowercase in URLs for consistency: ...--ma/
+  const cc = (row.pays_code || "").toLowerCase().trim();
   return `#mot=${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
 }
 
@@ -368,7 +369,8 @@ function buildIdForRow(row){
   const a = slugify(row.mot_arabe || "");
   const tr = slugify(row.transliteration || "");
   const base = a || tr || "mot";
-  const cc = (row.pays_code || "").toUpperCase().trim();
+  // keep country codes lowercase in URLs for consistency: ...--ma/
+  const cc = (row.pays_code || "").toLowerCase().trim();
   return `${base}--${cc}`;
 }
 
@@ -710,13 +712,14 @@ const updateSuggestions = debounce(() => {
   const out = scored.slice(0, MAX).map(({r, meaning}) => {
     const flag = isoToFlagEmoji(r.pays_code);
     return {
-      id: r.mot_id || "",
+      // slug id used by word pages: <slug>--<cc>
+      id: buildIdForRow(r),
       q: r.mot_arabe || r.transliteration || q,
       ar: r.mot_arabe || "",
       tr: r.transliteration || "",
       meaning: meaning || "",
       flag,
-      code: r.pays_code || ""
+      code: (r.pays_code || "").toLowerCase()
     };
   });
 
@@ -1033,10 +1036,9 @@ suggestionsEl?.addEventListener("click", (e) => {
   const btn = e.target?.closest?.('.suggestItem');
   if(!btn) return;
   const id = (btn.dataset.id || "").trim();
-  const cc = (btn.dataset.cc || "").trim();
-  if(id && cc){
-    // Keep the same URL style as cards for consistency
-    window.location.href = `/mot/?id=${encodeURIComponent(id)}--${encodeURIComponent(cc)}`;
+  // id is the slug id: <slug>--<cc>
+  if(id){
+    window.location.href = `/mot/${encodeURIComponent(id)}/`;
     return;
   }
   // Fallback: populate the search box and run a search
