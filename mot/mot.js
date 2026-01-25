@@ -39,63 +39,8 @@ const wTradsEl = document.getElementById("w_trads");
 const wKvEl = document.getElementById("w_kv");
 const wSuggestEl = document.getElementById("w_suggest");
 
-// Share-friendly hero (optional)
-const wordHeroEl = document.getElementById("wordHero");
-const heroTitleEl = document.getElementById("heroTitle");
-const heroSubEl = document.getElementById("heroSub");
-const heroChipEl = document.getElementById("heroChip");
-const countryFlagEl = document.getElementById("countryFlag");
-const countryIconEl = document.getElementById("countryIcon");
-
 const themeBtn = document.getElementById("themeToggle");
 const searchBtn = document.getElementById("searchBtn");
-
-/* =====================
-   SHARE THEME (per country)
-   ===================== */
-function countryIcon(cc){
-  const map = {
-    TN: "🌶️",  // Tunisie
-    MA: "🍊",  // Maroc
-    DZ: "🫒",  // Algérie
-    LY: "🐪",  // Libye
-    EG: "🏺",  // Egypte
-    LB: "🌲",  // Liban
-    SY: "🫒",  // Syrie
-    JO: "🏜️",  // Jordanie
-    IQ: "🏺",  // Irak
-    SD: "🌴",  // Soudan
-    SA: "🕋",  // Arabie Saoudite
-    AE: "🏙️",  // UAE
-    QA: "🏟️",  // Qatar
-    KW: "🛢️",  // Koweït
-    OM: "🕌",  // Oman
-    BH: "🛢️",  // Bahreïn
-  };
-  return map[cc] || "✨";
-}
-
-function countryPalette(cc){
-  const map = {
-    TN: { accent: "#E11D48", accent2: "#F59E0B" },
-    MA: { accent: "#DC2626", accent2: "#10B981" },
-    DZ: { accent: "#16A34A", accent2: "#FFFFFF" },
-    LY: { accent: "#16A34A", accent2: "#111827" },
-    EG: { accent: "#F59E0B", accent2: "#111827" },
-    LB: { accent: "#DC2626", accent2: "#16A34A" },
-    IQ: { accent: "#DC2626", accent2: "#16A34A" },
-    SD: { accent: "#F59E0B", accent2: "#16A34A" },
-  };
-  return map[cc] || { accent: "#60A5FA", accent2: "#A78BFA" };
-}
-
-function applyCountryTheme(cc){
-  if(!cc) return;
-  try { document.body.setAttribute("data-country", cc); } catch(e){}
-  const pal = countryPalette(cc);
-  document.documentElement.style.setProperty("--country-accent", pal.accent);
-  document.documentElement.style.setProperty("--country-accent2", pal.accent2);
-}
 
 /* =====================
    THEME (same logic)
@@ -298,21 +243,7 @@ function applyI18nStatic(){
 function getIdFromUrl(){
   try{
     const url = new URL(window.location.href);
-
-    // 1) Legacy querystring: /mot/?id=<slug>--tn
-    const q = (url.searchParams.get("id") || "").trim();
-    if(q) return q;
-
-    // 2) Pretty path: /mot/<slug>--tn/  (or /mot/<slug>--tn)
-    //    Also tolerates Netlify SPA fallback (same path but served by /mot/index.html)
-    const path = decodeURIComponent(url.pathname || "").trim();
-    // Grab last non-empty segment
-    const segs = path.split("/").filter(Boolean);
-    const last = segs[segs.length - 1] || "";
-    // Expected: <slug>--<cc>
-    if(last.includes("--")) return last;
-
-    return "";
+    return (url.searchParams.get("id") || "").trim();
   }catch(e){
     return "";
   }
@@ -323,10 +254,7 @@ function parseId(id){
   const raw = (id || "").trim();
   if(!raw) return null;
   const parts = raw.split("--");
-  // The URL slug may contain Arabic diacritics or be percent-encoded.
-  // Normalize it to the same slug format we compute from the dataset.
-  const slugRaw = decodeURIComponent(parts[0] || "").trim();
-  const slug = slugify(slugRaw);
+  const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
   const cc = decodeURIComponent(parts[1] || "").toUpperCase().trim();
   if(!slug) return null;
   return { slug, cc };
@@ -337,8 +265,6 @@ function slugify(s){
     .toString()
     .trim()
     .toLowerCase()
-    // Remove Arabic diacritics (tashkīl) + tatweel so URLs with vowels still match data.
-    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
     .replace(/-+/g, "-")
@@ -367,8 +293,7 @@ function buildWordUrl(row){
   const base = a || tr || "mot";
   const cc = (row.pays_code || "").toUpperCase().trim();
   const id = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
-  // Pretty URL (also used by the SEO static pages generator)
-  return `/mot/${id}/`;
+  return `/mot/?id=${id}`;
 }
 
 /* =====================
@@ -432,25 +357,7 @@ function safeDirRTL(ar){
 }
 
 function renderWord(row, rows, synIndex){
-  // Prefer meaning (French/EN) for share/screenshot readability
-  const trForTitle = getMeaningForLang(row);
-  const titleTerm = clean(trForTitle.value) || clean(row.transliteration) || clean(row.mot_arabe) || "Mot";
-  const dialectLabel = clean(row.dialecte_nom) || clean(row.pays_nom) || clean(row.pays_code) || "dialecte";
-  const isFR = (currentLang === "fr");
-  const pageTitle = isFR
-    ? `Comment dire « ${titleTerm} » en ${dialectLabel.toLowerCase()} ?`
-    : `How to say "${titleTerm}" in ${dialectLabel}?`;
-
-  document.title = `${pageTitle} — Zeedna 3amia`;
-
-  // Hero (if present)
-  if(heroTitleEl) heroTitleEl.textContent = pageTitle;
-  if(heroSubEl){
-    const subBits = [];
-    if(clean(row.mot_arabe)) subBits.push(`Mot (arabe) : ${row.mot_arabe}`);
-    if(clean(row.transliteration)) subBits.push(`Phonétique : ${row.transliteration}`);
-    heroSubEl.textContent = subBits.join(" • ");
-  }
+  document.title = `${row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
 
   if(wArEl) wArEl.innerHTML = safeDirRTL(row.mot_arabe || "—");
   if(wTrEl) wTrEl.textContent = row.transliteration || "";
@@ -535,14 +442,6 @@ function showNotFound(route){
 async function main(){
   initThemeToggle();
   applyI18nStatic();
-
-  // Optional: make the page "screenshot-ready" for socials
-  try{
-    const sp = new URLSearchParams(location.search);
-    if(sp.get("share") === "1" || sp.get("social") === "1"){
-      document.body.classList.add("share-mode");
-    }
-  }catch(_e){/* no-op */}
 
   const id = getIdFromUrl();
   const route = parseId(id);

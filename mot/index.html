@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zeedna 3amiat — Mot</title>
   <meta name="description" content="Zeedna 3amiat — dictionnaire collaboratif multi-dialectes arabes. Page mot avec traductions et suggestions." />
-  <link rel="stylesheet" href="../style.css" />
+  <base href="/" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
-<body class="word-page">
+<body>
   <header class="topbar">
     <a class="iconBtn home-btn" href="/" aria-label="Accueil" title="Accueil">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -27,28 +28,6 @@
   </header>
 
   <main class="container">
-
-    <!-- Share-friendly hero (good-looking screenshot for IG/TikTok previews) -->
-    <section class="word-hero" id="wordHero" aria-label="Word hero">
-      <div class="word-hero__top">
-        <div class="word-hero__badge" title="Pays / dialecte">
-          <span class="word-hero__flag" id="countryFlag" aria-hidden="true">🏳️</span>
-          <span class="word-hero__icon" id="countryIcon" aria-hidden="true">✨</span>
-        </div>
-        <a class="word-hero__cta" href="/add" aria-label="Ajouter / corriger">+ Add your word</a>
-      </div>
-
-      <h1 class="word-hero__title" id="heroTitle">
-        <!-- JS injects title -->
-      </h1>
-
-      <div class="word-hero__sub" id="heroSub">
-        <span id="heroDialect"></span>
-        <span class="word-hero__dot" aria-hidden="true">•</span>
-        <span id="heroRegion"></span>
-      </div>
-    </section>
-
     <section class="card" style="cursor:default;">
       <div id="wordStatus" class="status muted">Chargement…</div>
 
@@ -76,8 +55,8 @@
     </section>
   </main>
 
-  <script src="../utils.js"></script>
-  <script src="../synonyms.js"></script>
-  <script src="./mot.js"></script>
+  <script src="/utils.js"></script>
+  <script src="/synonyms.js"></script>
+  <script src="/mot/mot.js"></script>
 </body>
 </html>
