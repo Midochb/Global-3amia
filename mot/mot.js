@@ -337,6 +337,8 @@ function slugify(s){
     .toString()
     .trim()
     .toLowerCase()
+    // Remove Arabic diacritics (tashkīl) + tatweel so URLs with vowels still match data.
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "")
     .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
     .replace(/-+/g, "-")

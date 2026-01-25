@@ -342,7 +342,7 @@ async function main() {
     r._motPath = `${base}--${cc}/index.html`;
 
     const q = slugify(r.fr || r.en || r.transliteration || r.mot_arabe || "mot");
-    const d = DIALECT[cc] || { fr: cc.toLowerCase() };
+    const d = DIALECTS[cc] || { fr: cc.toLowerCase() };
     const dSlug = slugify(d.fr || cc);
     r._cdPath = `${q}-en-${dSlug}/index.html`;
   }

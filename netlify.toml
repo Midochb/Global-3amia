@@ -1,3 +1,17 @@
 [build]
   command = "npm run build"
   publish = "."
+
+# Force all dynamic word routes to use the dynamic renderer.
+# This avoids broken pre-generated pages when slugs / data mapping change.
+[[redirects]]
+  from = "/mot/*"
+  to = "/mot/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/comment-dire/*"
+  to = "/comment-dire/index.html"
+  status = 200
+  force = true
