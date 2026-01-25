@@ -323,7 +323,10 @@ function parseId(id){
   const raw = (id || "").trim();
   if(!raw) return null;
   const parts = raw.split("--");
-  const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
+  // The URL slug may contain Arabic diacritics or be percent-encoded.
+  // Normalize it to the same slug format we compute from the dataset.
+  const slugRaw = decodeURIComponent(parts[0] || "").trim();
+  const slug = slugify(slugRaw);
   const cc = decodeURIComponent(parts[1] || "").toUpperCase().trim();
   if(!slug) return null;
   return { slug, cc };
