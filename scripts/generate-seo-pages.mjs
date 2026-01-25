@@ -69,9 +69,27 @@ function escapeHtml(s) {
 }
 
 function pickRow(r) {
-  const mot_arabe = clean(r.mot_arabe);
-  const transliteration = clean(r.transliteration || r.phonetic || r.phonetique);
-  const fr = clean(r.sens_dialectal || r.sens_fr || r.traduction_fr || r.fr);
+  // NOTE: Apps Script may return raw column headers (e.g. "Français", "Arabe")
+  // while the client code may use normalized keys (fr, mot_arabe, etc.).
+  const mot_arabe = clean(r.mot_arabe || r.arabe || r.Arabe || r["Arabe"]);
+  const transliteration = clean(
+    r.transliteration || r.phonetic || r.phonetique || r.phonétique || r.Phonétique || r["Phonétique"]
+  );
+  // French concept/translation shown in the big header "Comment dire ..."
+  // Depending on the sheet, this can be stored under different headers.
+  const fr = clean(
+    r["Mot (français)"] ||
+    r["Mot (Francais)"] ||
+    r.mot_fr ||
+    r.mot_francais ||
+    r.francais ||
+    r["Français"] ||
+    r.Français ||
+    r.fr ||
+    r.sens_dialectal ||
+    r.sens_fr ||
+    r.traduction_fr
+  );
   const en = clean(r.traduction_eng || r.traduction_en || r.en);
   const nl = clean(r.traduction_nl || r.nl);
   const fu = clean(r.Fouss7a || r.fouss7a || r.fu);

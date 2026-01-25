@@ -331,7 +331,17 @@ function normalizeRow(r){
 
   const tr = clean(r.traduction);
 
-  let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
+  // French concept can be stored under various column headers (incl. accents)
+  let fr =
+    clean(r["Français"]) ||
+    clean(r["Francais"]) ||
+    clean(r["Mot (français)"]) ||
+    clean(r["Mot (francais)"]) ||
+    clean(r.mot_fr) ||
+    clean(r.mot_francais) ||
+    clean(r.traduction_fr) ||
+    clean(r.sens_dialectal) ||
+    clean(r.sens_fr);
   let en = clean(r.traduction_en) || clean(r.traduction_eng);
   const nl = "";
 
@@ -343,8 +353,16 @@ function normalizeRow(r){
 
   const obj = {
     mot_id: clean(r.mot_id),
-    mot_arabe: clean(r.mot_arabe),
-    transliteration: clean(r.transliteration),
+    // Dialect word (Arabic script)
+    mot_arabe: clean(r.mot_arabe) || clean(r["Arabe"]) || clean(r.Arabe) || clean(r["Mot (dialecte)"]),
+    // Latin/phonetic transliteration
+    transliteration:
+      clean(r.transliteration) ||
+      clean(r.phonetic) ||
+      clean(r.phonetique) ||
+      clean(r["Phonétique"]) ||
+      clean(r["Phonetique"]) ||
+      clean(r["VARIANTES_PHONETIQUES"]),
 
     concept_id: clean(r.concept_id),
 
@@ -380,7 +398,7 @@ function safeDirRTL(ar){
 }
 
 function renderWord(row, rows, synIndex){
-  document.title = `${row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
+  document.title = `${row.fr || row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
 
   if(wArEl) wArEl.innerHTML = safeDirRTL(row.mot_arabe || "—");
   if(wTrEl) wTrEl.textContent = row.transliteration || "";
