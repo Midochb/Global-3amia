@@ -193,12 +193,15 @@ const LANG = getPreferredLang();
 function getMeaningForLang(row){
   if(!row) return { label: "", value: "" };
 
-  if(LANG === "fr"){
-    const v = clean(row.fr);
+  // LANG can be "fr", "fr-FR", "en", "en-US", ... depending on browser/settings.
+  const base = (LANG || "fr").toLowerCase().slice(0, 2);
+
+  if(base === "fr"){
+    const v = clean(row.fr) || clean(row.traduction) || clean(row.translation);
     return { label: "FR", value: v };
   }
-  if(LANG === "en"){
-    const v = clean(row.en);
+  if(base === "en"){
+    const v = clean(row.en) || clean(row.translation);
     return { label: "EN", value: v };
   }
   // UI AR: pas de traduction FR/EN affichée
@@ -416,9 +419,16 @@ function normalizeRow(r){
   // Back-compat: some exports only have a generic "traduction".
   // If we have a generic translation and the targeted language field is empty,
   // use it as fallback (but never overwrite a real value).
+  const baseLang = (LANG || "fr").toLowerCase().slice(0, 2);
+
   if(tr){
-    if(!fr && LANG === "fr") fr = tr;
-    if(!en && LANG === "en") en = tr;
+    // In practice, Zeedna exports store the FR meaning in `traduction`.
+    // So always fall back to it for French.
+    if(!fr) fr = tr;
+
+    // If the current UI language is English and there is only a generic meaning,
+    // it's still better to show something than "manquante".
+    if(!en && baseLang === "en") en = tr;
     // If only one is present, mirror it so the fiche never says "manquante".
     if(!fr && en) fr = en;
     if(!en && fr) en = fr;
