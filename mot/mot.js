@@ -325,44 +325,137 @@ function buildWordUrl(row){
 
 function lower(s){ return (s || "").toString().toLowerCase(); }
 
+// --- Key-safe access --------------------------------------------------------
+// Our Apps Script / exports sometimes vary column names (accents, casing,
+// extra spaces, separators). This helper makes the word page resilient.
+function normKey(k){
+  return (k || "")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    // strip diacritics (works broadly)
+    .replace(/[\u0300-\u036f]+/g, '')
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
+
+function getField(row, aliases){
+  if(!row) return "";
+  // direct hits first
+  for(const a of aliases){
+    if(Object.prototype.hasOwnProperty.call(row, a)) return row[a];
+  }
+  // normalized lookup
+  const map = {};
+  for(const k of Object.keys(row)){
+    const nk = normKey(k);
+    if(nk && !(nk in map)) map[nk] = row[k];
+  }
+  for(const a of aliases){
+    const v = map[normKey(a)];
+    if(v !== undefined) return v;
+  }
+  return "";
+}
+
 function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  const tr = clean(r.traduction);
+  const tr = clean(getField(r, [
+    "traduction",
+    "Translation",
+    "translation",
+    "meaning",
+    "Meaning",
+    // some exports put the human text here
+    "Description",
+    "description",
+  ]));
 
   // French concept can be stored under various column headers (incl. accents)
-  let fr =
-    clean(r["Français"]) ||
-    clean(r["Francais"]) ||
-    clean(r["Mot (français)"]) ||
-    clean(r["Mot (francais)"]) ||
-    clean(r.mot_fr) ||
-    clean(r.mot_francais) ||
-    clean(r.traduction_fr) ||
-    clean(r.sens_dialectal) ||
-    clean(r.sens_fr);
-  let en = clean(r.traduction_en) || clean(r.traduction_eng);
+  let fr = clean(getField(r, [
+    "Mot (français)",
+    "Mot (francais)",
+    "Mot (français)",
+    "Mot (francais)",
+    "Mot (français)",
+    "Français",
+    "Francais",
+    "French",
+    "french",
+    "mot_fr",
+    "mot_francais",
+    "traduction_fr",
+    "sens_fr",
+    "sens_dialectal",
+    // some datasets expose the French concept as a generic label
+    "label_fr",
+    "label fr",
+    "label",
+    "Label",
+  ]));
+
+  let en = clean(getField(r, [
+    "traduction_en",
+    "traduction_eng",
+    "English",
+    "Anglais",
+    "translation_en",
+    "Description",
+    "description",
+    // some datasets expose the English concept as a label
+    "label_en",
+    "label en",
+    "label",
+    "Label",
+  ]));
   const nl = "";
 
+  // Back-compat: some exports only have a generic "traduction".
+  // If we have a generic translation and the targeted language field is empty,
+  // use it as fallback (but never overwrite a real value).
   if(tr){
-    if(LANG === "fr") fr = tr;
-    else if(LANG === "en") en = tr;
+    if(!fr && LANG === "fr") fr = tr;
+    if(!en && LANG === "en") en = tr;
+    // If only one is present, mirror it so the fiche never says "manquante".
+    if(!fr && en) fr = en;
+    if(!en && fr) en = fr;
+  } else {
+    if(!fr && en) fr = en;
+    if(!en && fr) en = fr;
   }
-  const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
+  const fu = clean(getField(r, [
+    "Arabe_classique",
+    "arabe_classique",
+    "Arabe classique",
+    "Fouss7a",
+    "fouss7a",
+    "Fous7a",
+    "Fous7a",
+  ]));
 
   const obj = {
     mot_id: clean(r.mot_id),
     // Dialect word (Arabic script)
-    mot_arabe: clean(r.mot_arabe) || clean(r["Arabe"]) || clean(r.Arabe) || clean(r["Mot (dialecte)"]),
+    mot_arabe: clean(getField(r, [
+      "mot_arabe",
+      "Arabe",
+      "arabe",
+      "Mot (dialecte)",
+      "mot_dialecte",
+    ])),
     // Latin/phonetic transliteration
     transliteration:
-      clean(r.transliteration) ||
-      clean(r.phonetic) ||
-      clean(r.phonetique) ||
-      clean(r["Phonétique"]) ||
-      clean(r["Phonetique"]) ||
-      clean(r["VARIANTES_PHONETIQUES"]),
+      clean(getField(r, [
+        "transliteration",
+        "phonetic",
+        "phonetique",
+        "Phonétique",
+        "Phonetique",
+        "VARIANTES_PHONETIQUES",
+      ])),
 
     concept_id: clean(r.concept_id),
 

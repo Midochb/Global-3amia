@@ -52,6 +52,33 @@ function norm(s) {
     .trim();
 }
 
+function normKey(k) {
+  return clean(k)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function getField(row, aliases) {
+  if (!row) return "";
+  // direct hit first
+  for (const a of aliases) {
+    if (a in row) return row[a];
+  }
+  // normalized key lookup
+  const map = {};
+  for (const k of Object.keys(row)) {
+    map[normKey(k)] = row[k];
+  }
+  for (const a of aliases) {
+    const v = map[normKey(a)];
+    if (v !== undefined) return v;
+  }
+  return "";
+}
+
 function slugify(s) {
   return norm(s)
     .replace(/[^a-z0-9\u0600-\u06FF]+/g, "-")
@@ -71,27 +98,19 @@ function escapeHtml(s) {
 function pickRow(r) {
   // NOTE: Apps Script may return raw column headers (e.g. "Français", "Arabe")
   // while the client code may use normalized keys (fr, mot_arabe, etc.).
-  const mot_arabe = clean(r.mot_arabe || r.arabe || r.Arabe || r["Arabe"]);
-  const transliteration = clean(
-    r.transliteration || r.phonetic || r.phonetique || r.phonétique || r.Phonétique || r["Phonétique"]
-  );
+  const mot_arabe = clean(getField(r, ["mot_arabe","arabe","Arabe","Arabe ","Mot (arabe)","mot (arabe)","ar","AR"]));
+  const transliteration = clean(getField(r, [
+    "transliteration","phonetic","phonetique","phonétique","Phonétique","Phonétique ","Phon",
+  ]));
   // French concept/translation shown in the big header "Comment dire ..."
   // Depending on the sheet, this can be stored under different headers.
-  const fr = clean(
-    r["Mot (français)"] ||
-    r["Mot (Francais)"] ||
-    r.mot_fr ||
-    r.mot_francais ||
-    r.francais ||
-    r["Français"] ||
-    r.Français ||
-    r.fr ||
-    r.sens_dialectal ||
-    r.sens_fr ||
-    r.traduction_fr
-  );
-  const en = clean(r.traduction_eng || r.traduction_en || r.en);
-  const nl = clean(r.traduction_nl || r.nl);
+  const fr = clean(getField(r, [
+    "Mot (français)","Mot (Francais)","mot_fr","mot_francais","francais","Français","Francais","fr","sens_dialectal","sens_fr","traduction_fr","label_fr","label",
+  ]));
+  const en = clean(getField(r, [
+    "traduction_eng","traduction_en","en","anglais","Anglais","English","Description","description","label_en",
+  ]));
+  const nl = clean(getField(r, ["traduction_nl","nl","dutch","nederlands"]));
   const fu = clean(r.Fouss7a || r.fouss7a || r.fu);
   const pays_code = clean(r.pays_code).toUpperCase();
   const region = clean(r.region);
