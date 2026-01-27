@@ -39,6 +39,15 @@ const wTradsEl = document.getElementById("w_trads");
 const wKvEl = document.getElementById("w_kv");
 const wSuggestEl = document.getElementById("w_suggest");
 
+// Social/share header (optional)
+const shareHeaderEl = document.getElementById("shareHeader");
+const shareFlagEl = document.getElementById("shareFlag");
+const shareIconEl = document.getElementById("shareIcon");
+const shareDialectEl = document.getElementById("shareDialect");
+const shareTitleEl = document.getElementById("shareTitle");
+const shareSubtitleEl = document.getElementById("shareSubtitle");
+const captureToggleEl = document.getElementById("captureToggle");
+
 const themeBtn = document.getElementById("themeToggle");
 const searchBtn = document.getElementById("searchBtn");
 
@@ -193,15 +202,12 @@ const LANG = getPreferredLang();
 function getMeaningForLang(row){
   if(!row) return { label: "", value: "" };
 
-  // LANG can be "fr", "fr-FR", "en", "en-US", ... depending on browser/settings.
-  const base = (LANG || "fr").toLowerCase().slice(0, 2);
-
-  if(base === "fr"){
-    const v = clean(row.fr) || clean(row.traduction) || clean(row.translation);
+  if(LANG === "fr"){
+    const v = clean(row.fr);
     return { label: "FR", value: v };
   }
-  if(base === "en"){
-    const v = clean(row.en) || clean(row.translation);
+  if(LANG === "en"){
+    const v = clean(row.en);
     return { label: "EN", value: v };
   }
   // UI AR: pas de traduction FR/EN affichée
@@ -252,35 +258,13 @@ function getIdFromUrl(){
   }
 }
 
-// Extract {slug, cc} from SEO path: /mot/<slug>--<cc>/
-function getSlugFromPath(){
-  try{
-    const path = window.location.pathname || "";
-    // supports: /mot/<slug>--<cc>/ or /mot/<slug>--<cc>
-    const m = path.match(/\/mot\/(.+?)(?:\/)?$/i);
-    if(!m) return null;
-    const last = (m[1] || "").trim();
-    if(!last || last === "index.html") return null;
-    // ignore the folder name "mot" itself
-    if(last.toLowerCase() === "mot") return null;
-    const parts = last.split("--");
-    if(parts.length < 2) return null;
-    const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
-    const cc = decodeURIComponent(parts[1] || "").toLowerCase().trim();
-    if(!slug || !cc) return null;
-    return { slug, cc };
-  }catch(e){
-    return null;
-  }
-}
-
 function parseId(id){
   // id is "slug--CC"
   const raw = (id || "").trim();
   if(!raw) return null;
   const parts = raw.split("--");
   const slug = decodeURIComponent(parts[0] || "").toLowerCase().trim();
-  const cc = decodeURIComponent(parts[1] || "").toLowerCase().trim();
+  const cc = decodeURIComponent(parts[1] || "").toUpperCase().trim();
   if(!slug) return null;
   return { slug, cc };
 }
@@ -316,10 +300,75 @@ function buildWordUrl(row){
   const a = slugify(row.mot_arabe || "");
   const tr = slugify(row.transliteration || "");
   const base = a || tr || "mot";
-  // lowercase country suffix in URLs: ...--ma/
-  const cc = (row.pays_code || "").toLowerCase().trim();
-  const slug = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
-  return `/mot/${slug}/`;
+  const cc = (row.pays_code || "").toUpperCase().trim();
+  const id = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
+  return `/mot/?id=${id}`;
+}
+
+/* =====================
+   Social / screenshot styling helpers
+   ===================== */
+
+const COUNTRY_STYLES = {
+  TN: { flag: "🇹🇳", icon: "🌶️", a1: "rgba(239,68,68,.82)", a2: "rgba(34,197,94,.55)", dialect: "tunisien" },
+  MA: { flag: "🇲🇦", icon: "🫖", a1: "rgba(220,38,38,.80)", a2: "rgba(16,185,129,.55)", dialect: "darija" },
+  DZ: { flag: "🇩🇿", icon: "🕌", a1: "rgba(34,197,94,.65)", a2: "rgba(239,68,68,.55)", dialect: "algérien" },
+  LY: { flag: "🇱🇾", icon: "🌙", a1: "rgba(16,185,129,.60)", a2: "rgba(59,130,246,.55)", dialect: "libyen" },
+  EG: { flag: "🇪🇬", icon: "🐫", a1: "rgba(245,158,11,.75)", a2: "rgba(59,130,246,.55)", dialect: "égyptien" },
+  LB: { flag: "🇱🇧", icon: "🌲", a1: "rgba(220,38,38,.80)", a2: "rgba(59,130,246,.55)", dialect: "libanais" },
+  SA: { flag: "🇸🇦", icon: "🕌", a1: "rgba(34,197,94,.65)", a2: "rgba(148,163,184,.45)", dialect: "khaliji" },
+  IQ: { flag: "🇮🇶", icon: "🏺", a1: "rgba(239,68,68,.70)", a2: "rgba(34,197,94,.45)", dialect: "irakien" },
+  SD: { flag: "🇸🇩", icon: "🌾", a1: "rgba(245,158,11,.70)", a2: "rgba(34,197,94,.45)", dialect: "soudanais" },
+};
+
+function getCountryStyle(cc){
+  const key = (cc || "").toUpperCase().trim();
+  if(COUNTRY_STYLES[key]) return COUNTRY_STYLES[key];
+  // Build a flag emoji from a 2-letter country code if possible
+  let flag = "🌍";
+  if(/^[A-Z]{2}$/.test(key)){
+    const A = 0x1F1E6; // regional indicator A
+    flag = String.fromCodePoint(A + (key.charCodeAt(0) - 65), A + (key.charCodeAt(1) - 65));
+  }
+  return { flag, icon: "✨", a1: "rgba(99,102,241,.75)", a2: "rgba(236,72,153,.45)", dialect: "dialecte" };
+}
+
+function applyShareHeader(row){
+  if(!shareHeaderEl) return;
+
+  const cc = (row.pays_code || "").toUpperCase().trim();
+  const st = getCountryStyle(cc);
+
+  // set per-page accents (used by CSS)
+  document.documentElement.style.setProperty("--z-accent-1", st.a1);
+  document.documentElement.style.setProperty("--z-accent-2", st.a2);
+  document.documentElement.style.setProperty("--z-accent-3", "rgba(148,163,184,.35)");
+
+  if(shareFlagEl) shareFlagEl.textContent = st.flag || "🌍";
+  if(shareIconEl) shareIconEl.textContent = st.icon || "✨";
+  if(shareDialectEl) shareDialectEl.textContent = `${st.dialect}${cc ? " · " + cc : ""}`;
+  if(shareBrandEl) shareBrandEl.textContent = "zeednalearn.com";
+
+  // Toggle capture mode: hides extra UI for clean screenshots
+  const url = new URL(window.location.href);
+  const captureOn = url.searchParams.get("capture") === "1";
+  document.body.classList.toggle("z-capture", captureOn);
+  if(shareCaptureBtnEl){
+    shareCaptureBtnEl.textContent = captureOn ? "✅" : "📸";
+    shareCaptureBtnEl.onclick = () => {
+      const u = new URL(window.location.href);
+      const now = u.searchParams.get("capture") === "1";
+      if(now) u.searchParams.delete("capture");
+      else u.searchParams.set("capture","1");
+      window.location.href = u.toString();
+    };
+  }
+
+  // Ensure the main card gets the proper class for the new background
+  const mainCard = document.querySelector(".card");
+  if(mainCard) mainCard.classList.add("z-social-card");
+
+  shareHeaderEl.style.display = "flex";
 }
 
 /* =====================
@@ -328,144 +377,26 @@ function buildWordUrl(row){
 
 function lower(s){ return (s || "").toString().toLowerCase(); }
 
-// --- Key-safe access --------------------------------------------------------
-// Our Apps Script / exports sometimes vary column names (accents, casing,
-// extra spaces, separators). This helper makes the word page resilient.
-function normKey(k){
-  return (k || "")
-    .toString()
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    // strip diacritics (works broadly)
-    .replace(/[\u0300-\u036f]+/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '');
-}
-
-function getField(row, aliases){
-  if(!row) return "";
-  // direct hits first
-  for(const a of aliases){
-    if(Object.prototype.hasOwnProperty.call(row, a)) return row[a];
-  }
-  // normalized lookup
-  const map = {};
-  for(const k of Object.keys(row)){
-    const nk = normKey(k);
-    if(nk && !(nk in map)) map[nk] = row[k];
-  }
-  for(const a of aliases){
-    const v = map[normKey(a)];
-    if(v !== undefined) return v;
-  }
-  return "";
-}
-
 function normalizeRow(r){
   const actifRaw = clean(r.actif);
   const actifBool = actifRaw === "" ? true : ["true","1","oui","vrai"].includes(lower(actifRaw));
 
-  const tr = clean(getField(r, [
-    "traduction",
-    "Translation",
-    "translation",
-    "meaning",
-    "Meaning",
-    // some exports put the human text here
-    "Description",
-    "description",
-  ]));
+  const tr = clean(r.traduction);
 
-  // French concept can be stored under various column headers (incl. accents)
-  let fr = clean(getField(r, [
-    "Mot (français)",
-    "Mot (francais)",
-    "Mot (français)",
-    "Mot (francais)",
-    "Mot (français)",
-    "Français",
-    "Francais",
-    "French",
-    "french",
-    "mot_fr",
-    "mot_francais",
-    "traduction_fr",
-    "sens_fr",
-    "sens_dialectal",
-    // some datasets expose the French concept as a generic label
-    "label_fr",
-    "label fr",
-    "label",
-    "Label",
-  ]));
-
-  let en = clean(getField(r, [
-    "traduction_en",
-    "traduction_eng",
-    "English",
-    "Anglais",
-    "translation_en",
-    "Description",
-    "description",
-    // some datasets expose the English concept as a label
-    "label_en",
-    "label en",
-    "label",
-    "Label",
-  ]));
+  let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
+  let en = clean(r.traduction_en) || clean(r.traduction_eng);
   const nl = "";
 
-  // Back-compat: some exports only have a generic "traduction".
-  // If we have a generic translation and the targeted language field is empty,
-  // use it as fallback (but never overwrite a real value).
-  const baseLang = (LANG || "fr").toLowerCase().slice(0, 2);
-
   if(tr){
-    // In practice, Zeedna exports store the FR meaning in `traduction`.
-    // So always fall back to it for French.
-    if(!fr) fr = tr;
-
-    // If the current UI language is English and there is only a generic meaning,
-    // it's still better to show something than "manquante".
-    if(!en && baseLang === "en") en = tr;
-    // If only one is present, mirror it so the fiche never says "manquante".
-    if(!fr && en) fr = en;
-    if(!en && fr) en = fr;
-  } else {
-    if(!fr && en) fr = en;
-    if(!en && fr) en = fr;
+    if(LANG === "fr") fr = tr;
+    else if(LANG === "en") en = tr;
   }
-  const fu = clean(getField(r, [
-    "Arabe_classique",
-    "arabe_classique",
-    "Arabe classique",
-    "Fouss7a",
-    "fouss7a",
-    "Fous7a",
-    "Fous7a",
-  ]));
+  const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 
   const obj = {
     mot_id: clean(r.mot_id),
-    // Dialect word (Arabic script)
-    mot_arabe: clean(getField(r, [
-      "mot_arabe",
-      "Arabe",
-      "arabe",
-      "Mot (dialecte)",
-      "mot_dialecte",
-    ])),
-    // Latin/phonetic transliteration
-    transliteration:
-      clean(getField(r, [
-        "transliteration",
-        "phonetic",
-        "phonetique",
-        "Phonétique",
-        "Phonetique",
-        "VARIANTES_PHONETIQUES",
-      ])),
+    mot_arabe: clean(r.mot_arabe),
+    transliteration: clean(r.transliteration),
 
     concept_id: clean(r.concept_id),
 
@@ -501,12 +432,15 @@ function safeDirRTL(ar){
 }
 
 function renderWord(row, rows, synIndex){
-  document.title = `${row.fr || row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
+  document.title = `${row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
 
   if(wArEl) wArEl.innerHTML = safeDirRTL(row.mot_arabe || "—");
   if(wTrEl) wTrEl.textContent = row.transliteration || "";
 
   const flag = isoToFlagEmoji(row.pays_code);
+
+  // Social header (optional) for screenshots / sharing
+  applyShareHeader(row);
 
   const lines = [];
   lines.push(`<div class="trad-line"><span class="tag">${flag}</span>${row.registre ? `<span class="small">${escapeHtml(row.registre)}</span>` : ""}</div>`);
@@ -587,9 +521,8 @@ async function main(){
   initThemeToggle();
   applyI18nStatic();
 
-  // Prefer legacy query param (?id=...), fallback to SEO path (/mot/<slug>--<cc>/)
   const id = getIdFromUrl();
-  const route = id ? parseId(id) : getSlugFromPath();
+  const route = parseId(id);
   if(!route){
     showNotFound(null);
     return;

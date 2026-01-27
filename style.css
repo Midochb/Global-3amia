@@ -902,3 +902,112 @@ a{ color:inherit; }
 }
 .lang-select:focus{ outline:none; box-shadow:0 0 0 3px rgba(140,170,255,.18); }
 html[dir="rtl"] .lang-select{ direction:ltr; }
+
+/* =========================================================
+   ZEEDNA — Social / Insta-ready word pages
+   ========================================================= */
+
+/* Container that becomes the share card */
+.z-social-card{
+  position: relative;
+  overflow: hidden;
+}
+
+/* Soft cultural background layers (colors set via CSS vars) */
+.z-social-card::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    radial-gradient(900px 500px at 10% 15%, var(--z-accent-1, rgba(255,255,255,.06)) 0%, transparent 55%),
+    radial-gradient(800px 450px at 90% 10%, var(--z-accent-2, rgba(255,255,255,.04)) 0%, transparent 60%),
+    radial-gradient(700px 450px at 60% 110%, var(--z-accent-3, rgba(255,255,255,.03)) 0%, transparent 60%);
+  opacity: .95;
+  pointer-events:none;
+}
+.z-social-card > *{ position: relative; z-index: 1; }
+
+.z-social-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: rgba(8, 10, 20, .28);
+  backdrop-filter: blur(10px);
+}
+
+.z-social-left{ display:flex; align-items:center; gap:10px; min-width:0; }
+.z-social-flag{
+  font-size: 20px;
+  width: 34px;
+  height: 34px;
+  display:grid;
+  place-items:center;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.z-social-icon{
+  font-size: 18px;
+  width: 34px;
+  height: 34px;
+  display:grid;
+  place-items:center;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.z-social-meta{ min-width:0; }
+.z-social-country{
+  font-weight: 750;
+  letter-spacing: .01em;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.z-social-dialect{
+  margin-top: 3px;
+  opacity: .85;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.z-social-actions{ display:flex; gap:8px; }
+.z-social-btn{
+  cursor:pointer;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-weight: 650;
+  font-size: 13px;
+}
+.z-social-btn:hover{ background: rgba(255,255,255,.09); }
+
+/* Capture mode: hide UI chrome + maximize card for screenshot */
+body.z-capture .nav,
+body.z-capture header,
+body.z-capture .topbar,
+body.z-capture .floating-actions,
+body.z-capture .chat-widget,
+body.z-capture .z-hide-in-capture{ display:none !important; }
+
+body.z-capture .z-social-card{
+  border-radius: 22px;
+}
+
+body.z-capture main{ padding-top: 10px !important; }
+
+@media (max-width: 520px){
+  .z-social-header{ padding: 10px 12px; border-radius: 14px; }
+  .z-social-country{ font-size: 14px; }
+  .z-social-dialect{ font-size: 12px; }
+}

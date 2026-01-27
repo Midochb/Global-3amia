@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Zeedna 3amiat — Mot</title>
   <meta name="description" content="Zeedna 3amiat — dictionnaire collaboratif multi-dialectes arabes. Page mot avec traductions et suggestions." />
-  <base href="/" />
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="../style.css" />
 </head>
 
 <body>
@@ -32,6 +31,17 @@
       <div id="wordStatus" class="status muted">Chargement…</div>
 
       <div id="wordView" style="display:none;">
+        <!-- Social header (optional): styled for screenshots / sharing -->
+        <div id="shareHeader" class="z-social-header" style="display:none;">
+          <div class="z-social-title" id="shareTitle">Comment dire ce mot&nbsp;?</div>
+          <div class="z-social-meta">
+            <span class="z-social-badge" id="shareDialect">Dialecte</span>
+            <span class="z-social-badge" id="shareCountry">Pays</span>
+            <span class="z-social-badge" id="shareIcon">✨</span>
+          </div>
+          <button id="captureToggle" class="z-social-capture" type="button" title="Mode capture (screenshot)">📸</button>
+        </div>
+
         <div id="w_ar" class="word-ar word-ar--page" dir="rtl"></div>
         <div class="tr-row" style="margin-bottom:12px;">
           <div class="muted" id="w_tr"></div>
@@ -55,8 +65,8 @@
     </section>
   </main>
 
-  <script src="/utils.js"></script>
-  <script src="/synonyms.js"></script>
-  <script src="/mot/mot.js"></script>
+  <script src="../utils.js"></script>
+  <script src="../synonyms.js"></script>
+  <script src="./mot.js"></script>
 </body>
 </html>
