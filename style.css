@@ -902,112 +902,129 @@ a{ color:inherit; }
 }
 .lang-select:focus{ outline:none; box-shadow:0 0 0 3px rgba(140,170,255,.18); }
 html[dir="rtl"] .lang-select{ direction:ltr; }
+/* ==============================
+   Zeedna Social / Insta Word Cards
+   Scope: only word pages (mot/*)
+   ============================== */
 
-/* =========================================================
-   ZEEDNA — Social / Insta-ready word pages
-   ========================================================= */
-
-/* Container that becomes the share card */
-.z-social-card{
-  position: relative;
-  overflow: hidden;
+body.page-word{
+  /* default theme (fallback) */
+  --zn-accent: rgba(167, 139, 250, 1);
+  --zn-accent2: rgba(96, 165, 250, 1);
+  --zn-accent-soft: rgba(167, 139, 250, .18);
+  --zn-accent-soft2: rgba(96, 165, 250, .14);
 }
 
-/* Soft cultural background layers (colors set via CSS vars) */
-.z-social-card::before{
+body.page-word.insta-word{
+  /* richer background for screenshots */
+  background:
+    radial-gradient(1000px 700px at 12% 18%, var(--zn-accent-soft), transparent 60%),
+    radial-gradient(900px 650px at 86% 22%, var(--zn-accent-soft2), transparent 55%),
+    radial-gradient(900px 650px at 75% 92%, rgba(0,0,0,.35), transparent 55%),
+    linear-gradient(135deg, rgba(10, 16, 34, 1), rgba(18, 10, 28, 1));
+}
+
+/* Make the word card look like a shareable "post" */
+body.page-word.insta-word .word-card{
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.14);
+  background:
+    radial-gradient(1200px 800px at 15% 0%, rgba(255,255,255,0.06), transparent 60%),
+    radial-gradient(800px 500px at 92% 10%, var(--zn-accent-soft2), transparent 55%),
+    linear-gradient(180deg, rgba(16, 20, 40, 0.78), rgba(10, 12, 25, 0.82));
+  box-shadow:
+    0 20px 70px rgba(0,0,0,0.48),
+    0 0 0 1px rgba(255,255,255,0.04) inset;
+}
+
+/* subtle pattern */
+body.page-word.insta-word .word-card::before{
   content:"";
   position:absolute;
   inset:-2px;
   background:
-    radial-gradient(900px 500px at 10% 15%, var(--z-accent-1, rgba(255,255,255,.06)) 0%, transparent 55%),
-    radial-gradient(800px 450px at 90% 10%, var(--z-accent-2, rgba(255,255,255,.04)) 0%, transparent 60%),
-    radial-gradient(700px 450px at 60% 110%, var(--z-accent-3, rgba(255,255,255,.03)) 0%, transparent 60%);
-  opacity: .95;
+    radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06), transparent 38%),
+    radial-gradient(circle at 78% 26%, rgba(255,255,255,0.05), transparent 40%),
+    radial-gradient(circle at 55% 86%, rgba(255,255,255,0.04), transparent 44%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.03) 1px, transparent 1px, transparent 14px);
+  opacity:.55;
   pointer-events:none;
 }
-.z-social-card > *{ position: relative; z-index: 1; }
 
-.z-social-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:12px 14px;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px;
-  background: rgba(8, 10, 20, .28);
-  backdrop-filter: blur(10px);
+/* top accent strip */
+body.page-word.insta-word .word-card::after{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:6px;
+  background: linear-gradient(90deg, var(--zn-accent), var(--zn-accent2));
+  opacity:.85;
+  pointer-events:none;
 }
 
-.z-social-left{ display:flex; align-items:center; gap:10px; min-width:0; }
-.z-social-flag{
-  font-size: 20px;
-  width: 34px;
-  height: 34px;
-  display:grid;
-  place-items:center;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-}
-.z-social-icon{
-  font-size: 18px;
-  width: 34px;
-  height: 34px;
-  display:grid;
-  place-items:center;
-  border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
+/* hero area */
+body.page-word.insta-word .word-hero{
+  padding: 34px 34px 22px;
 }
 
-.z-social-meta{ min-width:0; }
-.z-social-country{
-  font-weight: 750;
-  letter-spacing: .01em;
+body.page-word.insta-word .word-hero-title{
+  font-size: clamp(34px, 5vw, 54px);
+  letter-spacing: -0.02em;
   line-height: 1.05;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.z-social-dialect{
-  margin-top: 3px;
-  opacity: .85;
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.z-social-actions{ display:flex; gap:8px; }
-.z-social-btn{
-  cursor:pointer;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: inherit;
-  padding: 8px 10px;
-  border-radius: 12px;
-  font-weight: 650;
-  font-size: 13px;
-}
-.z-social-btn:hover{ background: rgba(255,255,255,.09); }
-
-/* Capture mode: hide UI chrome + maximize card for screenshot */
-body.z-capture .nav,
-body.z-capture header,
-body.z-capture .topbar,
-body.z-capture .floating-actions,
-body.z-capture .chat-widget,
-body.z-capture .z-hide-in-capture{ display:none !important; }
-
-body.z-capture .z-social-card{
-  border-radius: 22px;
+body.page-word.insta-word .word-hero-title .quote{
+  opacity: .9;
 }
 
-body.z-capture main{ padding-top: 10px !important; }
+/* badge chips become share-friendly */
+body.page-word.insta-word .word-hero-badge{
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  padding: 10px 14px;
+  border-radius: 999px;
+}
 
-@media (max-width: 520px){
-  .z-social-header{ padding: 10px 12px; border-radius: 14px; }
-  .z-social-country{ font-size: 14px; }
-  .z-social-dialect{ font-size: 12px; }
+/* rows */
+body.page-word.insta-word .row{
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(10, 14, 30, 0.36);
+}
+
+body.page-word.insta-word .label{
+  color: rgba(255,255,255,0.70);
+  font-weight: 800;
+}
+
+body.page-word.insta-word .value{
+  color: rgba(255,255,255,0.95);
+}
+
+/* highlight French translation row */
+body.page-word.insta-word .row.row-translation{
+  border-color: rgba(255,255,255,0.16);
+  background:
+    radial-gradient(900px 420px at 0% 0%, var(--zn-accent-soft), transparent 55%),
+    rgba(10, 14, 30, 0.44);
+}
+
+body.page-word.insta-word .row.row-translation .value{
+  font-size: 18px;
+  font-weight: 900;
+}
+
+/* make Arabic word more "poster" like */
+body.page-word.insta-word .word-main-ar{
+  font-size: clamp(44px, 5.6vw, 86px);
+  text-shadow: 0 18px 50px rgba(0,0,0,0.55);
+}
+
+/* Footer buttons align better on mobile for screenshots */
+@media (max-width: 720px){
+  body.page-word.insta-word .word-hero{ padding: 22px 18px 14px; }
+  body.page-word.insta-word .word-card{ border-radius: 22px; }
+  body.page-word.insta-word .word-hero-title{ font-size: 36px; }
+  body.page-word.insta-word .word-main-ar{ font-size: 56px; }
 }
