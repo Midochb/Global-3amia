@@ -3,9 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!--
+    IMPORTANT:
+    This file may be served as a fallback for unknown /mot/<slug>/ routes.
+    Without a base href + absolute asset URLs, the browser resolves ../style.css,
+    ../app.js, etc. against /mot/<slug>/ and CSS/JS won't load (white page, huge icons).
+  -->
+  <base href="/" />
   <title>Zeedna 3amiat — Mot</title>
   <meta name="description" content="Zeedna 3amiat — dictionnaire collaboratif multi-dialectes arabes. Page mot avec traductions et suggestions." />
-  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="/style.css" />
 </head>
 
 <body>
@@ -65,8 +72,8 @@
     </section>
   </main>
 
-  <script src="../utils.js"></script>
-  <script src="../synonyms.js"></script>
-  <script src="./mot.js"></script>
+  <script src="/utils.js"></script>
+  <script src="/synonyms.js"></script>
+  <script src="/mot.js"></script>
 </body>
 </html>

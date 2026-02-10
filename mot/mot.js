@@ -39,15 +39,6 @@ const wTradsEl = document.getElementById("w_trads");
 const wKvEl = document.getElementById("w_kv");
 const wSuggestEl = document.getElementById("w_suggest");
 
-// Social/share header (optional)
-const shareHeaderEl = document.getElementById("shareHeader");
-const shareFlagEl = document.getElementById("shareFlag");
-const shareIconEl = document.getElementById("shareIcon");
-const shareDialectEl = document.getElementById("shareDialect");
-const shareTitleEl = document.getElementById("shareTitle");
-const shareSubtitleEl = document.getElementById("shareSubtitle");
-const captureToggleEl = document.getElementById("captureToggle");
-
 const themeBtn = document.getElementById("themeToggle");
 const searchBtn = document.getElementById("searchBtn");
 
@@ -306,72 +297,6 @@ function buildWordUrl(row){
 }
 
 /* =====================
-   Social / screenshot styling helpers
-   ===================== */
-
-const COUNTRY_STYLES = {
-  TN: { flag: "🇹🇳", icon: "🌶️", a1: "rgba(239,68,68,.82)", a2: "rgba(34,197,94,.55)", dialect: "tunisien" },
-  MA: { flag: "🇲🇦", icon: "🫖", a1: "rgba(220,38,38,.80)", a2: "rgba(16,185,129,.55)", dialect: "darija" },
-  DZ: { flag: "🇩🇿", icon: "🕌", a1: "rgba(34,197,94,.65)", a2: "rgba(239,68,68,.55)", dialect: "algérien" },
-  LY: { flag: "🇱🇾", icon: "🌙", a1: "rgba(16,185,129,.60)", a2: "rgba(59,130,246,.55)", dialect: "libyen" },
-  EG: { flag: "🇪🇬", icon: "🐫", a1: "rgba(245,158,11,.75)", a2: "rgba(59,130,246,.55)", dialect: "égyptien" },
-  LB: { flag: "🇱🇧", icon: "🌲", a1: "rgba(220,38,38,.80)", a2: "rgba(59,130,246,.55)", dialect: "libanais" },
-  SA: { flag: "🇸🇦", icon: "🕌", a1: "rgba(34,197,94,.65)", a2: "rgba(148,163,184,.45)", dialect: "khaliji" },
-  IQ: { flag: "🇮🇶", icon: "🏺", a1: "rgba(239,68,68,.70)", a2: "rgba(34,197,94,.45)", dialect: "irakien" },
-  SD: { flag: "🇸🇩", icon: "🌾", a1: "rgba(245,158,11,.70)", a2: "rgba(34,197,94,.45)", dialect: "soudanais" },
-};
-
-function getCountryStyle(cc){
-  const key = (cc || "").toUpperCase().trim();
-  if(COUNTRY_STYLES[key]) return COUNTRY_STYLES[key];
-  // Build a flag emoji from a 2-letter country code if possible
-  let flag = "🌍";
-  if(/^[A-Z]{2}$/.test(key)){
-    const A = 0x1F1E6; // regional indicator A
-    flag = String.fromCodePoint(A + (key.charCodeAt(0) - 65), A + (key.charCodeAt(1) - 65));
-  }
-  return { flag, icon: "✨", a1: "rgba(99,102,241,.75)", a2: "rgba(236,72,153,.45)", dialect: "dialecte" };
-}
-
-function applyShareHeader(row){
-  if(!shareHeaderEl) return;
-
-  const cc = (row.pays_code || "").toUpperCase().trim();
-  const st = getCountryStyle(cc);
-
-  // set per-page accents (used by CSS)
-  document.documentElement.style.setProperty("--z-accent-1", st.a1);
-  document.documentElement.style.setProperty("--z-accent-2", st.a2);
-  document.documentElement.style.setProperty("--z-accent-3", "rgba(148,163,184,.35)");
-
-  if(shareFlagEl) shareFlagEl.textContent = st.flag || "🌍";
-  if(shareIconEl) shareIconEl.textContent = st.icon || "✨";
-  if(shareDialectEl) shareDialectEl.textContent = `${st.dialect}${cc ? " · " + cc : ""}`;
-  if(shareBrandEl) shareBrandEl.textContent = "zeednalearn.com";
-
-  // Toggle capture mode: hides extra UI for clean screenshots
-  const url = new URL(window.location.href);
-  const captureOn = url.searchParams.get("capture") === "1";
-  document.body.classList.toggle("z-capture", captureOn);
-  if(shareCaptureBtnEl){
-    shareCaptureBtnEl.textContent = captureOn ? "✅" : "📸";
-    shareCaptureBtnEl.onclick = () => {
-      const u = new URL(window.location.href);
-      const now = u.searchParams.get("capture") === "1";
-      if(now) u.searchParams.delete("capture");
-      else u.searchParams.set("capture","1");
-      window.location.href = u.toString();
-    };
-  }
-
-  // Ensure the main card gets the proper class for the new background
-  const mainCard = document.querySelector(".card");
-  if(mainCard) mainCard.classList.add("z-social-card");
-
-  shareHeaderEl.style.display = "flex";
-}
-
-/* =====================
    Data normalize
    ===================== */
 
@@ -431,16 +356,53 @@ function safeDirRTL(ar){
   return `<span dir="rtl" style="direction:rtl; unicode-bidi:plaintext;">${escapeHtml(ar)}</span>`;
 }
 
+
+
+// --- Social / Insta card theming (country accents) ---
+const COUNTRY_THEMES = {
+  TN: { flag: '🇹🇳', symbol: '🌶️', accent: 'rgba(231, 0, 19, 1)', accent2: 'rgba(255, 193, 7, 1)' },
+  MA: { flag: '🇲🇦', symbol: '🌿', accent: 'rgba(198, 12, 48, 1)', accent2: 'rgba(0, 98, 51, 1)' },
+  DZ: { flag: '🇩🇿', symbol: '🫒', accent: 'rgba(0, 122, 61, 1)', accent2: 'rgba(220, 20, 60, 1)' },
+  EG: { flag: '🇪🇬', symbol: '🏺', accent: 'rgba(206, 17, 38, 1)', accent2: 'rgba(0, 0, 0, 1)' },
+  LB: { flag: '🇱🇧', symbol: '🌲', accent: 'rgba(237, 28, 36, 1)', accent2: 'rgba(0, 150, 57, 1)' },
+  IQ: { flag: '🇮🇶', symbol: '🗿', accent: 'rgba(206, 17, 38, 1)', accent2: 'rgba(0, 122, 61, 1)' },
+  SD: { flag: '🇸🇩', symbol: '🌊', accent: 'rgba(206, 17, 38, 1)', accent2: 'rgba(0, 122, 61, 1)' },
+};
+
+function applyInstaThemeFromRow(row){
+  try {
+    const code = (row?.pays_code || row?.country_code || '').toString().trim().toUpperCase();
+    const theme = COUNTRY_THEMES[code] || { flag: '🌍', symbol: '✨', accent: 'rgba(167, 139, 250, 1)', accent2: 'rgba(96, 165, 250, 1)' };
+
+    document.body.classList.add('page-word', 'insta-word');
+
+    // CSS variables
+    document.body.style.setProperty('--zn-accent', theme.accent);
+    document.body.style.setProperty('--zn-accent2', theme.accent2);
+    document.body.style.setProperty('--zn-accent-soft', theme.accent.replace(', 1)', ', .18)'));
+    document.body.style.setProperty('--zn-accent-soft2', theme.accent2.replace(', 1)', ', .14)'));
+
+    // Update the small badges in the header card (if present)
+    const badges = document.querySelectorAll('.word-hero-badge');
+    if (badges && badges.length >= 2){
+      badges[0].textContent = theme.flag;
+      badges[1].textContent = theme.symbol;
+    }
+  } catch(e) {
+    // never block rendering
+    console.warn('Theme error:', e);
+  }
+}
 function renderWord(row, rows, synIndex){
   document.title = `${row.mot_arabe || row.transliteration || "Mot"} — Zeedna 3amiat`;
+
+  // Social / Insta theming (colors + badges)
+  applyInstaThemeFromRow(row);
 
   if(wArEl) wArEl.innerHTML = safeDirRTL(row.mot_arabe || "—");
   if(wTrEl) wTrEl.textContent = row.transliteration || "";
 
   const flag = isoToFlagEmoji(row.pays_code);
-
-  // Social header (optional) for screenshots / sharing
-  applyShareHeader(row);
 
   const lines = [];
   lines.push(`<div class="trad-line"><span class="tag">${flag}</span>${row.registre ? `<span class="small">${escapeHtml(row.registre)}</span>` : ""}</div>`);

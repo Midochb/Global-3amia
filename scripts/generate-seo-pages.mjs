@@ -105,14 +105,7 @@ function pickRow(r) {
   // French concept/translation shown in the big header "Comment dire ..."
   // Depending on the sheet, this can be stored under different headers.
   const fr = clean(getField(r, [
-    // Current Zeedna exports
-    "traduction","Traduction",
-
-    // Legacy / alternate headers
-    "Mot (français)","Mot (Francais)","mot_fr","mot_francais","francais","Français","Francais","fr",
-    "sens_dialectal","sens_fr","traduction_fr","label_fr","label",
-    // Sometimes English key is used for French meaning
-    "translation",
+    "Mot (français)","Mot (Francais)","mot_fr","mot_francais","francais","Français","Francais","fr","sens_dialectal","sens_fr","traduction_fr","label_fr","label",
   ]));
   const en = clean(getField(r, [
     "traduction_eng","traduction_en","en","anglais","Anglais","English","Description","description","label_en",
