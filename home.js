@@ -18,7 +18,20 @@ const I18N_HOME = {
     home_cta_search: 'Commence à chercher',
     home_cta_contribute: 'Ajoute ton mot',
     home_tr_help_link: 'Comment lire la translittération ?',
-    home_note: 'Idée de départ: faciliter la compréhension du monde arabe, surtout pour celles et ceux nés à l\'extérieur qui veulent (re)découvrir leurs racines et les bases de l’arabe classique.',
+    home_note: "Je vous mets à disposition l’ensemble de mes notes d’apprentissage. L’arabe n’est pas un long fleuve tranquille : il peut y avoir des erreurs ou des approximations. Si c’est le cas, proposez votre version en appuyant sur ‘Ajouter / corriger’ dans les fiches (≈ 30 secondes).",
+
+    // New: story + roadmap
+    home_story_title: "Un projet simple, humain, et utile",
+    home_story_p1: "J’ai appris l’arabe avec plein de ressources… mais c’était souvent difficile de faire le lien entre arabe classique, dialectes et mots réellement utilisés.",
+    home_story_p2: "Du coup, je partage ici mes notes, comme un carnet d’apprentissage ouvert. L’idée n’est pas de ‘faire un business agressif’, mais de construire une ressource vraie, qualitative, et qui s’améliore petit à petit.",
+    home_story_p3: "Vous pouvez trouver des erreurs ou des approximations : dans ce cas, cliquez sur ‘Ajouter / corriger’ dans la fiche pour proposer votre version.",
+
+    home_roadmap_title: "À venir (progressivement)",
+    home_roadmap_desc: "Zeedna 3amia est le premier module. D’autres ‘Zeedna’ arriveront ensuite, quand ce module sera solide.",
+    home_roadmap_item1: "Zeedna English (anglais)",
+    home_roadmap_item2: "Zeedna Hollandais (néerlandais)",
+    home_roadmap_item3: "Zeedna Español (espagnol)",
+
     home_how_title: 'Comment ça marche',
     home_step1_title: 'Cherche un mot',
     home_step1_desc: 'Écris en arabe, en translit, ou en FR/EN/NL/DE. Tu vois des suggestions au fur et à mesure.',
@@ -40,6 +53,18 @@ const I18N_HOME = {
     home_cta_contribute: 'Add your word',
     home_tr_help_link: 'How to read transliteration?',
     home_note: 'Starting point: make Arabic dialect understanding easier, especially for people born abroad who want to reconnect with their roots and learn the basics of Classical Arabic.',
+
+    // New: story + roadmap
+    home_story_title: "A simple, human, useful project",
+    home_story_p1: "I learned Arabic using lots of resources… but it was often hard to connect MSA, dialects, and the words people actually use.",
+    home_story_p2: "So I’m sharing my notes as an open learning notebook. The goal isn’t ‘aggressive monetization’, it’s building a true, high‑quality resource that improves step by step.",
+    home_story_p3: "If you spot mistakes or approximations, click on ‘Add / fix’ on the word page to suggest your version.",
+
+    home_roadmap_title: "Coming next (gradually)",
+    home_roadmap_desc: "Zeedna 3amia is the first module. More ‘Zeedna’ modules will come once this one is solid.",
+    home_roadmap_item1: "Zeedna English",
+    home_roadmap_item2: "Zeedna Dutch",
+    home_roadmap_item3: "Zeedna Spanish",
     home_how_title: 'How it works',
     home_step1_title: 'Search a word',
     home_step1_desc: 'Type Arabic, transliteration, or FR/EN/NL/DE. Suggestions appear as you type.',

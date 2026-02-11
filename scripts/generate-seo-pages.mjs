@@ -52,6 +52,39 @@ function norm(s) {
     .trim();
 }
 
+// A translation can contain multiple equivalents (commas, slashes, parentheses...).
+// To improve "other dialect" suggestions, we allow a row to belong to multiple
+// meaning groups by splitting the translation into tokens.
+function meaningKeys(meaning) {
+  const raw = clean(meaning);
+  if (!raw) return [];
+  const stripped = raw
+    .replace(/\([^)]*\)/g, " ") // remove parenthetical notes
+    .replace(/\[[^\]]*\]/g, " ");
+
+  const parts = stripped
+    .split(/[,;\n\r\t\/|]+/g)
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const out = [];
+  const seen = new Set();
+  for (const p of parts) {
+    const k = norm(p);
+    if (!k || k.length < 2) continue;
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(k);
+  }
+
+  // Fallback: if splitting removed everything, keep the whole thing.
+  if (out.length === 0) {
+    const k = norm(raw);
+    if (k) out.push(k);
+  }
+  return out;
+}
+
 function normKey(k) {
   return clean(k)
     .toLowerCase()
@@ -397,17 +430,29 @@ async function main() {
     r._cdPath = `${q}-en-${dSlug}/index.html`;
   }
 
-  // Group by FR meaning (normalized)
+  // Group by meaning keys (normalized). We allow one row to belong to multiple groups
+  // (e.g. "aussi / également" -> keys: ["aussi", "egalement"]).
   const groups = new Map();
   for (const r of rows) {
-    const k = norm(r.fr || r.en || "");
-    if (!k) continue;
-    if (!groups.has(k)) groups.set(k, []);
-    groups.get(k).push(r);
+    const keys = meaningKeys(r.fr || r.en || "");
+    for (const k of keys) {
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(r);
+    }
   }
   for (const [k, arr] of groups) {
+    // de-duplicate (same row may be pushed multiple times if the translation repeats)
+    const seen = new Set();
+    const dedup = [];
+    for (const r of arr) {
+      const id = r.mot_id || `${r.mot_arabe}::${r.pays_code}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      dedup.push(r);
+    }
     // stable order
-    arr.sort((a,b) => (a.pays_code || "").localeCompare(b.pays_code || ""));
+    dedup.sort((a,b) => (a.pays_code || "").localeCompare(b.pays_code || "") || (a.mot_arabe || "").localeCompare(b.mot_arabe || ""));
+    groups.set(k, dedup);
   }
 
   // Output dirs
@@ -433,7 +478,8 @@ async function main() {
   const addUrl = (u) => { if (u) urls.add(u); };
 
   for (const r of rows) {
-    const g = groups.get(norm(r.fr || r.en || "")) || [];
+    const primaryKey = meaningKeys(r.fr || r.en || "")[0] || norm(r.fr || r.en || "");
+    const g = groups.get(primaryKey) || [];
 
     // /mot/<slug>--<CC>/index.html
     const outMotDir = path.join(process.cwd(), "mot", r._motPath.replace(/\/index\.html$/, ""));
