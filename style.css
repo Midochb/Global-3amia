@@ -1032,3 +1032,82 @@ body.page-word.insta-word .word-main-ar{
 /* Home: roadmap pills */
 .pillRow{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .pill{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-weight:700}
+
+/* =============================
+   Home page (readable sections)
+   ============================= */
+
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  font-size:0.9rem;
+}
+
+.panel-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.panel-head h2{margin:0;}
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0,1fr));
+  gap:12px;
+}
+
+.mini-card{
+  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.05);
+  border-radius:14px;
+  padding:14px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.25);
+}
+
+.mini-card h3{margin:0 0 6px 0; font-size:1.02rem;}
+.mini-card p{margin:0; color:rgba(255,255,255,0.82);}
+
+.steps-list{margin:10px 0 0 0; padding-left:18px;}
+.steps-list li{margin:6px 0;}
+
+.inline-link{color:inherit; text-decoration:underline; text-decoration-color:rgba(255,255,255,0.35);} 
+.inline-link:hover{text-decoration-color:rgba(255,255,255,0.7);} 
+
+.contact-box{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.contact-email{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.06);
+  font-weight:600;
+}
+
+@media (max-width: 900px){
+  .grid-3{grid-template-columns:1fr;}
+  .panel-head{flex-direction:column; align-items:flex-start;}
+}
