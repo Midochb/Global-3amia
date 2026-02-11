@@ -193,12 +193,16 @@ const LANG = getPreferredLang();
 function getMeaningForLang(row){
   if(!row) return { label: "", value: "" };
 
+  // Extra fallbacks (legacy keys)
+  const frVal = clean(row.fr) || clean(row.traduction_fr) || clean(row.traduction);
+  const enVal = clean(row.en) || clean(row.translation) || clean(row.traduction_en) || clean(row.traduction_eng);
+
   if(LANG === "fr"){
-    const v = clean(row.fr);
+    const v = frVal;
     return { label: "FR", value: v };
   }
   if(LANG === "en"){
-    const v = clean(row.en);
+    const v = enVal || frVal;
     return { label: "EN", value: v };
   }
   // UI AR: pas de traduction FR/EN affichée
@@ -288,12 +292,12 @@ function findRowById(route, rows){
 }
 
 function buildWordUrl(row){
+  // Pretty URLs (same format as generated SEO pages)
   const a = slugify(row.mot_arabe || "");
   const tr = slugify(row.transliteration || "");
   const base = a || tr || "mot";
   const cc = (row.pays_code || "").toUpperCase().trim();
-  const id = `${encodeURIComponent(base)}--${encodeURIComponent(cc)}`;
-  return `/mot/?id=${id}`;
+  return `/mot/${encodeURIComponent(base)}--${encodeURIComponent(cc)}/`;
 }
 
 /* =====================
@@ -309,12 +313,18 @@ function normalizeRow(r){
   const tr = clean(r.traduction);
 
   let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
-  let en = clean(r.traduction_en) || clean(r.traduction_eng);
+  let en = clean(r.en) || clean(r.translation) || clean(r.traduction_en) || clean(r.traduction_eng);
   const nl = "";
 
+  // Backward compatibility: many datasets store the French meaning in `traduction`.
+  // We should NOT depend on the browser language to fill `fr`.
+  // Rule:
+  // - `traduction_fr` wins for FR
+  // - otherwise `traduction` is treated as FR meaning
+  // - if EN is missing but a translation exists, we also reuse it as a fallback
   if(tr){
-    if(LANG === "fr") fr = tr;
-    else if(LANG === "en") en = tr;
+    if(!fr) fr = tr;
+    if(!en && LANG === "en") en = tr; // keep EN UX for English UI
   }
   const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 

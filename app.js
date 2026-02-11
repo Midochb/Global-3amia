@@ -531,13 +531,15 @@ function normalizeRow(r){
 
   const tr = clean(r.traduction);
 
-  let fr = clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
-  let en = clean(r.traduction_en) || clean(r.traduction_eng);
+  let fr = clean(r.fr) || clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
+  let en = clean(r.en) || clean(r.translation) || clean(r.traduction_en) || clean(r.traduction_eng);
   const nl = "";
 
+  // Backward compatibility: many exports store the FR meaning in `traduction`.
+  // Do not rely on browser/UI language to fill FR.
   if(tr){
-    if(LANG === "fr") fr = tr;
-    else if(LANG === "en") en = tr;
+    if(!fr) fr = tr;
+    if(!en && LANG === "en") en = tr;
   }
   const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 

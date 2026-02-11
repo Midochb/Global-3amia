@@ -137,8 +137,9 @@ function pickRow(r) {
   ]));
   // French concept/translation shown in the big header "Comment dire ..."
   // Depending on the sheet, this can be stored under different headers.
+  // Many datasets (and older exports) store the FR meaning in `traduction`.
   const fr = clean(getField(r, [
-    "Mot (français)","Mot (Francais)","mot_fr","mot_francais","francais","Français","Francais","fr","sens_dialectal","sens_fr","traduction_fr","label_fr","label",
+    "Mot (français)","Mot (Francais)","mot_fr","mot_francais","francais","Français","Francais","fr","sens_dialectal","sens_fr","traduction_fr","traduction","label_fr","label",
   ]));
   const en = clean(getField(r, [
     "traduction_eng","traduction_en","en","anglais","Anglais","English","Description","description","label_en",
