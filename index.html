@@ -1,159 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zeedna 3amia – Dictionnaire collaboratif des dialectes arabes</title>
-  <meta name="description" content="Compare les dialectes arabes, propose ta variante, et contribue en 30 secondes. Zeedna 3amia : dialecte ↔ arabe classique ↔ traduction." />
-  <link rel="icon" href="/assets_logo_icon.png" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeedna 3amia</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="/">
-      <img src="/assets_logo_icon.png" alt="Zeedna" class="brand-icon" />
-      <span class="brand-name">Zeedna</span>
-    </a>
 
-    <nav class="top-actions">
-      <div id="langSwitcher" class="lang-switcher" aria-label="Language"></div>
-      <a class="btn" href="/recherche/" data-i18n="nav_search">Rechercher</a>
-      <a class="btn primary" href="/contribuer/" data-i18n="nav_add">+ Add your word</a>
-    </nav>
-  </header>
+<header class="topbar">
+<a href="/" class="home-link">🏠</a>
+<a href="/contribute.html" class="btn-add">+ Ajoute ton mot</a>
+</header>
 
-  <main class="container">
-    <header class="hero">
-      <h1 data-i18n="home_title">Zeedna 3amia</h1>
-      <p class="muted" data-i18n="home_subtitle">
-        Un dictionnaire collaboratif pour comparer les dialectes arabes et relier dialecte ↔ arabe classique ↔ traduction.
-      </p>
+<section class="hero">
+<h1>Zeedna 3amia</h1>
+<p>Dictionnaire communautaire des dialectes arabes.</p>
+</section>
 
-      <div class="hero-badges">
-        <span class="pill">Mobile-friendly</span>
-        <span class="pill">Communautaire</span>
-        <span class="pill">Notes + contributions</span>
-      </div>
-    </header>
+<section class="guide">
+<h2>Guide d'utilisation</h2>
+<p>1. Recherchez un mot.</p>
+<p>2. Consultez les variantes dialectales.</p>
+<p>3. Proposez une correction si nécessaire.</p>
+</section>
 
-    <!-- Quick guide -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Guide d’utilisation (30 secondes)</h2>
-        <p class="muted">Si tu arrives ici pour la première fois, voici le chemin le plus simple.</p>
-      </div>
+<section class="contact">
+<h2>Contact</h2>
+<p>Une idée ou suggestion ?</p>
+<p><strong>zeednaarabe@gmail.com</strong></p>
+</section>
 
-      <div class="cards-grid">
-        <div class="mini-card">
-          <div class="mini-emoji">🔎</div>
-          <div class="mini-title">1) Cherche un mot</div>
-          <div class="mini-desc">Français, arabe, phonétique : peu importe, la recherche te guide.</div>
-        </div>
-
-        <div class="mini-card">
-          <div class="mini-emoji">📄</div>
-          <div class="mini-title">2) Ouvre la fiche</div>
-          <div class="mini-desc">Tu vois la forme dialectale, la région, l’arabe classique et les variantes.</div>
-        </div>
-
-        <div class="mini-card">
-          <div class="mini-emoji">⚡</div>
-          <div class="mini-title">3) Ajoute / corrige</div>
-          <div class="mini-desc">Une contribution prend ~30 secondes et améliore la qualité pour tout le monde.</div>
-        </div>
-      </div>
-
-      <div class="panel-cta">
-        <a class="btn" href="/recherche/">Commencer une recherche</a>
-        <a class="btn primary" href="/contribuer/">Contribuer</a>
-      </div>
-    </section>
-
-    <!-- About -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2 data-i18n="home_about_title">Pourquoi ce projet ?</h2>
-        <p class="muted">Le but : rendre l’apprentissage plus clair, plus concret, et plus connecté au réel.</p>
-      </div>
-
-      <div class="two-col">
-        <div>
-          <p data-i18n="home_about_text">
-            J’apprends l’arabe depuis un moment, et ce n’est pas un long fleuve tranquille.
-            Comme beaucoup, j’ai jonglé entre l’arabe classique, les dialectes, et des ressources parfois dispersées.
-            C’est pour ça que je mets à disposition mes notes, et un format de contribution très simple.
-          </p>
-          <p class="muted" data-i18n="home_about_note">
-            Tu peux trouver des erreurs ou approximations : dans ce cas, propose ta version en cliquant sur “Ajouter / corriger” dans les fiches.
-          </p>
-        </div>
-
-        <div class="info-box">
-          <div class="info-title">Ce que tu trouveras dans une fiche</div>
-          <ul class="checklist">
-            <li>Mot en dialecte + phonétique</li>
-            <li>Traduction en français (quand dispo)</li>
-            <li>Arabe classique (pour relier les registres)</li>
-            <li>Région + variantes / synonymes</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Roadmap -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2 data-i18n="home_roadmap_title">En cours & à venir</h2>
-        <p class="muted">Le projet avance par itérations : d’abord la qualité et l’utilité, ensuite le reste.</p>
-      </div>
-
-      <div class="roadmap-grid">
-        <div class="road-item">
-          <div class="road-dot"></div>
-          <div>
-            <div class="road-title">Plus de contenus & synonymes</div>
-            <div class="road-desc">Plus de variantes par mot, plus de régions, et des liens entre mots proches.</div>
-          </div>
-        </div>
-        <div class="road-item">
-          <div class="road-dot"></div>
-          <div>
-            <div class="road-title">Pages “instagrammables”</div>
-            <div class="road-desc">Des fiches lisibles en capture mobile pour partager facilement sur Insta / TikTok.</div>
-          </div>
-        </div>
-        <div class="road-item">
-          <div class="road-dot"></div>
-          <div>
-            <div class="road-title">Mini-modules (en préparation)</div>
-            <div class="road-desc">Anglais, néerlandais, espagnol… pas encore dispo, mais dans la roadmap.</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact -->
-    <section class="panel">
-      <div class="panel-head">
-        <h2>Contact & idées</h2>
-        <p class="muted">Si tu as une idée, une correction globale, ou un projet d’amélioration : écris-moi.</p>
-      </div>
-
-      <div class="contact-row">
-        <div class="contact-pill">
-          <span class="contact-label">Email</span>
-          <a class="contact-link" href="mailto:zeednaarabe@gmail.com">zeednaarabe@gmail.com</a>
-        </div>
-        <div class="contact-note muted">(Tu peux aussi envoyer une liste de mots à ajouter, même brute.)</div>
-      </div>
-    </section>
-  </main>
-
-  <footer class="footer">
-    <div class="muted">© 2026 Zeedna</div>
-  </footer>
-
-  <script src="utils.js"></script>
-  <script src="home.js"></script>
 </body>
 </html>
