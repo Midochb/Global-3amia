@@ -183,5 +183,6 @@ initThemeToggle();
 
 // Lang switcher
 document.addEventListener('DOMContentLoaded', () => {
-  try { mountLangSwitcher(document.querySelector('.headerActions')); } catch(e) {}
+  // Language selector on the homepage
+  try { mountLangSwitcher(document.querySelector('#langSwitcher')); } catch(e) {}
 });

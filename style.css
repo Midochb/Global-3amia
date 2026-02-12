@@ -85,6 +85,28 @@ a{ color:inherit; }
 .brand-center{flex:1;display:flex;align-items:center;justify-content:center;}
 .brandLogo{ height:64px; width:auto; display:block; filter:drop-shadow(0 6px 14px rgba(0,0,0,.25)); }
 
+/* Mobile: prevent the top area from taking too much space and avoid overlaps */
+@media (max-width: 640px){
+  .topbar{
+    flex-wrap:wrap;
+    justify-content:flex-start;
+    gap:10px;
+    padding:10px 12px;
+  }
+  .homeIcon{ order:0; }
+  .brand-center{ order:1; width:100%; justify-content:center; }
+  .brandLogo{ height:48px; }
+  .top-actions{ order:2; width:100%; justify-content:flex-start; gap:10px; }
+  .top-actions .btn{ flex:1 1 0; min-width:0; justify-content:center; padding:12px 12px; font-size:14px; }
+  .top-actions .btn .plus{ font-size:16px; }
+}
+
+/* Home page: if a banner/illustration exists, keep it sized on mobile */
+#homeContent img{ max-width:100%; height:auto; }
+@media (max-width: 640px){
+  #homeContent img{ max-width:220px; margin:0 auto; display:block; }
+}
+
 /* Lamp-only logo (search + contribute) */
 .brandLogo--lamp{
   height:72px;
@@ -154,6 +176,39 @@ a{ color:inherit; }
   display:flex;
   gap:10px;
   align-items:center;
+}
+
+/* Language selector (home page + future pages) */
+.lang-switcher{
+  display:flex;
+  align-items:center;
+}
+.lang-switcher select{
+  appearance:none;
+  -webkit-appearance:none;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.16);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.lang-switcher select:focus{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(128,92,255,.22);
+}
+
+@media (max-width: 560px){
+  .top-actions{
+    flex-wrap: wrap;
+  }
+  .lang-switcher{
+    width: 100%;
+  }
+  .lang-switcher select{
+    width: 100%;
+  }
 }
 
 /* Theme button (needs id="themeToggle" in HTML) */
