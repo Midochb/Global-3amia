@@ -15,7 +15,7 @@
 
   function cacheKey(){
     // cache per UI language (evite de charger des champs inutiles)
-    const lang = (Z.i18n && Z.i18n.LANG) ? Z.i18n.LANG : "fr";
+    const lang = (Z.i18n && Z.i18n.uiLang) ? Z.i18n.uiLang : "fr";
     return CACHE_KEY_BASE + "_" + lang;
   }
 
@@ -65,6 +65,8 @@
 
   const tr = clean(r.traduction);
 
+  const uiLang = (window.Zeedna && window.Zeedna.i18n && window.Zeedna.i18n.uiLang) || (localStorage.getItem('zeedna_lang') || 'fr');
+
   let fr = clean(r.fr) || clean(r.traduction_fr) || clean(r.sens_dialectal) || clean(r.sens_fr);
   let en = clean(r.en) || clean(r.translation) || clean(r.traduction_en) || clean(r.traduction_eng);
   const nl = "";
@@ -73,7 +75,7 @@
   // Do not rely on browser/UI language to fill FR.
   if(tr){
     if(!fr) fr = tr;
-    if(!en && LANG === "en") en = tr;
+    if(!en && uiLang === "en") en = tr;
   }
   const fu = clean(r["Arabe_classique"]) || clean(r["arabe_classique"]) || clean(r.Fouss7a) || clean(r["Fouss7a"]);
 
@@ -113,7 +115,7 @@
   obj._search = norm([
     obj.mot_arabe,
     obj.transliteration,
-    (LANG === "ar") ? "" : meaning,
+    (uiLang === "ar") ? "" : meaning,
     obj.fu,
     obj.pays_code,
     obj.region,
