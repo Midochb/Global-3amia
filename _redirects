@@ -1,4 +1,0 @@
-# Fallback for word pages: if a specific /mot/<slug>/ page is missing,
-# serve the dynamic renderer at /mot/index.html
-/mot /mot/index.html 200
-/mot/* /mot/index.html 200
