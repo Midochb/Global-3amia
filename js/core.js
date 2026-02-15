@@ -125,7 +125,7 @@
   return obj;
 }
 
-  async async function loadData(){
+  async function loadData(){
     // 1) cache
     const cached = readCache();
     if(cached && Array.isArray(cached)){
