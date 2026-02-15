@@ -376,6 +376,21 @@ body[data-theme="light"] .suggestions{ background:rgba(255,255,255,.85); }
 .meta-right{ display:flex; align-items:center; gap:10px; }
 .badge{ padding:8px 10px; border-radius:999px; border:1px solid var(--border); background:rgba(0,0,0,.14); }
 body[data-theme="light"] .badge{ background:rgba(255,255,255,.75); }
+
+/* Small flag shown on word pages (next to transliteration) */
+.mini-flag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,.14);
+  font-size:16px;
+  line-height:1;
+}
+body[data-theme="light"] .mini-flag{ background:rgba(255,255,255,.75); }
 .flag{ font-size:18px; }
 
 .trad-line{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
