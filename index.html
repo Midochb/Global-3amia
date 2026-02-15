@@ -1,40 +1,80 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zeedna 3amia</title>
-<link rel="stylesheet" href="/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zeedna 3amia</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <header class="topbar">
-<a href="/recherche/" class="btn-search">Dictionnaire</a>
-<a href="/contribuer/" class="btn-add">+ Ajoute ton mot</a>
+  <a href="/recherche/" class="cta" data-i18n="nav_dict">Dictionnaire</a>
+
+  <div class="headerActions">
+    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">🌙</button>
+    <div id="langSwitcher"></div>
+    <a href="/contribuer/" class="cta" data-i18n="nav_add">➕ Ajoute ton mot</a>
+  </div>
 </header>
 
-<section class="hero">
-<h1>Zeedna 3amia</h1>
-<p>Dictionnaire communautaire des dialectes arabes.</p>
+<main class="container">
 
-  <!-- Quick search (home) -->
-  <form class="home-search" action="/recherche/" method="GET" role="search" aria-label="Rechercher un mot">
-    <label class="sr-only" for="home-q">Rechercher un mot</label>
-    <input
-      id="home-q"
-      name="q"
-      type="search"
-      autocomplete="off"
-      placeholder="Rechercher un mot… (ex: wa5a, زادا, برضو)"
-    />
-    <button type="submit" class="btn">Rechercher</button>
-  </form>
+  <section class="hero" style="padding-top:28px;">
+    <h1 style="margin:0 0 10px; font-size:44px; letter-spacing:-.02em;">Zeedna 3amia</h1>
+    <p class="muted" data-i18n="home_title" style="font-size:18px; margin:0 0 10px;">Dictionnaire collaboratif des dialectes arabes</p>
+    <p class="muted" data-i18n="home_subtitle" style="max-width:820px; margin:0 0 18px;">
+      Version bêta. Compare darija, tunisien, algérien, égyptien, levantin, khaliji… reliés à l’arabe classique et aux langues européennes.
+    </p>
 
-  <div class="home-actions">
-    <a class="btn" href="/recherche/">Ouvrir le dictionnaire</a>
-    <a class="btn btn-secondary" href="/transliteration/">Guide phonétique</a>
-  </div>
-</section>
+    <!-- Quick search (home) -->
+    <form class="home-search" action="/recherche/" method="GET" role="search" aria-label="Rechercher un mot" style="margin-top:14px;">
+      <label class="sr-only" for="home-q" data-i18n="home_cta_search">Commence à chercher</label>
+      <input
+        id="home-q"
+        name="q"
+        type="search"
+        autocomplete="off"
+        data-i18n-placeholder="home_search_ph"
+        placeholder="Rechercher un mot… (ex: wa5a, زادا, برضو)"
+      />
+      <button type="submit" class="cta" data-i18n="home_cta_search">Commence à chercher</button>
+    </form>
+
+    <div class="home-actions" style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+      <a class="cta" href="/recherche/" data-i18n="home_cta_search">Commence à chercher</a>
+      <a class="cta" href="/transliteration/" style="border:1px solid var(--border); background:var(--panel);" data-i18n="home_tr_help_link">Comment lire la translittération ?</a>
+    </div>
+
+    <p class="small muted" data-i18n="home_note" style="margin-top:18px; max-width:900px;">
+      Je vous mets à disposition l’ensemble de mes notes d’apprentissage. L’arabe n’est pas un long fleuve tranquille : il peut y avoir des erreurs ou des approximations. Si c’est le cas, proposez votre version en appuyant sur ‘Ajouter / corriger’ dans les fiches (≈ 30 secondes).
+    </p>
+  </section>
+
+  <section class="card" style="margin-top:18px;">
+    <h2 data-i18n="home_how_title" style="margin:0 0 10px;">Comment ça marche</h2>
+    <div class="muted" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
+      <div class="panel" style="padding:14px; border-radius:16px; border:1px solid var(--border); background:var(--panel);">
+        <div style="font-weight:800; margin-bottom:6px;" data-i18n="home_step1_title">Cherche un mot</div>
+        <div class="small" data-i18n="home_step1_desc">Écris en arabe, en translit, ou en FR/EN/NL/DE. Tu vois des suggestions au fur et à mesure.</div>
+      </div>
+      <div class="panel" style="padding:14px; border-radius:16px; border:1px solid var(--border); background:var(--panel);">
+        <div style="font-weight:800; margin-bottom:6px;" data-i18n="home_step2_title">Compare les variantes</div>
+        <div class="small" data-i18n="home_step2_desc">Filtre par pays, ouvre une fiche, et découvre les synonymes proches.</div>
+      </div>
+      <div class="panel" style="padding:14px; border-radius:16px; border:1px solid var(--border); background:var(--panel);">
+        <div style="font-weight:800; margin-bottom:6px;" data-i18n="home_step3_title">Ajoute une contribution</div>
+        <div class="small" data-i18n="home_step3_desc">Si le mot n'existe pas, propose-le. C'est communautaire : chacun ajoute ses variantes régionales.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer" style="margin-top:22px;">
+    <div>© Zeedna 3amiat</div>
+    <div class="muted">v1.0.0</div>
+  </footer>
+
+</main>
 
 <script>
   // If user lands with ?q=... on the home page, keep it and forward to /recherche/
@@ -54,18 +94,9 @@
   })();
 </script>
 
-<section class="guide">
-<h2>Guide d'utilisation</h2>
-<p>1. Recherchez un mot.</p>
-<p>2. Consultez les variantes dialectales.</p>
-<p>3. Proposez une correction si nécessaire.</p>
-</section>
-
-<section class="contact">
-<h2>Contact</h2>
-<p>Une idée ou suggestion ?</p>
-<p><strong>zeednaarabe@gmail.com</strong></p>
-</section>
+<!-- i18n + theme + lang switcher -->
+<script src="/utils.js"></script>
+<script src="/home.js"></script>
 
 </body>
 </html>
