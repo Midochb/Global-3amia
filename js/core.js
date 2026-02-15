@@ -110,7 +110,9 @@
   // - FR UI => cherche sur FR (fallback EN)
   // - EN UI => cherche sur EN (fallback FR)
   // - AR UI => pas de recherche sur FR/EN/NL
-  const meaning = getMeaningForLang(obj).value;
+  const meaning = (Z.i18n && typeof Z.i18n.getMeaningForLang === 'function')
+    ? (Z.i18n.getMeaningForLang(obj).value)
+    : (clean(obj.fr) || clean(obj.en) || '');
 
   obj._search = norm([
     obj.mot_arabe,
