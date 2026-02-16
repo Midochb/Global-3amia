@@ -231,30 +231,33 @@
 
   // ---------- [DATA] ----------
   const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
-  const CACHE_KEY = 'zeedna_rows_v1';
-  const CACHE_TS = 'zeedna_rows_ts_v1';
+  const CACHE_KEY = 'zeedna_rows_v2';
+  const CACHE_TS = 'zeedna_rows_ts_v2';
   const CACHE_TTL = 1000 * 60 * 30; // 30 min
 
   function normalizeRow(r){
-    const row = Object.assign({}, r);
-    // normalize expected fields used by UI
-    row.mot_arabe = row.mot_arabe ?? row.arabe ?? '';
-    row.transliteration = row.transliteration ?? row.phonetique ?? '';
-    row.dialecte = row.dialecte ?? row.dialect ?? row.pays ?? '';
-    row.pays_code = (row.pays_code || row.iso2 || '').toString().toUpperCase();
-    row.pays = row.pays || row.country || '';
-    row.region = row.region || row.ville || '';
-    row.fr = row.fr || row.francais || '';
-    row.en = row.en || row.anglais || '';
-    row.fusha = row.fusha || row.arabe_classique || '';
-
-    // active bool
-    const actif = row.actif;
-    row.actifBool = (typeof actif === 'boolean') ? actif : (String(actif || '').toLowerCase() !== 'false');
-    // id
-    row.mot_id = row.mot_id || row.id || '';
+    const row = Object.assign({}, r || {});
+    // ---- robust field mapping (API columns may vary) ----
+    row.mot_arabe = row.mot_arabe ?? row.mot ?? row.arabe ?? row.arabic ?? row.ar ?? row.word_ar ?? row.motArabe ?? '';
+    row.transliteration =
+      row.transliteration ?? row.translit ?? row.phonetique ?? row.phonétique ?? row.phonetic ??
+      row.prononciation ?? row.pronunciation ?? row.tr ?? row.latin ?? row.romanization ?? '';
+    row.dialecte = row.dialecte ?? row.dialect ?? row.variante ?? row.variant ?? row.dialekt ?? row.region_dialecte ?? row.dialectRegion ?? row.pays ?? '';
+    row.pays_code = (row.pays_code ?? row.iso2 ?? row.iso ?? row.country_code ?? row.code_pays ?? row.paysCode ?? '').toString().toUpperCase();
+    row.pays = row.pays ?? row.country ?? row.pays_nom ?? row.paysNom ?? '';
+    row.region = row.region ?? row.ville ?? row.city ?? row.localite ?? row.localité ?? row.gouvernorat ?? row.governorate ?? '';
+    row.fr = row.fr ?? row.francais ?? row.français ?? row.mot_francais ?? row.sens_fr ?? row.sensFR ?? row.traduction_fr ?? row.translation_fr ?? row.meaning_fr ?? row.definition_fr ?? '';
+    row.en = row.en ?? row.anglais ?? row.english ?? row.mot_anglais ?? row.sens_en ?? row.sensEN ?? row.traduction_en ?? row.translation_en ?? row.meaning_en ?? row.definition_en ?? '';
+    row.nl = row.nl ?? row.neerlandais ?? row.dutch ?? row.sens_nl ?? row.translation_nl ?? '';
+    row.es = row.es ?? row.espagnol ?? row.spanish ?? row.sens_es ?? row.translation_es ?? '';
+    row.it = row.it ?? row.italien ?? row.italian ?? row.sens_it ?? row.translation_it ?? '';
+    row.fusha = row.fusha ?? row.arabe_classique ?? row.arabeClassique ?? row.ar_classique ?? row.classical_arabic ?? row.msa ?? row.foss7a ?? row.fous7a ?? '';
+    const actif = row.actif ?? row.active ?? row.is_active ?? row.isActive;
+    row.actifBool = (typeof actif === 'boolean') ? actif : (String(actif ?? '').toLowerCase() !== 'false');
+    row.mot_id = row.mot_id ?? row.id ?? row.motID ?? row.word_id ?? '';
     return row;
   }
+
 
   async function fetchRows(){
     const res = await fetch(API_URL, { cache: 'no-store' });
@@ -474,7 +477,7 @@
         if(!needle) return false;
         const m = getMeaningForLang(r);
         const hay = norm([
-          r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha, m.value, r.pays, r.region
+          r.mot_arabe, r.transliteration, r.fr, r.en, r.nl, r.es, r.it, r.fusha, m.value, r.pays, r.region
         ].join(' | '));
         return hay.includes(needle);
       });
@@ -565,7 +568,7 @@
       if(!needle){ clearSuggestions(); return; }
       const matches = [];
       for(const r of ALL){
-        const hay = norm([r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha].join(' | '));
+        const hay = norm([r.mot_arabe, r.transliteration, r.fr, r.en, r.nl, r.es, r.it, r.fusha].join(' | '));
         if(hay.includes(needle)){
           matches.push(r);
           if(matches.length >= 8) break;
