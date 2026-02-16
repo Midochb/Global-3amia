@@ -59,6 +59,7 @@
       search_btn: 'Rechercher',
       all_dialects: 'Tous les dialectes',
       results_count: (n)=>`${n} résultat(s)`,
+      load_more: 'Charger plus',
       add_word_btn: '➕ Ajoute ton mot',
       word_more: 'Autres mots suggérés',
       word_nf_title: 'Mot introuvable',
@@ -76,6 +77,7 @@
       search_btn: 'Search',
       all_dialects: 'All dialects',
       results_count: (n)=>`${n} result(s)`,
+      load_more: 'Load more',
       add_word_btn: '➕ Add your word',
       word_more: 'More suggested words',
       word_nf_title: 'Word not found',
@@ -93,6 +95,7 @@
       search_btn: 'بحث',
       all_dialects: 'كل اللهجات',
       results_count: (n)=>`${n} نتيجة`,
+      load_more: 'عرض المزيد',
       add_word_btn: '➕ أضف كلمتك',
       word_more: 'اقتراحات أخرى',
       word_nf_title: 'الكلمة غير موجودة',
@@ -424,44 +427,24 @@
     const loadMoreBtn = document.getElementById('loadMoreBtn');
 
     let ALL=[];
-    let LAST=[];
-    let renderLimit=20;
+    let CURRENT=[];
+    let DISPLAY_LIMIT=20;
 
-    function setCount(total, shown){
-      if(!countEl) return;
-      if(typeof shown==='number' && shown < total){
-        countEl.textContent = (I18N[LANG]?.results_count ? I18N[LANG].results_count(total) : `${total}`);
-        // show shown/total in the corner for clarity
-        countEl.textContent = `${shown}/${total} résultat(s)`;
-      }else{
-        countEl.textContent = I18N[LANG]?.results_count ? I18N[LANG].results_count(total) : `${total}`;
-      }
-    }`; }
+    function setCount(n){ if(countEl) countEl.textContent = I18N[LANG]?.results_count ? I18N[LANG].results_count(n) : `${n}`; }
 
-    function clearSuggestions(){
-      if(!suggestionsEl) return;
-      suggestionsEl.innerHTML='';
-      suggestionsEl.style.display='none';
-    }
+    function clearSuggestions(){ if(suggestionsEl) suggestionsEl.innerHTML=''; }
 
     function renderSuggestions(items){
       if(!suggestionsEl) return;
-      const list = items.slice(0,8);
-      if(!list.length){ clearSuggestions(); return; }
       suggestionsEl.innerHTML='';
-      suggestionsEl.style.display='block';
-      list.forEach(r=>{
+      items.slice(0,8).forEach(r=>{
         const div=document.createElement('div');
         div.className='suggestion';
-        const label = clean(r.mot_arabe) || clean(r.transliteration) || clean(r.fr) || clean(r.en) || clean(r.fusha);
-        div.textContent = label || '—';
-        div.setAttribute('role','option');
-        div.addEventListener('mousedown', (e)=>{
-          // mousedown to avoid blur before click
-          e.preventDefault();
+        div.textContent = clean(r.mot_arabe) || clean(r.transliteration) || clean(r.fr) || clean(r.en);
+        div.addEventListener('click', ()=>{
           if(qEl) qEl.value = div.textContent;
           clearSuggestions();
-          performSearch(true);
+          performSearch();
         });
         suggestionsEl.appendChild(div);
       });
@@ -480,87 +463,78 @@
     }
 
     function applyFilters(rows, q, dialect){
-      const needle = clean(q).toLowerCase();
+      const needle = norm(q);
       const dia = dialect || '';
-      // Avoid rendering the whole dictionary when nothing is searched
-      if(!needle && !dia) return [];
       return rows.filter(r=>{
         if(dia){
           const d = clean(r.dialecte || r.pays || r.region);
           if(d !== dia) return false;
         }
-        if(!needle) return true;
+        // IMPORTANT: do not render the whole dictionary by default
+        if(!needle) return false;
         const m = getMeaningForLang(r);
-        const fields = [r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha, m.value].map(v=>clean(v).toLowerCase());
-        return fields.some(v=>v.includes(needle));
+        const hay = norm([
+          r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha, m.value, r.pays, r.region
+        ].join(' | '));
+        return hay.includes(needle);
       });
     }
 
     function renderCard(row){
-      const a=document.createElement('a');
-      a.className='resultCard';
-      a.href = wordPageUrlForRow(row);
+      const card = document.createElement('div');
+      card.className = 'resultCard';
+      card.tabIndex = 0;
 
-      const top=document.createElement('div');
-      top.className='resultTop';
+      const top = document.createElement('div');
+      top.className = 'rcTop';
 
-      const left=document.createElement('div');
-      left.className='resultLeft';
-
-      const word=document.createElement('div');
-      word.className='resultWord';
+      const word = document.createElement('div');
+      word.className = 'rcWord';
       word.textContent = clean(row.mot_arabe) || clean(row.transliteration) || '—';
 
-      const translit=document.createElement('div');
-      translit.className='resultTranslit muted';
-      translit.textContent = clean(row.transliteration);
+      const flag = document.createElement('div');
+      flag.className = 'rcFlag';
+      // Try country code first, fallback to country name mapping (best-effort)
+      flag.textContent = isoToFlagEmoji(row.pays_code || row.iso || row.country_code);
 
-      left.appendChild(word);
-      if(clean(row.transliteration)) left.appendChild(translit);
+      top.appendChild(word);
+      top.appendChild(flag);
 
-      const right=document.createElement('div');
-      right.className='resultRight';
+      const tr = document.createElement('div');
+      tr.className = 'rcTranslit';
+      tr.textContent = clean(row.transliteration);
 
-      const flag=document.createElement('span');
-      flag.className='flagBadge';
-      flag.textContent = getFlagForRow(row) || '';
-
-      const place=document.createElement('div');
-      place.className='resultPlace muted';
-      place.textContent = [clean(row.pays), clean(row.region)].filter(Boolean).join(' · ');
-
-      if(flag.textContent) right.appendChild(flag);
-      if(place.textContent) right.appendChild(place);
-
-      top.appendChild(left);
-      top.appendChild(right);
-
-      const meaning=document.createElement('div');
-      meaning.className='resultMeaning';
+      const meaning = document.createElement('div');
+      meaning.className = 'rcMeaning';
       meaning.textContent = clean(getMeaningForLang(row).value);
 
-      a.appendChild(top);
-      if(meaning.textContent) a.appendChild(meaning);
+      const meta = document.createElement('div');
+      meta.className = 'rcMeta';
+      meta.textContent = [clean(row.pays), clean(row.region)].filter(Boolean).join(' · ');
 
-      return a;
+      card.appendChild(top);
+      if(clean(row.transliteration)) card.appendChild(tr);
+      if(clean(getMeaningForLang(row).value)) card.appendChild(meaning);
+      if(meta.textContent) card.appendChild(meta);
+
+      card.addEventListener('click', ()=>{ location.href = wordPageUrlForRow(row); });
+      card.addEventListener('keydown', (e)=>{ if(e.key==='Enter') card.click(); });
+      return card;
     }
 
-    function renderList(rows, resetLimit){
+    function setLoadMore(visible){
+      if(!loadMoreWrap || !loadMoreBtn) return;
+      loadMoreWrap.style.display = visible ? 'flex' : 'none';
+      loadMoreBtn.textContent = t('load_more') || 'Charger plus';
+    }
+
+    function renderList(rows){
       if(!resultsEl) return;
-      if(resetLimit) renderLimit = 20;
-      LAST = rows;
-      const shown = Math.min(renderLimit, rows.length);
       resultsEl.innerHTML='';
-      rows.slice(0, shown).forEach(r=> resultsEl.appendChild(renderCard(r)));
-      setCount(rows.length, shown);
-      if(loadMoreWrap && loadMoreBtn){
-        if(rows.length > shown){
-          loadMoreWrap.style.display='flex';
-          loadMoreBtn.disabled=false;
-        }else{
-          loadMoreWrap.style.display='none';
-        }
-      }
+      const slice = rows.slice(0, DISPLAY_LIMIT);
+      slice.forEach(r=> resultsEl.appendChild(renderCard(r)));
+      setCount(rows.length);
+      setLoadMore(rows.length > DISPLAY_LIMIT);
     }
 
     function writeParams(q, dialect){
@@ -576,23 +550,27 @@
       return { q: sp.get('q')||'', dialect: sp.get('dialect')||'' };
     }
 
-    function performSearch(resetLimit){
+    function performSearch(){
       const q = qEl ? qEl.value : '';
       const dialect = dialectEl ? dialectEl.value : '';
-      const rows = applyFilters(ALL, q, dialect);
-      renderList(rows, resetLimit!==false);
+      DISPLAY_LIMIT = 20;
+      CURRENT = applyFilters(ALL, q, dialect);
+      renderList(CURRENT);
       writeParams(q, dialect);
     }
 
     function onInput(){
       if(!qEl) return;
-      const needle = clean(qEl.value).toLowerCase();
+      const needle = norm(qEl.value);
       if(!needle){ clearSuggestions(); return; }
-      const matches = ALL.filter(r=>{
-        const m = getMeaningForLang(r).value;
-        const fields = [r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha, m].map(v=>clean(v).toLowerCase());
-        return fields.some(v=>v.includes(needle));
-      });
+      const matches = [];
+      for(const r of ALL){
+        const hay = norm([r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha].join(' | '));
+        if(hay.includes(needle)){
+          matches.push(r);
+          if(matches.length >= 8) break;
+        }
+      }
       renderSuggestions(matches);
     }
 
@@ -606,15 +584,20 @@
         if(qEl) qEl.value = params.q;
         if(dialectEl) dialectEl.value = params.dialect;
 
-        if(searchBtn && searchBtn.tagName==='BUTTON') searchBtn.addEventListener('click', ()=>{ clearSuggestions(); performSearch(true); });
+        if(searchBtn && searchBtn.tagName==='BUTTON') searchBtn.addEventListener('click', ()=>{ clearSuggestions(); performSearch(); });
         if(qEl){
           qEl.addEventListener('input', debounce(onInput, 120));
-          qEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ clearSuggestions(); performSearch(true); } });
+          qEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ clearSuggestions(); performSearch(); } });
         }
-        if(dialectEl) dialectEl.addEventListener('change', ()=>{ clearSuggestions(); performSearch(true); });
-        if(loadMoreBtn) loadMoreBtn.addEventListener('click', ()=>{ renderLimit += 20; renderList(LAST, false); });
+        if(dialectEl) dialectEl.addEventListener('change', ()=>{ clearSuggestions(); performSearch(); });
+        if(loadMoreBtn){
+          loadMoreBtn.addEventListener('click', ()=>{
+            DISPLAY_LIMIT += 20;
+            renderList(CURRENT);
+          });
+        }
 
-        performSearch(true);
+        performSearch();
         if(statusEl) statusEl.textContent = t('ready');
       }catch(err){
         console.error(err);

@@ -9,7 +9,7 @@
   <meta name="description" content="Recherche Zeedna 3amiat : dictionnaire participatif des dialectes arabes (darija, tunisien, marocain, algérien, etc.)." />
 
   <base href="/" />
-  <link rel="stylesheet" href="/style.css?v=99" />
+  <link rel="stylesheet" href="/style.css?v=100" />
 </head>
 
 <body>
@@ -82,11 +82,12 @@
   </section>
 
   <!-- Résultats -->
-  <section id="results" class="results"></section>
-
+  <section class="resultsWrap">
+  <div id="results" class="resultsGrid" aria-live="polite"></div>
   <div id="loadMoreWrap" class="loadMoreWrap" style="display:none;">
-    <button id="loadMoreBtn" class="cta loadMoreBtn" type="button">Charger plus</button>
+    <button id="loadMoreBtn" class="loadMoreBtn" type="button">Charger plus</button>
   </div>
+</section>
 
   <!-- Footer -->
   <footer class="footer">
@@ -128,7 +129,7 @@
 
 <!-- ===================== SCRIPTS ===================== -->
 <!-- ⚠️ ordre important -->
-<script src="/js/app.js?v=99"></script>
+<script src="/js/app.js?v=100"></script>
 
 </body>
 </html>
