@@ -41,6 +41,115 @@ body{
   min-height:100vh;
 }
 
+/* =============================
+   DICO SEARCH — RESULTS (pro cards)
+   ============================= */
+.results{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (min-width: 900px){
+  .results{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.result-card{
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 14px 14px;
+  cursor: pointer;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  outline: none;
+}
+
+.result-card:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.result-card:focus{
+  border-color: rgba(160,120,255,0.55);
+  box-shadow: 0 0 0 3px rgba(160,120,255,0.18);
+}
+
+.rc-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.rc-title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  line-height: 1.15;
+}
+
+.rc-translit{
+  margin-top: 4px;
+  font-size: 14px;
+  opacity: .85;
+}
+
+.rc-sub{
+  font-size: 15px;
+  opacity: .92;
+  margin-top: 6px;
+}
+
+.rc-meta{
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: .75;
+}
+
+.rc-flag{
+  font-size: 18px;
+  line-height: 1;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* =============================
+   Suggestions dropdown
+   ============================= */
+.suggestions{
+  position: relative;
+}
+.suggestions:empty{ display:none; }
+
+.suggestion{
+  padding: 10px 12px;
+  background: rgba(20,22,35,0.92);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-top: none;
+  cursor: pointer;
+}
+.suggestion:hover{
+  background: rgba(255,255,255,0.06);
+}
+
+.loadMoreWrap{
+  display:flex;
+  justify-content:center;
+  margin: 18px 0 8px;
+}
+
+.loadMoreBtn{
+  padding: 12px 16px;
+  border-radius: 999px;
+}
+
 a{ color:var(--link); text-decoration:none; }
 a:hover{ text-decoration:underline; }
 
@@ -287,7 +396,7 @@ body[data-theme="light"] .home-search input{ background:rgba(255,255,255,.75); }
   margin-top:14px;
 }
 
-.searchwrap{ flex:1; min-width:240px; }
+.searchwrap{ flex:1; min-width:240px;  position:relative;}
 
 .searchbar{
   display:flex;
@@ -334,13 +443,18 @@ body[data-theme="light"] input.search{ background:rgba(255,255,255,.75); }
 }
 
 .suggestions{
-  margin-top:10px;
+  position:absolute;
+  left:0;
+  right:0;
+  top:calc(100% + 8px);
   border:1px solid var(--border);
-  background:rgba(0,0,0,.25);
+  background:rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
   border-radius:14px;
   overflow:hidden;
   box-shadow: var(--shadow);
   display:none;
+  z-index:30;
 }
 body[data-theme="light"] .suggestions{ background:rgba(255,255,255,.85); }
 
@@ -550,4 +664,77 @@ body[data-theme="light"] .modal{
   .cta{ padding:10px 12px; border-radius:14px; }
   .searchbar{ flex-direction:column; }
   .searchBtn{ width:100%; }
+}
+
+
+/* ===== Search results as dictionary cards (Patch #98) ===== */
+.resultCard{
+  display:block;
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:rgba(255,255,255,.03);
+  text-decoration:none;
+  color:inherit;
+  box-shadow: var(--shadow-soft);
+  transition: transform .08s ease, border-color .08s ease, background .08s ease;
+}
+.resultCard:hover{
+  transform: translateY(-1px);
+  border-color: rgba(170,140,255,.55);
+  background:rgba(255,255,255,.05);
+}
+.resultTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.resultWord{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.2px;
+}
+.resultTranslit{
+  margin-top:4px;
+  font-size:14px;
+}
+.resultMeaning{
+  margin-top:10px;
+  font-size:15px;
+  line-height:1.35;
+}
+.resultRight{
+  display:flex;
+  align-items:flex-end;
+  flex-direction:column;
+  gap:6px;
+  min-width:110px;
+  text-align:right;
+}
+.flagBadge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(0,0,0,.18);
+  font-size:14px;
+}
+.resultPlace{
+  font-size:12px;
+  max-width:180px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.loadMoreWrap{
+  display:flex;
+  justify-content:center;
+  margin:18px 0 4px;
+}
+.loadMoreBtn{
+  padding:10px 16px;
+  border-radius:14px;
 }

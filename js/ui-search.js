@@ -11,14 +11,23 @@
   const dialectEl = document.getElementById("dialect");
   const resultsEl = document.getElementById("results");
   const countEl = document.getElementById("count");
+  const loadMoreWrap = document.getElementById("loadMoreWrap");
+  const loadMoreBtn = document.getElementById("loadMoreBtn");
 
   let ALL_ROWS = [];
   let CURRENT_RESULTS = [];
+  let DISPLAY_LIMIT = 20;
 
   function setCount(n){
     if(!countEl) return;
     const pack = (Z.i18n && Z.i18n.I18N) ? (Z.i18n.I18N[Z.i18n.LANG] || Z.i18n.I18N.en) : null;
     countEl.textContent = (pack && typeof pack.results_count === "function") ? pack.results_count(n) : `${n}`;
+  }
+
+  function setLoadMore(visible, label){
+    if(!loadMoreWrap || !loadMoreBtn) return;
+    loadMoreWrap.style.display = visible ? "flex" : "none";
+    if(label) loadMoreBtn.textContent = label;
   }
 
   function buildDialectDropdown(rows){
@@ -62,9 +71,23 @@
   }
 
   function renderCard(row){
-    const li = document.createElement("li");
-    li.className = "result-card";
-    li.tabIndex = 0;
+    const card = document.createElement("article");
+    card.className = "result-card";
+    card.tabIndex = 0;
+
+    const header = document.createElement("div");
+    header.className = "rc-head";
+
+    const left = document.createElement("div");
+    left.className = "rc-left";
+
+    const right = document.createElement("div");
+    right.className = "rc-right";
+
+    const flag = document.createElement("span");
+    flag.className = "rc-flag";
+    try { flag.textContent = isoToFlagEmoji(row.pays_code); } catch(e){ flag.textContent = "🏳️"; }
+    right.appendChild(flag);
 
     const title = document.createElement("div");
     title.className = "rc-title";
@@ -77,46 +100,63 @@
 
     const meta = document.createElement("div");
     meta.className = "rc-meta";
-    meta.textContent = [clean(row.pays), clean(row.region)].filter(Boolean).join(" · ");
+    meta.textContent = [clean(row.pays_code), clean(row.region)].filter(Boolean).join(" · ");
 
-    li.appendChild(title);
-    li.appendChild(sub);
-    li.appendChild(meta);
+    left.appendChild(title);
+    if(clean(row.transliteration)){
+      const tr = document.createElement("div");
+      tr.className = "rc-translit";
+      tr.textContent = clean(row.transliteration);
+      left.appendChild(tr);
+    }
 
-    li.addEventListener("click", ()=>{
+    header.appendChild(left);
+    header.appendChild(right);
+
+    card.appendChild(header);
+    card.appendChild(sub);
+    card.appendChild(meta);
+
+    card.addEventListener("click", ()=>{
       if(Z.modal) Z.modal.openModal(row, ALL_ROWS);
       if(Z.router) location.hash = Z.router.buildHashForRow(row);
     });
-    li.addEventListener("keydown",(e)=>{ if(e.key==="Enter") li.click(); });
+    card.addEventListener("keydown",(e)=>{ if(e.key==="Enter") card.click(); });
 
-    return li;
+    return card;
   }
 
   function renderList(rows){
     if(!resultsEl) return;
     resultsEl.innerHTML = "";
-    rows.forEach(r=> resultsEl.appendChild(renderCard(r)));
+    const visible = rows.slice(0, DISPLAY_LIMIT);
+    visible.forEach(r=> resultsEl.appendChild(renderCard(r)));
     setCount(rows.length);
+
+    if(rows.length > DISPLAY_LIMIT){
+      const remaining = rows.length - DISPLAY_LIMIT;
+      setLoadMore(true, `Charger plus (+${Math.min(20, remaining)})`);
+    } else {
+      setLoadMore(false);
+    }
   }
 
   function applyFilters(rows, q, dialect){
-    const needle = clean(q).toLowerCase();
+    const needle = norm(q);
     const dia = dialect || "";
 
     return rows.filter(r=>{
       if(dia){
-        const d = clean(r.dialecte || r.pays || r.region);
+        const d = clean(r.dialecte || r.pays_code || r.pays || r.region);
         if(d !== dia) return false;
       }
-      if(!needle) return true;
+      // ne pas afficher toute la base par défaut
+      if(!needle) return false;
 
-      const m = Z.i18n ? Z.i18n.getMeaningForLang(r) : {value: clean(r.fr||r.en)};
-      const fields = [
-        r.arabe, r.phonetique, r.fr, r.en, r.fusha,
-        m.value
-      ].map(v=>clean(v).toLowerCase());
-
-      return fields.some(v=>v.includes(needle));
+      const hay = r._search ? clean(r._search) : norm([
+        r.mot_arabe, r.transliteration, r.fr, r.en, r.fu, r.pays_code, r.region
+      ].join(" | "));
+      return hay.includes(needle);
     });
   }
 
@@ -140,6 +180,7 @@
     const q = qEl ? qEl.value : "";
     const dialect = dialectEl ? dialectEl.value : "";
 
+    DISPLAY_LIMIT = 20;
     CURRENT_RESULTS = applyFilters(ALL_ROWS, q, dialect);
     renderList(CURRENT_RESULTS);
     writeSearchParams(q, dialect);
@@ -147,10 +188,10 @@
 
   function onInput(){
     if(!qEl) return;
-    const needle = clean(qEl.value).toLowerCase();
+    const needle = norm(qEl.value);
     if(!needle){ clearSuggestions(); return; }
     const matches = ALL_ROWS.filter(r=>{
-      const v = clean(r.mot_arabe||r.transliteration||r.fr||r.en).toLowerCase();
+      const v = r._search ? clean(r._search) : norm(r.mot_arabe||r.transliteration||r.fr||r.en);
       return v.includes(needle);
     });
     renderSuggestions(matches);
@@ -172,6 +213,11 @@
     if(qEl) qEl.addEventListener("input", debounce(onInput, 120));
     if(qEl) qEl.addEventListener("keydown",(e)=>{ if(e.key==="Enter"){ clearSuggestions(); performSearch(); }});
     if(dialectEl) dialectEl.addEventListener("change", ()=>{ clearSuggestions(); performSearch(); });
+
+    if(loadMoreBtn) loadMoreBtn.addEventListener("click", ()=>{
+      DISPLAY_LIMIT += 20;
+      renderList(CURRENT_RESULTS);
+    });
 
     performSearch();
 

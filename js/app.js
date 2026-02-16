@@ -420,24 +420,48 @@
     const resultsEl = document.getElementById('results');
     const countEl = document.getElementById('count');
     const statusEl = document.getElementById('status');
+    const loadMoreWrap = document.getElementById('loadMoreWrap');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
 
     let ALL=[];
+    let LAST=[];
+    let renderLimit=20;
 
-    function setCount(n){ if(countEl) countEl.textContent = I18N[LANG]?.results_count ? I18N[LANG].results_count(n) : `${n}`; }
+    function setCount(total, shown){
+      if(!countEl) return;
+      if(typeof shown==='number' && shown < total){
+        countEl.textContent = (I18N[LANG]?.results_count ? I18N[LANG].results_count(total) : `${total}`);
+        // show shown/total in the corner for clarity
+        countEl.textContent = `${shown}/${total} résultat(s)`;
+      }else{
+        countEl.textContent = I18N[LANG]?.results_count ? I18N[LANG].results_count(total) : `${total}`;
+      }
+    }`; }
 
-    function clearSuggestions(){ if(suggestionsEl) suggestionsEl.innerHTML=''; }
+    function clearSuggestions(){
+      if(!suggestionsEl) return;
+      suggestionsEl.innerHTML='';
+      suggestionsEl.style.display='none';
+    }
 
     function renderSuggestions(items){
       if(!suggestionsEl) return;
+      const list = items.slice(0,8);
+      if(!list.length){ clearSuggestions(); return; }
       suggestionsEl.innerHTML='';
-      items.slice(0,8).forEach(r=>{
+      suggestionsEl.style.display='block';
+      list.forEach(r=>{
         const div=document.createElement('div');
         div.className='suggestion';
-        div.textContent = clean(r.mot_arabe) || clean(r.transliteration) || clean(r.fr) || clean(r.en);
-        div.addEventListener('click', ()=>{
+        const label = clean(r.mot_arabe) || clean(r.transliteration) || clean(r.fr) || clean(r.en) || clean(r.fusha);
+        div.textContent = label || '—';
+        div.setAttribute('role','option');
+        div.addEventListener('mousedown', (e)=>{
+          // mousedown to avoid blur before click
+          e.preventDefault();
           if(qEl) qEl.value = div.textContent;
           clearSuggestions();
-          performSearch();
+          performSearch(true);
         });
         suggestionsEl.appendChild(div);
       });
@@ -458,6 +482,8 @@
     function applyFilters(rows, q, dialect){
       const needle = clean(q).toLowerCase();
       const dia = dialect || '';
+      // Avoid rendering the whole dictionary when nothing is searched
+      if(!needle && !dia) return [];
       return rows.filter(r=>{
         if(dia){
           const d = clean(r.dialecte || r.pays || r.region);
@@ -471,34 +497,70 @@
     }
 
     function renderCard(row){
-      const li=document.createElement('li');
-      li.className='result-card';
-      li.tabIndex=0;
+      const a=document.createElement('a');
+      a.className='resultCard';
+      a.href = wordPageUrlForRow(row);
 
-      const title=document.createElement('div');
-      title.className='rc-title';
-      title.textContent = clean(row.mot_arabe) || clean(row.transliteration) || '—';
+      const top=document.createElement('div');
+      top.className='resultTop';
 
-      const sub=document.createElement('div');
-      sub.className='rc-sub';
-      sub.textContent = clean(getMeaningForLang(row).value);
+      const left=document.createElement('div');
+      left.className='resultLeft';
 
-      const meta=document.createElement('div');
-      meta.className='rc-meta';
-      meta.textContent = [clean(row.pays), clean(row.region)].filter(Boolean).join(' · ');
+      const word=document.createElement('div');
+      word.className='resultWord';
+      word.textContent = clean(row.mot_arabe) || clean(row.transliteration) || '—';
 
-      li.appendChild(title); li.appendChild(sub); li.appendChild(meta);
+      const translit=document.createElement('div');
+      translit.className='resultTranslit muted';
+      translit.textContent = clean(row.transliteration);
 
-      li.addEventListener('click', ()=>{ location.href = wordPageUrlForRow(row); });
-      li.addEventListener('keydown', (e)=>{ if(e.key==='Enter') li.click(); });
-      return li;
+      left.appendChild(word);
+      if(clean(row.transliteration)) left.appendChild(translit);
+
+      const right=document.createElement('div');
+      right.className='resultRight';
+
+      const flag=document.createElement('span');
+      flag.className='flagBadge';
+      flag.textContent = getFlagForRow(row) || '';
+
+      const place=document.createElement('div');
+      place.className='resultPlace muted';
+      place.textContent = [clean(row.pays), clean(row.region)].filter(Boolean).join(' · ');
+
+      if(flag.textContent) right.appendChild(flag);
+      if(place.textContent) right.appendChild(place);
+
+      top.appendChild(left);
+      top.appendChild(right);
+
+      const meaning=document.createElement('div');
+      meaning.className='resultMeaning';
+      meaning.textContent = clean(getMeaningForLang(row).value);
+
+      a.appendChild(top);
+      if(meaning.textContent) a.appendChild(meaning);
+
+      return a;
     }
 
-    function renderList(rows){
+    function renderList(rows, resetLimit){
       if(!resultsEl) return;
+      if(resetLimit) renderLimit = 20;
+      LAST = rows;
+      const shown = Math.min(renderLimit, rows.length);
       resultsEl.innerHTML='';
-      rows.forEach(r=> resultsEl.appendChild(renderCard(r)));
-      setCount(rows.length);
+      rows.slice(0, shown).forEach(r=> resultsEl.appendChild(renderCard(r)));
+      setCount(rows.length, shown);
+      if(loadMoreWrap && loadMoreBtn){
+        if(rows.length > shown){
+          loadMoreWrap.style.display='flex';
+          loadMoreBtn.disabled=false;
+        }else{
+          loadMoreWrap.style.display='none';
+        }
+      }
     }
 
     function writeParams(q, dialect){
@@ -514,11 +576,11 @@
       return { q: sp.get('q')||'', dialect: sp.get('dialect')||'' };
     }
 
-    function performSearch(){
+    function performSearch(resetLimit){
       const q = qEl ? qEl.value : '';
       const dialect = dialectEl ? dialectEl.value : '';
       const rows = applyFilters(ALL, q, dialect);
-      renderList(rows);
+      renderList(rows, resetLimit!==false);
       writeParams(q, dialect);
     }
 
@@ -527,8 +589,9 @@
       const needle = clean(qEl.value).toLowerCase();
       if(!needle){ clearSuggestions(); return; }
       const matches = ALL.filter(r=>{
-        const v = clean(r.mot_arabe||r.transliteration||r.fr||r.en).toLowerCase();
-        return v.includes(needle);
+        const m = getMeaningForLang(r).value;
+        const fields = [r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha, m].map(v=>clean(v).toLowerCase());
+        return fields.some(v=>v.includes(needle));
       });
       renderSuggestions(matches);
     }
@@ -543,14 +606,15 @@
         if(qEl) qEl.value = params.q;
         if(dialectEl) dialectEl.value = params.dialect;
 
-        if(searchBtn && searchBtn.tagName==='BUTTON') searchBtn.addEventListener('click', ()=>{ clearSuggestions(); performSearch(); });
+        if(searchBtn && searchBtn.tagName==='BUTTON') searchBtn.addEventListener('click', ()=>{ clearSuggestions(); performSearch(true); });
         if(qEl){
           qEl.addEventListener('input', debounce(onInput, 120));
-          qEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ clearSuggestions(); performSearch(); } });
+          qEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ clearSuggestions(); performSearch(true); } });
         }
-        if(dialectEl) dialectEl.addEventListener('change', ()=>{ clearSuggestions(); performSearch(); });
+        if(dialectEl) dialectEl.addEventListener('change', ()=>{ clearSuggestions(); performSearch(true); });
+        if(loadMoreBtn) loadMoreBtn.addEventListener('click', ()=>{ renderLimit += 20; renderList(LAST, false); });
 
-        performSearch();
+        performSearch(true);
         if(statusEl) statusEl.textContent = t('ready');
       }catch(err){
         console.error(err);
