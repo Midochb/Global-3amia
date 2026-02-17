@@ -231,42 +231,103 @@
 
   // ---------- [DATA] ----------
   const API_URL = "https://script.google.com/macros/s/AKfycbxRvetENGm215GS4OowKMa_BqHBi5CNEWOgzQ5k5D7UaaItvPHLj2N1tmCBjVB_WZN1/exec";
+  // Cache keys bumped to avoid stale/broken cached schema
   const CACHE_KEY = 'zeedna_rows_v2';
-  const CACHE_TS = 'zeedna_rows_ts_v2';
+  const CACHE_TS  = 'zeedna_rows_ts_v2';
   const CACHE_TTL = 1000 * 60 * 30; // 30 min
 
+  function keyNorm(k){
+    return (k ?? '')
+      .toString()
+      .trim()
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace(/[^a-z0-9]+/g,'_')
+      .replace(/_+/g,'_')
+      .replace(/^_+|_+$/g,'');
+  }
+
+  function pick(map, candidates){
+    for(const c of candidates){
+      if(map[c] != null && clean(map[c]) !== '') return map[c];
+    }
+    return '';
+  }
+
   function normalizeRow(r){
-    const row = Object.assign({}, r || {});
-    // ---- robust field mapping (API columns may vary) ----
-    row.mot_arabe = row.mot_arabe ?? row.mot ?? row.arabe ?? row.arabic ?? row.ar ?? row.word_ar ?? row.motArabe ?? '';
-    row.transliteration =
-      row.transliteration ?? row.translit ?? row.phonetique ?? row.phonétique ?? row.phonetic ??
-      row.prononciation ?? row.pronunciation ?? row.tr ?? row.latin ?? row.romanization ?? '';
-    row.dialecte = row.dialecte ?? row.dialect ?? row.variante ?? row.variant ?? row.dialekt ?? row.region_dialecte ?? row.dialectRegion ?? row.pays ?? '';
-    row.pays_code = (row.pays_code ?? row.iso2 ?? row.iso ?? row.country_code ?? row.code_pays ?? row.paysCode ?? '').toString().toUpperCase();
-    row.pays = row.pays ?? row.country ?? row.pays_nom ?? row.paysNom ?? '';
-    row.region = row.region ?? row.ville ?? row.city ?? row.localite ?? row.localité ?? row.gouvernorat ?? row.governorate ?? '';
-    row.fr = row.fr ?? row.francais ?? row.français ?? row.mot_francais ?? row.sens_fr ?? row.sensFR ?? row.traduction_fr ?? row.translation_fr ?? row.meaning_fr ?? row.definition_fr ?? '';
-    row.en = row.en ?? row.anglais ?? row.english ?? row.mot_anglais ?? row.sens_en ?? row.sensEN ?? row.traduction_en ?? row.translation_en ?? row.meaning_en ?? row.definition_en ?? '';
-    row.nl = row.nl ?? row.neerlandais ?? row.dutch ?? row.sens_nl ?? row.translation_nl ?? '';
-    row.es = row.es ?? row.espagnol ?? row.spanish ?? row.sens_es ?? row.translation_es ?? '';
-    row.it = row.it ?? row.italien ?? row.italian ?? row.sens_it ?? row.translation_it ?? '';
-    row.fusha = row.fusha ?? row.arabe_classique ?? row.arabeClassique ?? row.ar_classique ?? row.classical_arabic ?? row.msa ?? row.foss7a ?? row.fous7a ?? '';
-    const actif = row.actif ?? row.active ?? row.is_active ?? row.isActive;
-    row.actifBool = (typeof actif === 'boolean') ? actif : (String(actif ?? '').toLowerCase() !== 'false');
-    row.mot_id = row.mot_id ?? row.id ?? row.motID ?? row.word_id ?? '';
+    const raw = (r && typeof r === 'object') ? r : {};
+    const km = {};
+    Object.keys(raw).forEach(k=>{
+      const nk = keyNorm(k);
+      if(!nk) return;
+      const v = raw[k];
+      if(km[nk] == null || clean(km[nk]) === '') km[nk] = v;
+      else km[nk + '_2'] = v;
+    });
+
+    const row = {};
+
+    row.mot_id = pick(km, ['mot_id','id','uid','uuid','slug']);
+    const activeRaw = pick(km, ['actif','active','is_active','enabled','enable']);
+    row.actifBool = (activeRaw === '' ? true : (String(activeRaw).toLowerCase() !== 'false' && String(activeRaw).toLowerCase() !== '0'));
+
+    row.mot_arabe = pick(km, [
+      'mot_arabe','mot_arab','arabe','mot_arabe_dialecte','mot_arabe_dial','mot_ar','word_ar','arabic','mot'
+    ]);
+    row.transliteration = pick(km, [
+      'transliteration','translit','phonetique','phonetic','latin','latinisation','latine','romanization','prononciation'
+    ]);
+    row.fusha = pick(km, ['arabe_classique','fusha','msa','arabe_litteral','arabic_classical','classique']);
+
+    row.fr = pick(km, ['fr','francais','french','mot_francais','sens_fr','traduction_fr','definition_fr','meaning_fr']);
+    row.en = pick(km, ['en','anglais','english','sens_en','traduction_en','definition_en','meaning_en']);
+    row.nl = pick(km, ['nl','neerlandais','dutch','sens_nl','traduction_nl']);
+    row.es = pick(km, ['es','espagnol','spanish','sens_es','traduction_es']);
+    row.it = pick(km, ['it','italien','italian','sens_it','traduction_it']);
+
+    row.pays_code = (pick(km, ['pays_code','country_code','iso','iso2','iso_2','code_pays','country_iso2']) || '').toString().trim().toUpperCase();
+    row.pays = pick(km, ['pays','country','etat','nation']);
+    row.region = pick(km, ['region','ville','city','localite','gouvernorat','governorate']);
+
+    row.dialecte = pick(km, ['dialecte','dialect','variante','variant','patois']) || row.pays || row.region || '';
+
+    row._raw = raw;
+
+    const parts = [];
+    Object.values(raw).forEach(v=>{
+      if(v == null) return;
+      if(typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'){
+        const s = clean(v);
+        if(s) parts.push(s);
+      }
+    });
+    [row.mot_arabe,row.transliteration,row.fr,row.en,row.fusha,row.pays,row.region,row.dialecte,row.pays_code].forEach(v=>{
+      const s = clean(v); if(s) parts.push(s);
+    });
+    row._search = norm(parts.join(' | '));
     return row;
   }
 
+  function extractRowsFromApiPayload(data){
+    if(Array.isArray(data)) return data;
+    if(!data || typeof data !== 'object') return [];
+    const cand = data.rows || data.data || data.result || data.items || data.list || data.records;
+    if(Array.isArray(cand)) return cand;
+    if(typeof data.payload === 'string'){
+      try{ return extractRowsFromApiPayload(JSON.parse(data.payload)); }catch(e){ return []; }
+    }
+    if(typeof data.payload === 'object') return extractRowsFromApiPayload(data.payload);
+    return [];
+  }
 
   async function fetchRows(){
     const res = await fetch(API_URL, { cache: 'no-store' });
     if(!res.ok) throw new Error('API HTTP ' + res.status);
     const data = await res.json();
-    const rows = Array.isArray(data) ? data : (data.rows || data.data || []);
-    return rows.map(normalizeRow).filter(r=>r.actifBool);
+    const rawRows = extractRowsFromApiPayload(data);
+    const rows = rawRows.map(normalizeRow).filter(r=>r.actifBool);
+    return rows;
   }
-
   async function loadData(){
     try{
       const now = Date.now();
@@ -467,19 +528,14 @@
 
     function applyFilters(rows, q, dialect){
       const needle = norm(q);
-      const dia = dialect || '';
+      const dia = (dialect || "").trim();
       return rows.filter(r=>{
         if(dia){
           const d = clean(r.dialecte || r.pays || r.region);
           if(d !== dia) return false;
         }
-        // IMPORTANT: do not render the whole dictionary by default
         if(!needle) return false;
-        const m = getMeaningForLang(r);
-        const hay = norm([
-          r.mot_arabe, r.transliteration, r.fr, r.en, r.nl, r.es, r.it, r.fusha, m.value, r.pays, r.region
-        ].join(' | '));
-        return hay.includes(needle);
+        return (r._search || "").includes(needle);
       });
     }
 
@@ -568,7 +624,7 @@
       if(!needle){ clearSuggestions(); return; }
       const matches = [];
       for(const r of ALL){
-        const hay = norm([r.mot_arabe, r.transliteration, r.fr, r.en, r.nl, r.es, r.it, r.fusha].join(' | '));
+        const hay = norm([r.mot_arabe, r.transliteration, r.fr, r.en, r.fusha].join(' | '));
         if(hay.includes(needle)){
           matches.push(r);
           if(matches.length >= 8) break;
@@ -715,3 +771,4 @@
   });
 
 })();
+//test
