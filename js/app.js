@@ -294,15 +294,9 @@
     row._raw = raw;
 
     const parts = [];
-    Object.values(raw).forEach(v=>{
-      if(v == null) return;
-      if(typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean'){
-        const s = clean(v);
-        if(s) parts.push(s);
-      }
-    });
-    [row.mot_arabe,row.transliteration,row.fr,row.en,row.fusha,row.pays,row.region,row.dialecte,row.pays_code].forEach(v=>{
-      const s = clean(v); if(s) parts.push(s);
+    [row.mot_arabe, row.Fouss7a || row.fouss7a, row.transliteration, row.traduction || row.fr].forEach(v=>{
+      const s = clean(v);
+      if(s) parts.push(s);
     });
     row._search = norm(parts.join(' | '));
     return row;
@@ -513,33 +507,99 @@
         suggestionsEl.appendChild(div);
       });
     }
+    const COUNTRY_LABELS = {
+      TN: 'Tunisie',
+      DZ: 'Algérie',
+      MA: 'Maroc',
+      LY: 'Libye',
+      EG: 'Égypte',
+      IQ: 'Irak',
+      SD: 'Soudan',
+      SA: 'Arabie saoudite',
+      AE: 'Émirats',
+      QA: 'Qatar',
+      KW: 'Koweït',
+      BH: 'Bahreïn',
+      OM: 'Oman',
+      JO: 'Jordanie',
+      LB: 'Liban',
+      SY: 'Syrie',
+      PS: 'Palestine',
+      IL: 'Israël',
+      YE: 'Yémen'
+    };
+
+    const CITY_TO_COUNTRY = {
+      "zarzis":"TN","tunis":"TN","sfax":"TN","sousse":"TN",
+      "alger":"DZ","algiers":"DZ","oran":"DZ",
+      "rabat":"MA","kenitra":"MA","casablanca":"MA","marrakech":"MA","fes":"MA",
+      "le caire":"EG","cairo":"EG","alexandrie":"EG","alexandria":"EG",
+      "tripoli":"LY","benghazi":"LY",
+      "maroc":"MA","algérie":"DZ","algerie":"DZ","tunisie":"TN","egypte":"EG","libye":"LY"
+    };
+    function inferCountryCode(row){
+      const code = clean(row.pays_code || row.country_code);
+      if(code) return code.toUpperCase();
+      const p = lower(clean(row.pays || row.country));
+      const r = lower(clean(row.region));
+      return (CITY_TO_COUNTRY[p] || CITY_TO_COUNTRY[r] || "").toUpperCase();
+    }
+
+
+    function getDialectKey(r){
+      return clean(r.pays_code || r.country_code || r.pays || r.country || '');
+    }
+
+    function getDialectLabel(code){
+      return COUNTRY_LABELS[code] || code;
+    }
 
     function buildDialectDropdown(rows){
-      if(!dialectEl) return;
-      const seen=new Set();
-      rows.forEach(r=>{ const d=clean(r.dialecte || r.pays || r.region); if(d) seen.add(d); });
-      const current = dialectEl.value || '';
-      dialectEl.innerHTML = `<option value="">${t('all_dialects')}</option>`;
-      [...seen].sort().forEach(d=>{
-        const opt=document.createElement('option'); opt.value=d; opt.textContent=d; dialectEl.appendChild(opt);
-      });
-      dialectEl.value=current;
+      if(!dialectSelect) return;
+      const set = new Set();
+      for(const r of rows){
+        const code = getDialectKey(r);
+        if(code) set.add(code);
+      }
+      const codes = Array.from(set).sort((a,b)=>getDialectLabel(a).localeCompare(getDialectLabel(b),'fr'));
+      dialectSelect.innerHTML = '';
+      const optAll = document.createElement('option');
+      optAll.value = '';
+      optAll.textContent = t('all_dialects');
+      dialectSelect.appendChild(optAll);
+      for(const code of codes){
+        const opt = document.createElement('option');
+        opt.value = code;
+        opt.textContent = getDialectLabel(code);
+        dialectSelect.appendChild(opt);
+      }
     }
+
 
     function applyFilters(rows, q, dialect){
-      const needle = norm(q);
+      const raw = (q||"").trim();
+      const needle = norm(raw);
       const dia = (dialect || "").trim();
+      if(!needle) return [];
+      const isArabic = /[\u0600-\u06FF]/.test(raw);
       return rows.filter(r=>{
         if(dia){
-          const d = clean(r.dialecte || r.pays || r.region);
-          if(d !== dia) return false;
+          const code = getDialectKey(r);
+          if(code !== dia) return false;
         }
-        if(!needle) return false;
-        return (r._search || "").includes(needle);
+        if(isArabic){
+          const a = norm(r.mot_arabe);
+          const f = norm(r.Fouss7a || r.fouss7a);
+          return (a && a.includes(needle)) || (f && f.includes(needle));
+        }
+        const fr = norm(r.traduction || r.fr);
+        const tr = norm(r.transliteration);
+        const f7 = norm(r.Fouss7a || r.fouss7a);
+        return (fr && fr.includes(needle)) || (tr && tr.includes(needle)) || (f7 && f7.includes(needle));
       });
     }
 
-    function renderCard(row){
+function renderCard(row){
       const card = document.createElement('div');
       card.className = 'resultCard';
       card.tabIndex = 0;
@@ -636,6 +696,7 @@
     (async ()=>{
       try{
         if(statusEl) statusEl.textContent = t('loading');
+        [qEl, searchBtn, dialectSelect].forEach(el=>{ if(el){ el.disabled = true; el.classList.add('is-disabled'); } });
         ALL = await loadData();
         buildDialectDropdown(ALL);
 

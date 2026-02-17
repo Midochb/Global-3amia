@@ -641,3 +641,7 @@ body[data-theme="light"] .modal{
   font-weight: 650;
 }
 .suggestion:hover{ background: rgba(255,255,255,.06); }
+
+
+/* Disabled controls while loading */
+.is-disabled{opacity:.6;cursor:not-allowed;}
