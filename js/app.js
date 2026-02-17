@@ -288,6 +288,23 @@
     row.pays_code = (pick(km, ['pays_code','country_code','iso','iso2','iso_2','code_pays','country_iso2']) || '').toString().trim().toUpperCase();
     row.pays = pick(km, ['pays','country','etat','nation']);
     row.region = pick(km, ['region','ville','city','localite','gouvernorat','governorate']);
+  // Country code (for dialect filter + badge). Prefer API pays_code, fallback from pays/region.
+  function inferCountryCode(){
+    const c = clean(row.pays_code).toUpperCase();
+    if(c) return c;
+    const p = clean(row.pays).toLowerCase();
+    const r = clean(row.region).toLowerCase();
+    const blob = (p + " " + r);
+    if(/tunisie|tunis|zarzis|sfax|sousse|djerba|gabes|gafsa|kairouan|medenine/.test(blob)) return "TN";
+    if(/maroc|rabat|kenitra|casablanca|fes|fès|marrakech|agadir|tanger|oujda|meknes|meknès/.test(blob)) return "MA";
+    if(/alg[eé]rie|alger|oran|constantine|annaba|tlemcen|blida|setif|s[eé]tif/.test(blob)) return "DZ";
+    if(/[eé]gypte|cairo|le caire|alexandrie|giza|gizeh/.test(blob)) return "EG";
+    if(/libye|tripoli|benghazi|misrata/.test(blob)) return "LY";
+    if(/irak|bagdad|baghdad/.test(blob)) return "IQ";
+    if(/soudan|khartoum/.test(blob)) return "SD";
+    return "";
+  }
+  row.countryCode = inferCountryCode();
 
     row.dialecte = pick(km, ['dialecte','dialect','variante','variant','patois']) || row.pays || row.region || '';
 
@@ -315,12 +332,45 @@
   }
 
   async function fetchRows(){
-    const res = await fetch(API_URL, { cache: 'no-store' });
-    if(!res.ok) throw new Error('API HTTP ' + res.status);
-    const data = await res.json();
-    const rawRows = extractRowsFromApiPayload(data);
-    const rows = rawRows.map(normalizeRow).filter(r=>r.actifBool);
-    return rows;
+    async function attempt(){
+      const controller = new AbortController();
+      const timeout = setTimeout(()=>controller.abort(), 12000);
+      try{
+        const u = new URL(API_URL);
+        u.searchParams.set('_ts', String(Date.now()));
+        const res = await fetch(u.toString(), {
+          cache: 'no-store',
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json,text/plain,*/*' }
+        });
+        if(!res.ok){
+          const txt = await res.text().catch(()=> '');
+          throw new Error('API HTTP ' + res.status + ' ' + res.statusText + ' ' + txt.slice(0,120));
+        }
+        const txt = await res.text();
+        try{
+          return JSON.parse(txt);
+        }catch(_){
+          return JSON.parse(txt.replace(/^\uFEFF/, '').trim());
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+
+    let lastErr = null;
+    for(let i=1;i<=3;i++){
+      try{
+        const data = await attempt();
+        const rawRows = extractRowsFromApiPayload(data);
+        const rows = rawRows.map(normalizeRow).filter(r=>r.actifBool);
+        return rows;
+      }catch(err){
+        lastErr = err;
+        await new Promise(r=>setTimeout(r, 400*i));
+      }
+    }
+    throw lastErr || new Error('API fetch failed');
   }
   async function loadData(){
     try{
@@ -547,7 +597,10 @@
 
 
     function getDialectKey(r){
-      return clean(r.pays_code || r.country_code || r.pays || r.country || '');
+      // Use ISO country code, not city/region labels
+      const direct = clean(r.countryCode || r.pays_code || r.country_code || '').toUpperCase();
+      if(direct) return direct;
+      return inferCountryCodeFromRow(r);
     }
 
     function getDialectLabel(code){
