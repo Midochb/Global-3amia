@@ -279,7 +279,7 @@
     ]);
     row.fusha = pick(km, ['arabe_classique','fusha','msa','arabe_litteral','arabic_classical','classique']);
 
-    row.fr = pick(km, ['fr','francais','french','mot_francais','sens_fr','traduction_fr','definition_fr','meaning_fr']);
+    row.fr = pick(km, ['fr','francais','french','mot_francais','sens_fr','traduction','traduction_fr','traductionfr','translation','meaning','definition','definition_fr','meaning_fr']);
     row.en = pick(km, ['en','anglais','english','sens_en','traduction_en','definition_en','meaning_en']);
     row.nl = pick(km, ['nl','neerlandais','dutch','sens_nl','traduction_nl']);
     row.es = pick(km, ['es','espagnol','spanish','sens_es','traduction_es']);
