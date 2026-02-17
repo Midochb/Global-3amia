@@ -3,133 +3,62 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-
-  <!-- SEO (on ne touche pas, comme demandé) -->
   <title>Zeedna 3amiat – Recherche</title>
-  <meta name="description" content="Recherche Zeedna 3amiat : dictionnaire participatif des dialectes arabes (darija, tunisien, marocain, algérien, etc.)." />
-
-  <base href="/" />
-  <link rel="stylesheet" href="/style.css?v=105" />
+  <link rel="stylesheet" href="/style.css?v=108" />
 </head>
-
 <body>
-
-<!-- ===================== HEADER ===================== -->
-<header class="topbar">
-
-  <!-- Home (retour présentation) -->
-  <a class="iconBtn home-btn" href="/" aria-label="Accueil" title="Accueil">
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-      <path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-      <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-    </svg>
-  </a>
-
-  <!-- Logo centré (retour recherche) -->
-  <a class="brand brand-center" href="/recherche" aria-label="Recherche" title="Recherche">
-    <img class="brandLogo brandLogo--lamp" src="/assets/LogoV2.png" alt="Zeedna" width="34" height="34" />
-  </a>
-
-  <!-- Actions -->
-  <div class="headerActions">
-    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">
-      🌙
-    </button>
-    <a class="iconBtn" href="/transliteration/" aria-label="Guide phonétique" title="Guide phonétique">📘</a>
-    <a class="cta" href="/contribuer" data-i18n="add_word_btn">
-      ➕ Ajoute ton mot
-    </a>
+  <div class="topbar">
+    <div class="topbarInner">
+      <div class="brand">
+        <a class="homeBtn" href="/"><span aria-hidden="true">⌂</span></a>
+        <div class="logo">🪔</div>
+      </div>
+      <div class="actions">
+        <button class="iconBtn" id="btnTheme" title="Mode sombre/clair">🌙</button>
+        <a class="cta" href="/ajouter/">＋ Ajoute ton mot</a>
+      </div>
+    </div>
   </div>
 
-</header>
-
-<!-- ===================== MAIN ===================== -->
-<main class="container">
-
-  <!-- Recherche -->
-  <section class="controls">
-    <div class="searchwrap">
-      <div class="searchbar">
-        <input
-          id="q"
-          class="search"
-          type="search"
-          autocomplete="off"
-          data-i18n-placeholder="home_search_ph"
-          placeholder="Chercher un mot (arabe, translit, FR, Fouss7a)..."
-        />
-
-        <!-- Bouton "Rechercher" (on n'affiche pas toute la liste à chaque lettre) -->
-        <button id="searchBtn" class="cta searchBtn" type="button" data-i18n="search_btn">Rechercher</button>
+  <div class="container">
+    <div class="heroCard">
+      <div class="searchRow">
+        <div id="suggestWrap">
+          <input class="input" id="q" type="search" placeholder="Chercher un mot (arabe, translit, FR, arabe classique)…" autocomplete="off" />
+          <div class="suggestBox" id="suggestBox"></div>
+        </div>
+        <button class="btn" id="btnSearch">Rechercher</button>
+        <select class="input select" id="country" aria-label="Filtrer par pays"></select>
       </div>
 
-      <!-- Suggestions (type Google) -->
-      <div id="suggestions" class="suggestions" aria-label="Suggestions" role="listbox"></div>
+      <div class="statusRow">
+        <div id="status" data-state="loading">Chargement…</div>
+        <div id="count">0 résultat(s)</div>
+      </div>
+
+      <div class="resultsGrid" id="results"></div>
+
+      <div class="loadMoreWrap">
+        <button class="btn" id="loadMore" style="display:none">Charger plus</button>
+      </div>
     </div>
 
-    <select id="dialect" class="select">
-      <option value="">Tous les dialectes</option>
-    </select>
-  </section>
-
-  <!-- Status -->
-  <section class="meta">
-    <div id="status" class="status muted">Prêt    </div>
-    <div id="count" class="count">
-      0 résultat(s)
-    </div>
-  </section>
-
-  <!-- Résultats -->
-  <section class="resultsWrap">
-  <div id="results" class="resultsGrid" aria-live="polite"></div>
-  <div id="loadMoreWrap" class="loadMoreWrap" style="display:none;">
-    <button id="loadMoreBtn" class="loadMoreBtn" type="button">Charger plus</button>
-  </div>
-</section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div>© Zeedna 3amiat</div>
-    <div class="muted">v1.0.0</div>
-  </footer>
-
-</main>
-
-<!-- ===================== MODAL ===================== -->
-<div id="backdrop" class="modal-backdrop" aria-hidden="true"></div>
-
-<div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-
-  <div class="modal-header">
-    <div>
-      <div id="m_word" class="word-ar"></div>
-      <div id="m_translit" class="translit"></div>
-    </div>
-    <button id="m_close" class="close-btn" data-i18n="modal_close">
-      Fermer
-    </button>
-  </div>
-
-  <div id="m_meta" class="trads"></div>
-  <div id="m_kv" class="kv"></div>
-
-  <div class="syn-wrap">
-    <div class="tag">
-      Autres dialectes / synonymes
-    </div>
-    <div id="m_syn" class="syn-list"></div>
-    <div class="small muted" style="margin-top:10px;">
-      Astuce : correspondances trouvées automatiquement via le sens de ta langue (FR ou EN).
+    <div class="footer">
+      <div>© Zeedna 3amiat</div>
+      <div>v1.0.0</div>
     </div>
   </div>
 
-</div>
-
-<!-- ===================== SCRIPTS ===================== -->
-<!-- ⚠️ ordre important -->
-<script src="/js/app.js?v=105"></script>
-
+  <script src="/js/app.js?v=108"></script>
+  <script>
+    const key='zeedna_theme';
+    const apply=()=>{document.documentElement.dataset.theme=localStorage.getItem(key)||'dark'};
+    apply();
+    document.getElementById('btnTheme').addEventListener('click',()=>{
+      const cur=localStorage.getItem(key)||'dark';
+      localStorage.setItem(key, cur==='dark'?'light':'dark');
+      apply();
+    });
+  </script>
 </body>
 </html>
