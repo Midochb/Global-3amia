@@ -1,0 +1,103 @@
+body {
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:linear-gradient(135deg,#0b1020,#1a1f3c);
+color:white;
+}
+
+.topbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 20px;
+}
+
+.btn-add{
+background:#2a2f55;
+padding:8px 14px;
+border-radius:12px;
+text-decoration:none;
+color:white;
+}
+
+.btn-search{
+background:rgba(255,255,255,0.08);
+border:1px solid rgba(255,255,255,0.14);
+padding:8px 14px;
+border-radius:12px;
+text-decoration:none;
+color:white;
+}
+
+.sr-only{
+position:absolute;
+width:1px;
+height:1px;
+padding:0;
+margin:-1px;
+overflow:hidden;
+clip:rect(0,0,0,0);
+white-space:nowrap;
+border:0;
+}
+
+.hero{
+padding:60px 20px 40px 20px;
+text-align:center;
+}
+
+.hero h1{
+font-size:2.2rem;
+margin-bottom:10px;
+}
+
+.home-search{
+margin:22px auto 0 auto;
+max-width:520px;
+display:flex;
+gap:10px;
+align-items:center;
+justify-content:center;
+padding:12px;
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.12);
+border-radius:18px;
+backdrop-filter:blur(10px);
+}
+
+.home-search input{
+flex:1;
+min-width:0;
+padding:12px 12px;
+border-radius:14px;
+border:1px solid rgba(255,255,255,0.14);
+background:rgba(0,0,0,0.18);
+color:white;
+font-size:16px;
+}
+
+.home-search button{
+padding:12px 14px;
+border-radius:14px;
+border:1px solid rgba(255,255,255,0.18);
+background:rgba(255,255,255,0.10);
+color:white;
+font-weight:600;
+cursor:pointer;
+}
+
+@media (max-width:520px){
+  .topbar{gap:10px;}
+  .btn-search{display:none;}
+  .hero{padding:46px 16px 24px 16px;}
+  .home-search{flex-direction:column;}
+  .home-search button{width:100%;}
+}
+
+.guide,.contact{
+padding:20px;
+max-width:600px;
+margin:0 auto 30px auto;
+background:rgba(255,255,255,0.05);
+border-radius:18px;
+}

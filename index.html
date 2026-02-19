@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeedna 3amia</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header class="topbar">
+<a href="/" class="home-link">🏠</a>
+<a href="/recherche/" class="btn-search">Rechercher</a>
+<a href="/contribute.html" class="btn-add">+ Ajoute ton mot</a>
+</header>
+
+<section class="hero">
+<h1>Zeedna 3amia</h1>
+<p>Dictionnaire communautaire des dialectes arabes.</p>
+
+  <!-- Quick search (home) -->
+  <form class="home-search" action="/recherche/" method="GET" role="search" aria-label="Rechercher un mot">
+    <label class="sr-only" for="home-q">Rechercher un mot</label>
+    <input
+      id="home-q"
+      name="q"
+      type="search"
+      autocomplete="off"
+      placeholder="Rechercher un mot… (ex: wa5a, زادا, برضو)"
+    />
+    <button type="submit" class="btn">Rechercher</button>
+  </form>
+
+  <div class="home-actions">
+    <a class="btn" href="/recherche/">Aller à la recherche</a>
+  </div>
+</section>
+
+<script>
+  // If user lands with ?q=... on the home page, keep it and forward to /recherche/
+  (function () {
+    try {
+      const params = new URLSearchParams(location.search);
+      const q = params.get('q');
+      if (q && q.trim()) {
+        location.replace('/recherche/?q=' + encodeURIComponent(q.trim()));
+        return;
+      }
+      const input = document.getElementById('home-q');
+      if (input) input.focus({ preventScroll: true });
+    } catch (e) {
+      // noop
+    }
+  })();
+</script>
+
+<section class="guide">
+<h2>Guide d'utilisation</h2>
+<p>1. Recherchez un mot.</p>
+<p>2. Consultez les variantes dialectales.</p>
+<p>3. Proposez une correction si nécessaire.</p>
+</section>
+
+<section class="contact">
+<h2>Contact</h2>
+<p>Une idée ou suggestion ?</p>
+<p><strong>zeednaarabe@gmail.com</strong></p>
+</section>
+
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!--
+    IMPORTANT:
+    This file may be served as a fallback for unknown /mot/<slug>/ routes.
+    Without a base href + absolute asset URLs, the browser resolves ../style.css,
+    ../app.js, etc. against /mot/<slug>/ and CSS/JS won't load (white page, huge icons).
+  -->
+  <base href="/" />
+  <title>Zeedna 3amiat — Mot</title>
+  <meta name="description" content="Zeedna 3amiat — dictionnaire collaboratif multi-dialectes arabes. Page mot avec traductions et suggestions." />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="iconBtn home-btn" href="/" aria-label="Accueil" title="Accueil">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 10v10h14V10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 20v-6h6v6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <a class="brand brand-center" id="searchBtn" href="/recherche" aria-label="Recherche" title="Recherche">
+      <img class="brandLogo brandLogo--lamp" src="/assets/LogoV2.png" alt="Zeedna" />
+    </a>
+
+    <button id="themeToggle" class="iconBtn" type="button" aria-label="Changer le thème">🌙</button>
+    <a class="cta" href="/contribuer" data-i18n="word_contribute_btn">➕ Ajoute ton mot</a>
+  </header>
+
+  <main class="container">
+    <section class="card" style="cursor:default;">
+      <div id="wordStatus" class="status muted">Chargement…</div>
+
+      <div id="wordView" style="display:none;">
+        <!-- Social header (optional): styled for screenshots / sharing -->
+        <div id="shareHeader" class="z-social-header" style="display:none;">
+          <div class="z-social-title" id="shareTitle">Comment dire ce mot&nbsp;?</div>
+          <div class="z-social-meta">
+            <span class="z-social-badge" id="shareDialect">Dialecte</span>
+            <span class="z-social-badge" id="shareCountry">Pays</span>
+            <span class="z-social-badge" id="shareIcon">✨</span>
+          </div>
+          <button id="captureToggle" class="z-social-capture" type="button" title="Mode capture (screenshot)">📸</button>
+        </div>
+
+        <div id="w_ar" class="word-ar word-ar--page" dir="rtl"></div>
+        <div class="tr-row" style="margin-bottom:12px;">
+          <div class="muted" id="w_tr"></div>
+          <a id="trHelpLink" class="tr-help-link" data-i18n="tr_help_link" href="/transliteration/" title="Aide pour lire la phonétique">📖 Guide phonétique</a>
+        </div>
+<div id="w_trads" class="trads"></div>
+
+        <div id="w_kv" class="kv" style="margin-top:10px;"></div>
+
+        <div class="syn-wrap" style="margin-top:14px;">
+          <div class="tag" data-i18n="word_more">Autres mots suggérés</div>
+          <div id="w_suggest" class="syn-list"></div>
+        </div>
+      </div>
+
+      <div id="wordNotFound" style="display:none;">
+        <div style="font-weight:800;font-size:18px;margin-bottom:6px;" data-i18n="word_nf_title">Mot introuvable</div>
+        <div class="muted small" style="margin-bottom:12px;" data-i18n="word_nf_hint">Ce mot n’est pas encore dans la base.</div>
+        <a class="cta" id="nfContrib" href="/contribuer">➕ Ajoute ton mot</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="/utils.js"></script>
+  <script src="/synonyms.js"></script>
+  <script src="/mot.js"></script>
+</body>
+</html>

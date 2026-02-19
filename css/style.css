@@ -1,0 +1,6 @@
+/*
+  Compatibility stylesheet.
+  Some pages (or older links) may load /css/style.css.
+  Keep it in sync with the main stylesheet at /style.css.
+*/
+@import url("../style.css");
